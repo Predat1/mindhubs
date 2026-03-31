@@ -30,7 +30,7 @@ const HeroSection = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center bg-gradient-hero pt-16 overflow-hidden">
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
-        <div className="space-y-5 z-10">
+        <div className="space-y-5 z-10 animate-fade-in">
           <span className="badge-purple inline-block px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider">
             Paiement unique et Accès illimité
           </span>
@@ -47,18 +47,18 @@ const HeroSection = () => {
           </p>
           <a
             href="#formations"
-            className="btn-primary-brand inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-semibold"
+            className="btn-primary-brand inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-semibold hover-scale"
           >
             VOIR NOS FORMATIONS <GraduationCap size={20} />
           </a>
         </div>
-        <div className="relative flex justify-center md:justify-end">
+        <div className="relative flex justify-center md:justify-end animate-slide-in-hero">
           <img
             src={heroStudent}
             alt="Étudiante avec ordinateur portable"
             width={600}
             height={750}
-            className="relative z-10 max-h-[520px] object-contain drop-shadow-2xl"
+            className="relative z-10 max-h-[520px] object-contain drop-shadow-2xl hover-float"
           />
         </div>
       </div>

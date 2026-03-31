@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 import type { Product } from "@/data/products";
 
 const StarRating = ({ rating }: { rating: number }) => (
@@ -17,10 +18,18 @@ const StarRating = ({ rating }: { rating: number }) => (
 );
 
 const ProductCard = ({ product }: { product: Product }) => {
+  const { addToCart } = useCart();
+
+  const handleBuy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+  };
+
   return (
-    <Link to={`/produit/${product.id}`} className="block">
+    <Link to={`/produit/${product.id}`} className="block group">
       <div className="course-card rounded-xl overflow-hidden h-full flex flex-col">
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <span className="absolute top-2 left-2 badge-purple text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
             VENTE !
           </span>
@@ -30,7 +39,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             loading="lazy"
             width={512}
             height={512}
-            className="w-full h-48 md:h-56 object-cover"
+            className="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
         <div className="p-4 flex flex-col flex-1 items-center text-center space-y-3">
@@ -42,7 +51,10 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="text-muted-foreground line-through text-xs">{product.oldPrice}</span>
             <span className="text-accent font-bold text-base underline">{product.price}</span>
           </div>
-          <button className="btn-primary-brand py-2.5 px-6 rounded-full font-semibold text-xs tracking-wide">
+          <button
+            onClick={handleBuy}
+            className="btn-primary-brand py-2.5 px-6 rounded-full font-semibold text-xs tracking-wide hover-scale"
+          >
             ACHETER MAINTENANT
           </button>
         </div>
