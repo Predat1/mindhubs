@@ -1,4 +1,5 @@
 import { Shield, Headphones, Infinity, Star } from "lucide-react";
+import AnimateOnScroll from "@/components/AnimateOnScroll";
 
 const stats = [
   { icon: Shield, value: "100%", label: "Paiement sécurisé" },
@@ -12,15 +13,14 @@ const StatsBar = () => {
     <section className="py-12 bg-background">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="stat-card rounded-xl p-6 text-center shadow-glow"
-            >
-              <stat.icon className="mx-auto mb-2 text-primary" size={24} />
-              <p className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-            </div>
+          {stats.map((stat, i) => (
+            <AnimateOnScroll key={stat.label} delay={i * 100}>
+              <div className="stat-card rounded-xl p-6 text-center shadow-glow hover-scale cursor-default">
+                <stat.icon className="mx-auto mb-2 text-primary" size={24} />
+                <p className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              </div>
+            </AnimateOnScroll>
           ))}
         </div>
       </div>
