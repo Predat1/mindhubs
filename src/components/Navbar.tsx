@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
@@ -13,6 +14,7 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { totalItems } = useCart();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -28,7 +30,7 @@ const Navbar = () => {
             <Link
               key={link.label}
               to={link.href}
-              className={`text-sm transition-colors ${
+              className={`text-sm transition-colors story-link ${
                 location.pathname === link.href
                   ? "text-foreground font-medium"
                   : "text-muted-foreground hover:text-foreground"
@@ -40,12 +42,16 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/panier" className="relative text-muted-foreground hover:text-foreground transition-colors hover-scale">
             <ShoppingCart size={20} />
-            <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
-              0
+            <span
+              className={`absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold transition-transform ${
+                totalItems > 0 ? "scale-100" : "scale-0"
+              }`}
+            >
+              {totalItems}
             </span>
-          </button>
+          </Link>
           <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
             {open ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -53,7 +59,7 @@ const Navbar = () => {
       </div>
 
       {open && (
-        <div className="md:hidden bg-background border-t border-border px-4 pb-4">
+        <div className="md:hidden bg-background border-t border-border px-4 pb-4 animate-fade-in">
           {navLinks.map((link) => (
             <Link
               key={link.label}
