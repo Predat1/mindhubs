@@ -25,6 +25,10 @@ const ProductCard = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
+    toast({
+      title: "Produit ajouté au panier 🛒",
+      description: `${product.title} a été ajouté à votre panier.`,
+    });
   };
 
   return (

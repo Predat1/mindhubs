@@ -19,6 +19,7 @@ const Index = () => {
       <CoursesSection />
       <TrustLogosSection />
       <ExpertiseSection />
+      <VideoTestimonialsSection />
       <GoogleReviewsSection />
       <NewsletterSection />
       <HelpSection />
