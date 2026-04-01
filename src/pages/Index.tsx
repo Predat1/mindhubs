@@ -4,6 +4,7 @@ import StatsBar from "@/components/StatsBar";
 import CoursesSection from "@/components/CoursesSection";
 import TrustLogosSection from "@/components/TrustLogosSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
+import VideoTestimonialsSection from "@/components/VideoTestimonialsSection";
 import GoogleReviewsSection from "@/components/GoogleReviewsSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import HelpSection from "@/components/HelpSection";
@@ -18,6 +19,7 @@ const Index = () => {
       <CoursesSection />
       <TrustLogosSection />
       <ExpertiseSection />
+      <VideoTestimonialsSection />
       <GoogleReviewsSection />
       <NewsletterSection />
       <HelpSection />

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/data/products";
 
 const StarRating = ({ rating }: { rating: number }) => (
@@ -24,6 +25,10 @@ const ProductCard = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
+    toast({
+      title: "Produit ajouté au panier 🛒",
+      description: `${product.title} a été ajouté à votre panier.`,
+    });
   };
 
   return (
