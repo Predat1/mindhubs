@@ -23,7 +23,7 @@ const FooterSection = () => {
   return (
     <footer className="relative bg-background border-t-0">
       {/* Purple gradient top border */}
-      <div className="h-2 w-full bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 rounded-t-xl" />
+      <div className="h-1.5 w-full bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
 
       <div className="container mx-auto px-6 py-14">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -32,7 +32,7 @@ const FooterSection = () => {
             <Link to="/" className="text-2xl font-black tracking-tight">
               <span className="text-foreground">SAVOIR</span>
               <span className="text-gradient-brand text-yellow-400">✦</span>
-              <span className="text-purple-500 font-black">HUB</span>
+               <span className="text-primary font-black">HUB</span>
             </Link>
             <div className="space-y-3 text-muted-foreground text-sm">
               <p>
@@ -84,7 +84,7 @@ const FooterSection = () => {
           </div>
           <p className="text-sm text-muted-foreground">
             Copyright © 2023-{new Date().getFullYear()}{" "}
-            <span className="text-purple-500 font-semibold">Savoir Hub</span>
+            <span className="text-primary font-semibold">Savoir Hub</span>
           </p>
         </div>
       </div>
