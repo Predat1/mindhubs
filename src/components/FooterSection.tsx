@@ -32,7 +32,7 @@ const FooterSection = () => {
             <Link to="/" className="text-2xl font-black tracking-tight">
               <span className="text-foreground">SAVOIR</span>
               <span className="text-gradient-brand text-yellow-400">✦</span>
-              <span className="text-purple-500 font-black">HUB</span>
+               <span className="text-primary font-black">HUB</span>
             </Link>
             <div className="space-y-3 text-muted-foreground text-sm">
               <p>
