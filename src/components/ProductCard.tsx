@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/data/products";
 
 const StarRating = ({ rating }: { rating: number }) => (
