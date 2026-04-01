@@ -84,7 +84,7 @@ const FooterSection = () => {
           </div>
           <p className="text-sm text-muted-foreground">
             Copyright © 2023-{new Date().getFullYear()}{" "}
-            <span className="text-purple-500 font-semibold">Savoir Hub</span>
+            <span className="text-primary font-semibold">Savoir Hub</span>
           </p>
         </div>
       </div>
