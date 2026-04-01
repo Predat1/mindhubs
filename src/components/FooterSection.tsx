@@ -1,87 +1,90 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
+import payMtn from "@/assets/pay-mtn.png";
+import payMoov from "@/assets/pay-moov.png";
+import payOrange from "@/assets/pay-orange.png";
+import payWave from "@/assets/pay-wave.png";
+import payTmoney from "@/assets/pay-tmoney.png";
+import payAirtel from "@/assets/pay-airtel.png";
+import payVisa from "@/assets/pay-visa.png";
+import payMastercard from "@/assets/pay-mastercard.png";
+
+const paymentMethods = [
+  { name: "MTN", logo: payMtn },
+  { name: "Moov Money", logo: payMoov },
+  { name: "Orange Money", logo: payOrange },
+  { name: "Wave", logo: payWave },
+  { name: "TMoney", logo: payTmoney },
+  { name: "Airtel Money", logo: payAirtel },
+  { name: "Visa", logo: payVisa },
+  { name: "MasterCard", logo: payMastercard },
+];
 
 const FooterSection = () => {
   return (
-    <footer className="bg-background border-t border-border">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="relative bg-background border-t-0">
+      {/* Purple gradient top border */}
+      <div className="h-2 w-full bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 rounded-t-xl" />
+
+      <div className="container mx-auto px-6 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Logo & Contact */}
-          <div className="space-y-4">
-            <Link to="/" className="text-xl font-bold">
+          <div className="space-y-5">
+            <Link to="/" className="text-2xl font-black tracking-tight">
               <span className="text-foreground">SAVOIR</span>
-              <span className="text-gradient-brand">✦</span>
-              <span className="text-accent">HUB</span>
+              <span className="text-gradient-brand text-yellow-400">✦</span>
+              <span className="text-purple-500 font-black">HUB</span>
             </Link>
-            <div className="space-y-2 text-muted-foreground text-sm">
-              <div className="flex items-center gap-2">
-                <Mail size={14} />
-                <span>contact@savoirhub.com</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone size={14} />
-                <span>+33 6 00 00 00 00</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} />
-                <span>En ligne</span>
-              </div>
+            <div className="space-y-3 text-muted-foreground text-sm">
+              <p>
+                <Link to="/boutique" className="hover:text-foreground transition-colors">
+                  Voir notre catalogue
+                </Link>
+              </p>
+              <p>contact@savoirhub.com</p>
             </div>
           </div>
 
           {/* Nos politiques */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground text-sm">Nos politiques</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+          <div className="space-y-5">
+            <h4 className="font-bold text-foreground text-lg">Nos politiques</h4>
+            <ul className="space-y-3 text-muted-foreground text-sm">
               <li><a href="#" className="hover:text-foreground transition-colors">Conditions générales</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Politique de confidentialité</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">Politique confidentialité</a></li>
               <li><a href="#" className="hover:text-foreground transition-colors">Politique de remboursement</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Mentions légales</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">Politique de livraison</a></li>
             </ul>
           </div>
 
           {/* Liens Utiles */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground text-sm">Liens Utiles</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
-              <li><Link to="/boutique" className="hover:text-foreground transition-colors">Toutes les formations</Link></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Mon compte</a></li>
+          <div className="space-y-5">
+            <h4 className="font-bold text-foreground text-lg">Liens Utiles</h4>
+            <ul className="space-y-3 text-muted-foreground text-sm">
+              <li><a href="#" className="hover:text-foreground transition-colors">Mentions légales</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">Politique des cookies</a></li>
               <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
               <li><a href="#" className="hover:text-foreground transition-colors">FAQ</a></li>
             </ul>
           </div>
-
-          {/* Newsletter mini */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground text-sm">Newsletter</h4>
-            <p className="text-muted-foreground text-sm">Recevez nos dernières offres</p>
-            <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Email"
-                className="flex-1 px-3 py-2 rounded-lg bg-input border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <button className="btn-primary-brand px-4 py-2 rounded-lg text-sm font-semibold">
-                OK
-              </button>
-            </form>
-          </div>
         </div>
 
-        {/* Payment icons */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {["VISA", "MC", "AMEX", "PayPal", "CB"].map((p) => (
-              <span
-                key={p}
-                className="text-[10px] font-bold px-2 py-1 rounded border border-border text-muted-foreground"
-              >
-                {p}
-              </span>
+        {/* Divider */}
+        <div className="mt-12 pt-8 border-t border-border" />
+
+        {/* Payment icons & Copyright */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            {paymentMethods.map((p) => (
+              <img
+                key={p.name}
+                src={p.logo}
+                alt={p.name}
+                className="h-9 w-auto rounded object-contain"
+              />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Copyright © 2023-{new Date().getFullYear()} SavoirHub ❤️
+          <p className="text-sm text-muted-foreground">
+            Copyright © 2023-{new Date().getFullYear()}{" "}
+            <span className="text-purple-500 font-semibold">Savoir Hub</span>
           </p>
         </div>
       </div>
