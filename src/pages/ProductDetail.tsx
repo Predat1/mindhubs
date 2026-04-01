@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { getProductById, getSimilarProducts } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/hooks/use-toast";
 import { CheckSquare, ShoppingCart } from "lucide-react";
 
 const ProductDetail = () => {
