@@ -59,9 +59,9 @@ const FooterSection = () => {
           <div className="space-y-5">
             <h4 className="font-bold text-foreground text-lg">Liens Utiles</h4>
             <ul className="space-y-3 text-muted-foreground text-sm">
-              <li><a href="#" className="hover:text-foreground transition-colors">Mentions légales</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Politique des cookies</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
+              <li><Link to="/a-propos" className="hover:text-foreground transition-colors">À propos</Link></li>
+              <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+              <li><Link to="/boutique" className="hover:text-foreground transition-colors">Boutique</Link></li>
               <li><a href="#" className="hover:text-foreground transition-colors">FAQ</a></li>
             </ul>
           </div>
