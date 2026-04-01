@@ -106,7 +106,7 @@ const Contact = () => {
         <div className="grid md:grid-cols-5 gap-8">
           {/* Form */}
           <AnimateOnScroll className="md:col-span-3">
-            <div className="md:col-span-3 stat-card rounded-2xl p-8">
+            <div className="stat-card rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-foreground mb-6">Envoyez-nous un message</h2>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
