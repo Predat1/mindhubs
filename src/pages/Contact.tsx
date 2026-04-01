@@ -174,8 +174,8 @@ const Contact = () => {
           </AnimateOnScroll>
 
           {/* Sidebar */}
-          <AnimateOnScroll delay={200}>
-            <div className="md:col-span-2 space-y-6">
+          <AnimateOnScroll delay={200} className="md:col-span-2">
+            <div className="space-y-6">
               {/* WhatsApp CTA */}
               <div className="stat-card rounded-2xl p-6 space-y-4">
                 <div className="w-14 h-14 rounded-xl bg-green-500/20 flex items-center justify-center">
