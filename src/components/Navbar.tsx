@@ -8,7 +8,7 @@ const navLinks = [
   { label: "Boutique", href: "/boutique" },
   { label: "À propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
-  { label: "Mon compte", href: "#" },
+  { label: "Mon compte", href: "/mon-compte" },
 ];
 
 const Navbar = () => {
