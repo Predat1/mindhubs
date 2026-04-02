@@ -37,12 +37,11 @@ const ProductDetail = () => {
       <Navbar />
 
       {/* Title Banner */}
-      <section className="pt-16">
-        <div className="relative py-12 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent" />
+      <section className="pt-20">
+        <div className="container mx-auto px-4 py-8">
           <AnimateOnScroll>
-            <div className="relative stat-card rounded-2xl py-8 px-6 max-w-3xl mx-auto">
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+            <div className="stat-card rounded-xl py-6 px-6 max-w-3xl mx-auto text-center">
+              <h1 className="text-lg md:text-xl font-bold text-foreground">
                 {product.title}
               </h1>
             </div>
@@ -51,53 +50,73 @@ const ProductDetail = () => {
       </section>
 
       {/* Product Info */}
-      <section className="container mx-auto px-4 py-10">
+      <section className="container mx-auto px-4 pb-10">
         <AnimateOnScroll>
-          <div className="stat-card rounded-2xl p-6 md:p-10 max-w-4xl mx-auto">
+          <div className="product-detail-card rounded-xl p-6 md:p-8 max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="relative group overflow-hidden rounded-lg">
-                <span className="absolute top-3 left-3 badge-purple text-xs font-semibold px-3 py-1 rounded-full z-10">
-                  VENTE !
-                </span>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+              {/* Left: Image */}
+              <div className="relative">
+                <div className="product-image-card rounded-lg p-4">
+                  <span className="absolute top-6 left-6 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded z-10">
+                    VENTE
+                  </span>
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-full rounded-lg object-cover"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-5">
-                <div className="stat-card rounded-xl p-5 space-y-4">
-                  <h2 className="text-lg md:text-xl font-bold text-foreground">
+              {/* Right: Details */}
+              <div className="space-y-0">
+                {/* Title + Price + Button + Meta */}
+                <div className="product-image-card rounded-lg p-5 space-y-4">
+                  <h2 className="text-lg font-bold text-foreground leading-snug">
                     {product.title}
                   </h2>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-baseline gap-2">
                     <span className="text-muted-foreground line-through text-sm">{product.oldPrice}</span>
-                    <span className="text-accent font-bold text-2xl">{product.price}</span>
+                    <span className="text-primary font-bold text-2xl">{product.price}</span>
                   </div>
                   <button
-                    onClick={() => { addToCart(product); toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` }); }}
-                    className="btn-primary-brand py-3 px-8 rounded-full font-semibold text-sm tracking-wide inline-flex items-center gap-2 hover-scale"
+                    onClick={() => {
+                      addToCart(product);
+                      toast({
+                        title: "Produit ajouté au panier 🛒",
+                        description: `${product.title} a été ajouté.`,
+                      });
+                    }}
+                    className="btn-primary-brand py-3 px-8 rounded-full font-bold text-sm tracking-wider inline-flex items-center gap-2"
                   >
                     <ShoppingCart size={16} />
                     ACHETER MAINTENANT
                   </button>
-                  <div className="text-xs text-muted-foreground space-y-1 pt-2">
-                    <p><span className="text-foreground font-medium">Catégorie</span> {product.category}</p>
-                    {product.tag && <p><span className="text-foreground font-medium">Étiquette</span> {product.tag}</p>}
+                  <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t border-border">
+                    <p>
+                      <span className="text-foreground font-semibold">Catégorie </span>
+                      <span className="text-primary">{product.category}</span>
+                    </p>
+                    {product.tag && (
+                      <p>
+                        <span className="text-foreground font-semibold">Étiquettes </span>
+                        <span className="text-primary">{product.tag}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="stat-card rounded-xl p-5 space-y-3">
+                {/* Processus de commande */}
+                <div className="product-image-card rounded-lg p-5 space-y-3 mt-4">
                   <h3 className="text-base font-bold text-foreground">Processus de commande</h3>
-                  <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="space-y-3 text-sm text-muted-foreground">
                     <div className="flex items-start gap-2">
                       <CheckSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <span>Appuyez sur acheter maintenant, puis appuyez sur Commander.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <span>Remplissez vos informations, entrez votre numéro pour le paiement et validez la commande.</span>
+                      <span>Remplissez vos informations, entrez votre numéro pour le paiement et validez la commande</span>
                     </div>
                   </div>
                 </div>
@@ -111,7 +130,7 @@ const ProductDetail = () => {
       <section className="container mx-auto px-4 pb-10">
         <AnimateOnScroll>
           <div className="max-w-4xl mx-auto">
-            <div className="flex gap-0 mb-0">
+            <div className="flex gap-0">
               <button
                 onClick={() => setActiveTab("description")}
                 className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
@@ -133,7 +152,7 @@ const ProductDetail = () => {
                 Avis (0)
               </button>
             </div>
-            <div className="stat-card rounded-b-2xl rounded-tr-2xl p-6 md:p-8">
+            <div className="product-detail-card rounded-b-xl rounded-tr-xl p-6 md:p-8">
               {activeTab === "description" ? (
                 <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
                   <h3 className="text-foreground font-bold text-base">Description</h3>
