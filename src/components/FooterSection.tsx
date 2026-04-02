@@ -48,10 +48,10 @@ const FooterSection = () => {
           <div className="space-y-5">
             <h4 className="font-bold text-foreground text-lg">Nos politiques</h4>
             <ul className="space-y-3 text-muted-foreground text-sm">
-              <li><a href="#" className="hover:text-foreground transition-colors">Conditions générales</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Politique confidentialité</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Politique de remboursement</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Politique de livraison</a></li>
+              <li><Link to="/conditions-generales" className="hover:text-foreground transition-colors">Conditions générales</Link></li>
+              <li><Link to="/politique-confidentialite" className="hover:text-foreground transition-colors">Politique confidentialité</Link></li>
+              <li><Link to="/politique-remboursement" className="hover:text-foreground transition-colors">Politique de remboursement</Link></li>
+              <li><Link to="/politique-livraison" className="hover:text-foreground transition-colors">Politique de livraison</Link></li>
             </ul>
           </div>
 
