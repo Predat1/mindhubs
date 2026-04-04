@@ -177,6 +177,14 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
+      <StickyProductCTA
+        productTitle={product.title}
+        price={product.price}
+        onBuy={() => {
+          addToCart(product);
+          toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` });
+        }}
+      />
     </div>
   );
 };
