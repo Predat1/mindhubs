@@ -181,11 +181,9 @@ const ProductDetail = () => {
       <StickyProductCTA
         productTitle={product.title}
         price={product.price}
-        onBuy={() => {
-          addToCart(product);
-          toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` });
-        }}
+        onBuy={() => setPopupOpen(true)}
       />
+      <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
     </div>
   );
 };
