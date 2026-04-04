@@ -78,7 +78,7 @@ const ProductDetail = () => {
                     <span className="text-accent font-bold text-2xl">{product.price}</span>
                   </div>
                   <button
-                    onClick={() => { addToCart(product); toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` }); }}
+                    onClick={() => setPopupOpen(true)}
                     className="btn-primary-brand py-3 px-8 rounded-full font-semibold text-sm tracking-wide inline-flex items-center gap-2 hover-scale"
                   >
                     <ShoppingCart size={16} />
