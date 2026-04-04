@@ -9,6 +9,7 @@ import GoogleReviewsSection from "@/components/GoogleReviewsSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import HelpSection from "@/components/HelpSection";
 import FooterSection from "@/components/FooterSection";
+import StickyMobileCTA from "@/components/StickyMobileCTA";
 
 const Index = () => {
   return (
@@ -24,6 +25,7 @@ const Index = () => {
       <NewsletterSection />
       <HelpSection />
       <FooterSection />
+      <StickyMobileCTA />
     </div>
   );
 };
