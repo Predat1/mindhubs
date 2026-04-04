@@ -5,15 +5,16 @@ import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
+import BuyPopup from "@/components/BuyPopup";
 import { getProductById, getSimilarProducts } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "@/hooks/use-toast";
 import { CheckSquare, ShoppingCart } from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
+  const [popupOpen, setPopupOpen] = useState(false);
   const { addToCart } = useCart();
 
   if (!product) {
@@ -77,7 +78,7 @@ const ProductDetail = () => {
                     <span className="text-accent font-bold text-2xl">{product.price}</span>
                   </div>
                   <button
-                    onClick={() => { addToCart(product); toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` }); }}
+                    onClick={() => setPopupOpen(true)}
                     className="btn-primary-brand py-3 px-8 rounded-full font-semibold text-sm tracking-wide inline-flex items-center gap-2 hover-scale"
                   >
                     <ShoppingCart size={16} />
@@ -180,11 +181,9 @@ const ProductDetail = () => {
       <StickyProductCTA
         productTitle={product.title}
         price={product.price}
-        onBuy={() => {
-          addToCart(product);
-          toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` });
-        }}
+        onBuy={() => setPopupOpen(true)}
       />
+      <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
     </div>
   );
 };
