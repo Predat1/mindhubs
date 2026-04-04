@@ -240,7 +240,7 @@ const HeroSection = () => {
               transition: "opacity 0.8s ease 1.8s, transform 0.8s ease 1.8s",
             }}
           >
-            <p className="text-green-400 font-bold text-lg flex items-center gap-1">
+            <p className="text-accent font-bold text-lg flex items-center gap-1">
               <Sparkles size={14} /> 98%
             </p>
             <p className="text-muted-foreground text-[10px]">Satisfaction</p>
