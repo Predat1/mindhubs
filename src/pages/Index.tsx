@@ -25,6 +25,7 @@ const Index = () => {
       <NewsletterSection />
       <HelpSection />
       <FooterSection />
+      <StickyMobileCTA />
     </div>
   );
 };
