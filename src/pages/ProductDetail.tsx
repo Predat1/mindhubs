@@ -5,15 +5,16 @@ import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
+import BuyPopup from "@/components/BuyPopup";
 import { getProductById, getSimilarProducts } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "@/hooks/use-toast";
 import { CheckSquare, ShoppingCart } from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
+  const [popupOpen, setPopupOpen] = useState(false);
   const { addToCart } = useCart();
 
   if (!product) {
