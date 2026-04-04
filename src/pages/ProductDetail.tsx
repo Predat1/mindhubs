@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import StickyProductCTA from "@/components/StickyProductCTA";
 import { getProductById, getSimilarProducts } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";

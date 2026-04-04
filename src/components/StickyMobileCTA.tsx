@@ -1,27 +1,21 @@
 import { useEffect, useState } from "react";
-import { GraduationCap } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const StickyMobileCTA = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let lastY = 0;
     let ticking = false;
 
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
-
       requestAnimationFrame(() => {
         const y = window.scrollY;
         const heroHeight = window.innerHeight * 0.75;
-
-        // Show after hero, hide if back at top
-        // Also hide near footer (last 300px)
         const nearBottom = y + window.innerHeight >= document.body.scrollHeight - 300;
         setVisible(y > heroHeight && !nearBottom);
-
-        lastY = y;
         ticking = false;
       });
     };
@@ -40,13 +34,13 @@ const StickyMobileCTA = () => {
       }}
     >
       <div className="pointer-events-auto bg-background/80 backdrop-blur-xl border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <a
-          href="#formations"
+        <Link
+          to="/boutique"
           className="btn-primary-brand flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm shadow-glow"
         >
           VOIR NOS FORMATIONS
-          <GraduationCap size={18} />
-        </a>
+          <ShoppingBag size={18} />
+        </Link>
       </div>
     </div>
   );
