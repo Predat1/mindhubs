@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import StickyProductCTA from "@/components/StickyProductCTA";
 import { getProductById, getSimilarProducts } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
@@ -176,6 +177,14 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
+      <StickyProductCTA
+        productTitle={product.title}
+        price={product.price}
+        onBuy={() => {
+          addToCart(product);
+          toast({ title: "Produit ajouté au panier 🛒", description: `${product.title} a été ajouté.` });
+        }}
+      />
     </div>
   );
 };
