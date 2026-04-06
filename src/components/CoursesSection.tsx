@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-import { getFeaturedProducts } from "@/data/products";
+import { useFeaturedProducts } from "@/hooks/useProducts";
 
 const CoursesSection = () => {
-  const featured = getFeaturedProducts();
+  const { data: featured = [], isLoading } = useFeaturedProducts();
 
   return (
     <section id="formations" className="py-16 bg-background">
@@ -20,13 +20,21 @@ const CoursesSection = () => {
           </div>
         </AnimateOnScroll>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {featured.map((product, i) => (
-            <AnimateOnScroll key={product.id} delay={i * 80}>
-              <ProductCard product={product} />
-            </AnimateOnScroll>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="stat-card rounded-xl h-72 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {featured.map((product, i) => (
+              <AnimateOnScroll key={product.id} delay={i * 80}>
+                <ProductCard product={product} />
+              </AnimateOnScroll>
+            ))}
+          </div>
+        )}
 
         <AnimateOnScroll delay={400}>
           <div className="text-center mt-10">
