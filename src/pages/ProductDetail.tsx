@@ -6,16 +6,28 @@ import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
 import BuyPopup from "@/components/BuyPopup";
-import { getProductById, getSimilarProducts } from "@/data/products";
+import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart } from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || "");
+  const { data: product, isLoading } = useProduct(id || "");
+  const { data: allProducts = [] } = useProducts();
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [popupOpen, setPopupOpen] = useState(false);
   const { addToCart } = useCart();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-32 text-center">
+          <div className="stat-card rounded-xl h-96 max-w-4xl mx-auto animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -32,28 +44,14 @@ const ProductDetail = () => {
     );
   }
 
-  const similar = getSimilarProducts(product.id, 4);
+  const similar = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Title Banner */}
-      <section className="pt-16">
-        <div className="relative py-12 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent" />
-          <AnimateOnScroll>
-            <div className="relative stat-card rounded-2xl py-8 px-6 max-w-3xl mx-auto">
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">
-                {product.title}
-              </h1>
-            </div>
-          </AnimateOnScroll>
-        </div>
-      </section>
-
       {/* Product Info */}
-      <section className="container mx-auto px-4 py-10">
+      <section className="container mx-auto px-4 pt-24 pb-10">
         <AnimateOnScroll>
           <div className="stat-card rounded-2xl p-6 md:p-10 max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
@@ -70,9 +68,9 @@ const ProductDetail = () => {
 
               <div className="space-y-5">
                 <div className="stat-card rounded-xl p-5 space-y-4">
-                  <h2 className="text-lg md:text-xl font-bold text-foreground">
+                  <h1 className="text-lg md:text-xl font-bold text-foreground">
                     {product.title}
-                  </h2>
+                  </h1>
                   <div className="flex items-center gap-3">
                     <span className="text-muted-foreground line-through text-sm">{product.oldPrice}</span>
                     <span className="text-accent font-bold text-2xl">{product.price}</span>
