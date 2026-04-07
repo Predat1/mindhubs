@@ -73,7 +73,7 @@ const VideoTestimonialsSection = () => {
   return (
     <section className="py-20 bg-gradient-hero relative overflow-hidden" id="avis">
       {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/8 rounded-full blur-[150px]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[150px]" />
 
       <div className="container mx-auto px-4 relative z-10">
         <AnimateOnScroll>
