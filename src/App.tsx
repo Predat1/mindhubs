@@ -18,6 +18,7 @@ import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite.tsx";
 import PolitiqueRemboursement from "./pages/PolitiqueRemboursement.tsx";
 import PolitiqueLivraison from "./pages/PolitiqueLivraison.tsx";
 import FAQ from "./pages/FAQ.tsx";
+import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
