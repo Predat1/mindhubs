@@ -6,7 +6,7 @@ const HeroSection = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center bg-gradient-hero pt-20 overflow-hidden">
       {/* Subtle ambient glow */}
-      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[160px]" />
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[160px]" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[140px]" />
 
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center relative z-10">
