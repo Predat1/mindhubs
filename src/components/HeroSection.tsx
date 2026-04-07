@@ -51,7 +51,7 @@ const HeroSection = () => {
         {/* Hero image — clean, no floating badges */}
         <div className="relative flex justify-center md:justify-end animate-fade-in" style={{ animationDelay: "0.15s" }}>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-primary/10 blur-3xl" />
+            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-primary/6 blur-3xl" />
           </div>
           <img
             src={heroStudent}
