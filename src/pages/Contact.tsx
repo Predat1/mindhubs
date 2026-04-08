@@ -3,6 +3,7 @@ import { Mail, Phone, MapPin, Send, MessageCircle, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
 
 const contactInfo = [
@@ -53,6 +54,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Contact" description="Contactez l'équipe SavoirHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" />
       <Navbar />
 
       {/* Hero */}

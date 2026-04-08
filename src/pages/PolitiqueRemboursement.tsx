@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { AlertCircle, CheckCircle, Clock, Mail } from "lucide-react";
 
 const steps = [
@@ -12,6 +13,7 @@ const steps = [
 const PolitiqueRemboursement = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Politique de Remboursement" description="Consultez notre politique de remboursement et les conditions de retour." path="/politique-remboursement" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">

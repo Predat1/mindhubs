@@ -5,12 +5,11 @@ import heroStudent from "@/assets/hero-student.png";
 const HeroSection = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center bg-gradient-hero pt-20 overflow-hidden">
-      {/* Subtle ambient glow */}
-      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[160px]" />
+      {/* Ambient glows */}
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[160px]" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[140px]" />
 
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center relative z-10">
-        {/* Text */}
         <div className="space-y-6 animate-fade-in">
           <span className="badge-purple inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider">
             <Sparkles size={14} className="text-accent" />
@@ -42,16 +41,14 @@ const HeroSection = () => {
             </a>
           </div>
 
-          {/* Minimal trust line */}
           <p className="text-muted-foreground text-xs pt-2">
             ✓ Paiement sécurisé &nbsp; ✓ Support 24/7 &nbsp; ✓ Accès à vie
           </p>
         </div>
 
-        {/* Hero image — clean, no floating badges */}
         <div className="relative flex justify-center md:justify-end animate-fade-in" style={{ animationDelay: "0.15s" }}>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-primary/6 blur-3xl" />
+            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-primary/10 blur-3xl" />
           </div>
           <img
             src={heroStudent}
@@ -63,7 +60,6 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
   );

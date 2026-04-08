@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { useProducts } from "@/hooks/useProducts";
 import { categories, type Category } from "@/data/products";
 
@@ -16,6 +17,7 @@ const Boutique = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Boutique" description="Découvrez notre catalogue de formations digitales premium. E-books, formations SMMA, e-commerce et plus encore." path="/boutique" />
       <Navbar />
 
       <section className="pt-16">
@@ -27,7 +29,6 @@ const Boutique = () => {
         </div>
       </section>
 
-      {/* Category filters */}
       <section className="container mx-auto px-4 mb-8">
         <AnimateOnScroll>
           <div className="flex flex-wrap gap-3 justify-center">
@@ -48,7 +49,6 @@ const Boutique = () => {
         </AnimateOnScroll>
       </section>
 
-      {/* Products grid */}
       <section className="container mx-auto px-4 pb-20">
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">

@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ const MonCompte = () => {
   if (user) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO title="Mon Compte" description="Gérez votre compte SavoirHub, vos achats et vos informations personnelles." path="/mon-compte" />
         <Navbar />
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-2xl">
@@ -121,6 +123,7 @@ const MonCompte = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Mon Compte" description="Connectez-vous ou créez votre compte SavoirHub." path="/mon-compte" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-md">

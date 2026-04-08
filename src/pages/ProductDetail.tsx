@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
 import BuyPopup from "@/components/BuyPopup";
+import SEO from "@/components/SEO";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart } from "lucide-react";
@@ -48,6 +49,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={product.title} description={product.description || `Découvrez ${product.title} sur SavoirHub.`} path={`/produit/${product.id}`} />
       <Navbar />
 
       {/* Product Info */}

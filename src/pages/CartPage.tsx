@@ -4,6 +4,7 @@ import FooterSection from "@/components/FooterSection";
 import { useCart } from "@/contexts/CartContext";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 
 const CartPage = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
@@ -11,6 +12,7 @@ const CartPage = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO title="Panier" description="Votre panier SavoirHub" path="/panier" />
         <Navbar />
         <section className="pt-32 pb-20">
           <div className="container mx-auto px-4 text-center">
@@ -33,6 +35,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Panier" description="Votre panier SavoirHub" path="/panier" />
       <Navbar />
 
       <section className="pt-16">
