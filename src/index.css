@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 10%;
+    --background: 260 20% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 240 10% 10%;
+    --card: 260 18% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover: 260 18% 12%;
+    --popover-foreground: 0 0% 95%;
 
     --primary: 270 80% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 94%;
-    --secondary-foreground: 240 10% 20%;
+    --secondary: 260 15% 18%;
+    --secondary-foreground: 0 0% 85%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 5% 46%;
+    --muted: 260 12% 16%;
+    --muted-foreground: 260 8% 55%;
 
     --accent: 45 100% 50%;
     --accent-foreground: 240 10% 10%;
@@ -30,19 +30,19 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 5% 94%;
+    --border: 260 12% 18%;
+    --input: 260 15% 16%;
     --ring: 270 80% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5% 26%;
+    --sidebar-background: 260 20% 10%;
+    --sidebar-foreground: 260 5% 70%;
     --sidebar-primary: 270 80% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 96%;
-    --sidebar-accent-foreground: 240 5% 10%;
-    --sidebar-border: 240 6% 90%;
+    --sidebar-accent: 260 15% 16%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 260 12% 18%;
     --sidebar-ring: 270 80% 55%;
   }
 }
@@ -67,43 +67,43 @@
   }
 
   .bg-gradient-hero {
-    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(270 40% 97%) 50%, hsl(0 0% 100%) 100%);
+    background: linear-gradient(180deg, hsl(260 20% 8%) 0%, hsl(270 25% 12%) 50%, hsl(260 20% 8%) 100%);
   }
 
   .bg-gradient-card {
-    background: linear-gradient(145deg, hsl(0 0% 99%) 0%, hsl(0 0% 96%) 100%);
+    background: linear-gradient(145deg, hsl(260 18% 14%) 0%, hsl(260 18% 10%) 100%);
   }
 
   .border-glow {
-    border: 1px solid hsl(270 40% 85%);
+    border: 1px solid hsl(270 40% 30%);
   }
 
   .shadow-glow {
-    box-shadow: 0 0 30px hsl(270 80% 55% / 0.12);
+    box-shadow: 0 0 30px hsl(270 80% 55% / 0.15);
   }
 
   .badge-purple {
-    background: hsl(270 80% 55% / 0.1);
-    border: 1px solid hsl(270 80% 55% / 0.2);
-    color: hsl(270 80% 45%);
+    background: hsl(270 80% 55% / 0.15);
+    border: 1px solid hsl(270 80% 55% / 0.25);
+    color: hsl(270 80% 75%);
   }
 
   .stat-card {
-    background: hsl(0 0% 100%);
-    border: 1px solid hsl(240 6% 90%);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.04);
+    background: hsl(260 18% 12%);
+    border: 1px solid hsl(260 12% 18%);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
   }
 
   .course-card {
-    background: hsl(0 0% 100%);
-    border: 1px solid hsl(240 6% 90%);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.04);
+    background: hsl(260 18% 12%);
+    border: 1px solid hsl(260 12% 18%);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
     transition: all 0.3s ease;
   }
 
   .course-card:hover {
     border-color: hsl(270 80% 55% / 0.4);
-    box-shadow: 0 4px 20px hsl(270 80% 55% / 0.08);
+    box-shadow: 0 4px 20px hsl(270 80% 55% / 0.12);
     transform: translateY(-4px);
   }
 
@@ -115,11 +115,11 @@
 
   .btn-primary-brand:hover {
     background: linear-gradient(135deg, hsl(270 80% 60%), hsl(280 70% 50%));
-    box-shadow: 0 4px 20px hsl(270 80% 55% / 0.3);
+    box-shadow: 0 4px 20px hsl(270 80% 55% / 0.4);
   }
 
   .newsletter-section {
-    background: linear-gradient(145deg, hsl(270 30% 97%) 0%, hsl(0 0% 100%) 100%);
+    background: linear-gradient(145deg, hsl(260 20% 10%) 0%, hsl(270 25% 14%) 100%);
   }
 
   /* Animation utilities */
@@ -135,7 +135,7 @@
   }
 
   .drop-shadow-hero {
-    filter: drop-shadow(0 20px 40px hsl(270 80% 55% / 0.15)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.08));
+    filter: drop-shadow(0 20px 40px hsl(270 80% 55% / 0.2)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.3));
   }
 
   @keyframes cursor-blink {
