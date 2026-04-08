@@ -14,6 +14,7 @@ const deliverySteps = [
 const PolitiqueLivraison = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Politique de Livraison" description="Découvrez notre politique de livraison 100% numérique avec accès instantané." path="/politique-livraison" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
