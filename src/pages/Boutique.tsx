@@ -8,9 +8,6 @@ import { useProducts } from "@/hooks/useProducts";
 import { categories, type Category } from "@/data/products";
 
 const Boutique = () => {
-  return (
-    <>
-      <SEO title="Boutique" description="Découvrez notre catalogue de formations digitales premium. E-books, formations SMMA, e-commerce et plus encore." path="/boutique" />
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
   const { data: products = [], isLoading } = useProducts();
 
@@ -20,6 +17,7 @@ const Boutique = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Boutique" description="Découvrez notre catalogue de formations digitales premium. E-books, formations SMMA, e-commerce et plus encore." path="/boutique" />
       <Navbar />
 
       <section className="pt-16">
@@ -31,7 +29,6 @@ const Boutique = () => {
         </div>
       </section>
 
-      {/* Category filters */}
       <section className="container mx-auto px-4 mb-8">
         <AnimateOnScroll>
           <div className="flex flex-wrap gap-3 justify-center">
@@ -52,7 +49,6 @@ const Boutique = () => {
         </AnimateOnScroll>
       </section>
 
-      {/* Products grid */}
       <section className="container mx-auto px-4 pb-20">
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
