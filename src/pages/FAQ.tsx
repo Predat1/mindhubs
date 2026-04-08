@@ -4,6 +4,7 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const faqCategories = [
   {

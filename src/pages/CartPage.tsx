@@ -4,6 +4,7 @@ import FooterSection from "@/components/FooterSection";
 import { useCart } from "@/contexts/CartContext";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 
 const CartPage = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
