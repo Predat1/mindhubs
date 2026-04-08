@@ -46,6 +46,7 @@ const faqCategories = [
 const FAQ = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="FAQ" description="Retrouvez les réponses aux questions fréquentes sur SavoirHub : paiement, accès, remboursement et plus." path="/faq" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
