@@ -35,6 +35,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Panier" description="Votre panier SavoirHub" path="/panier" />
       <Navbar />
 
       <section className="pt-16">
