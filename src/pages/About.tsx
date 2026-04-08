@@ -2,6 +2,7 @@ import { Users, Target, Award, BookOpen, Globe, Heart, CheckCircle } from "lucid
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 
 const values = [
   { icon: Target, title: "Excellence", desc: "Nous visons l'excellence dans chaque formation que nous proposons." },

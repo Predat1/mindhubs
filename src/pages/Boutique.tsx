@@ -3,10 +3,14 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { useProducts } from "@/hooks/useProducts";
 import { categories, type Category } from "@/data/products";
 
 const Boutique = () => {
+  return (
+    <>
+      <SEO title="Boutique" description="Découvrez notre catalogue de formations digitales premium. E-books, formations SMMA, e-commerce et plus encore." path="/boutique" />
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
   const { data: products = [], isLoading } = useProducts();
 

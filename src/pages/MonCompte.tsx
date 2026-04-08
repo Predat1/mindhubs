@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
