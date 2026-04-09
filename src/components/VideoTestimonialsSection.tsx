@@ -17,7 +17,7 @@ const videoTestimonials: VideoTestimonial[] = [
     id: "1",
     name: "Amadou Konaté",
     role: "Entrepreneur SMMA",
-    text: "Grâce à SavoirHub, j'ai lancé mon agence SMMA et généré mes premiers 500 000 FCFA en seulement 2 mois !",
+    text: "Grâce à MindHub, j'ai lancé mon agence SMMA et généré mes premiers 500 000 FCFA en seulement 2 mois !",
     rating: 5,
     thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
@@ -83,7 +83,7 @@ const VideoTestimonialsSection = () => {
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Ils ont transformé leur vie avec{" "}
-              <span className="text-gradient-brand">SavoirHub</span>
+              <span className="text-gradient-brand">MindHub</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               Découvrez les parcours inspirants de nos étudiants qui ont atteint leurs objectifs grâce à nos formations.

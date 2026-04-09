@@ -53,7 +53,7 @@ const Admin = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <SEO title="Administration" description="Panneau d'administration SavoirHub" path="/admin" />
+        <SEO title="Administration" description="Panneau d'administration MindHub" path="/admin" />
         <Navbar />
         <div className="pt-24 text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">Accès réservé</h1>
@@ -127,7 +127,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Administration" description="Gérez vos produits et votre catalogue SavoirHub." path="/admin" />
+      <SEO title="Administration" description="Gérez vos produits et votre catalogue MindHub." path="/admin" />
       <Navbar />
       <div className="pt-20 pb-12 container mx-auto px-4 max-w-5xl">
         <div className="flex items-center justify-between mb-8">

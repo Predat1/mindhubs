@@ -40,7 +40,7 @@ const FooterSection = () => {
                   Voir notre catalogue
                 </Link>
               </p>
-              <p>contact@savoirhub.com</p>
+              <p>contact@mindhub.com</p>
             </div>
           </div>
 
@@ -84,7 +84,7 @@ const FooterSection = () => {
           </div>
           <p className="text-sm text-muted-foreground">
             Copyright © 2023-{new Date().getFullYear()}{" "}
-            <span className="text-primary font-semibold">Savoir Hub</span>
+            <span className="text-primary font-semibold">Mind Hub</span>
           </p>
         </div>
       </div>

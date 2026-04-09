@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 
 const testimonials = [
-  { name: "Amadou K.", text: "Grâce à SavoirHub, j'ai pu lancer mon agence SMMA et générer mes premiers revenus en ligne !", rating: 5 },
+  { name: "Amadou K.", text: "Grâce à MindHub, j'ai pu lancer mon agence SMMA et générer mes premiers revenus en ligne !", rating: 5 },
   { name: "Fatou D.", text: "Les formations sont claires, accessibles et surtout très pratiques. Je recommande à 100% !", rating: 5 },
   { name: "Ibrahim M.", text: "Le meilleur investissement que j'ai fait. Le support est réactif et les contenus sont de qualité.", rating: 5 },
   { name: "Sarah L.", text: "J'ai appris l'anglais rapidement grâce à leur méthode. Formation très bien structurée.", rating: 4 },

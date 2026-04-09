@@ -49,7 +49,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={product.title} description={product.description || `Découvrez ${product.title} sur SavoirHub.`} path={`/produit/${product.id}`} />
+      <SEO title={product.title} description={product.description || `Découvrez ${product.title} sur MindHub.`} path={`/produit/${product.id}`} />
       <Navbar />
 
       {/* Product Info */}

@@ -4,7 +4,7 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 const reviews = [
   { name: "Issa Kharou", text: "Les formations sont très complètes et bien structurées. J'ai beaucoup appris en peu de temps.", avatar: "I" },
   { name: "Olive Larivière", text: "Excellente plateforme, le contenu est de qualité et le support est très réactif.", avatar: "O" },
-  { name: "Fadi Nidé", text: "Je recommande vivement SavoirHub. Les prix sont imbattables pour la qualité proposée.", avatar: "F" },
+  { name: "Fadi Nidé", text: "Je recommande vivement MindHub. Les prix sont imbattables pour la qualité proposée.", avatar: "F" },
 ];
 
 const GoogleReviewsSection = () => {

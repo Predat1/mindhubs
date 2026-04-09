@@ -7,7 +7,7 @@ interface SEOProps {
   image?: string;
 }
 
-const SITE_NAME = "SavoirHub";
+const SITE_NAME = "MindHub";
 const BASE_URL = "https://snap-clone-wonder.lovable.app";
 const DEFAULT_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2f734e7-d179-4626-a45b-222463a384a0/id-preview-9397db46--650b0e65-da19-47f4-baee-1c6346cd4434.lovable.app-1775038618817.png";
 

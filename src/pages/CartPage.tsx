@@ -12,7 +12,7 @@ const CartPage = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <SEO title="Panier" description="Votre panier SavoirHub" path="/panier" />
+        <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
         <Navbar />
         <section className="pt-32 pb-20">
           <div className="container mx-auto px-4 text-center">
@@ -35,7 +35,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Panier" description="Votre panier SavoirHub" path="/panier" />
+      <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
       <Navbar />
 
       <section className="pt-16">

@@ -20,8 +20,8 @@ const HelpSection = () => {
                 Nous sommes ravis de pouvoir répondre à vos questions et de vous
                 assister dans tous les aspects de notre plateforme. N'hésitez pas à
                 nous contacter par e-mail à{" "}
-                <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">
-                  contact@savoirhub.com
+                <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">
+                  contact@mindhub.com
                 </a>{" "}
                 ou en appuyant sur le bouton.
               </p>

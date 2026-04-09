@@ -71,7 +71,7 @@ const PolitiqueLivraison = () => {
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">Problème de livraison ?</h2>
-                <p>Si vous ne recevez pas votre produit dans les 30 minutes suivant le paiement, vérifiez votre dossier spam. Si le problème persiste, contactez-nous à : <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">contact@savoirhub.com</a> ou via WhatsApp.</p>
+                <p>Si vous ne recevez pas votre produit dans les 30 minutes suivant le paiement, vérifiez votre dossier spam. Si le problème persiste, contactez-nous à : <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">contact@mindhub.com</a> ou via WhatsApp.</p>
               </section>
             </AnimateOnScroll>
           </div>
