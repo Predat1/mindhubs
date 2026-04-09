@@ -7,7 +7,7 @@ import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
 
 const contactInfo = [
-  { icon: Mail, label: "Email", value: "contact@savoirhub.com", href: "mailto:contact@savoirhub.com" },
+  { icon: Mail, label: "Email", value: "contact@mindhub.com", href: "mailto:contact@mindhub.com" },
   { icon: Phone, label: "Téléphone", value: "+228 90 00 00 00", href: "tel:+22890000000" },
   { icon: MapPin, label: "Adresse", value: "Lomé, Togo", href: "#" },
   { icon: Clock, label: "Horaires", value: "Lun - Ven : 8h - 18h", href: "#" },
@@ -48,13 +48,13 @@ const Contact = () => {
   };
 
   const handleWhatsApp = () => {
-    const msg = encodeURIComponent("Bonjour SavoirHub, j'ai une question concernant vos formations.");
+    const msg = encodeURIComponent("Bonjour MindHub, j'ai une question concernant vos formations.");
     window.open(`https://wa.me/22890000000?text=${msg}`, "_blank");
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Contact" description="Contactez l'équipe SavoirHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" />
+      <SEO title="Contact" description="Contactez l'équipe MindHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" />
       <Navbar />
 
       {/* Hero */}

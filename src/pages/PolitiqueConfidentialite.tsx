@@ -6,7 +6,7 @@ import SEO from "@/components/SEO";
 const PolitiqueConfidentialite = () => {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Politique de Confidentialité" description="Découvrez comment SavoirHub protège vos données personnelles." path="/politique-confidentialite" />
+      <SEO title="Politique de Confidentialité" description="Découvrez comment MindHub protège vos données personnelles." path="/politique-confidentialite" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -19,7 +19,7 @@ const PolitiqueConfidentialite = () => {
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">1. Collecte des données</h2>
-                <p>Savoir Hub collecte les données personnelles suivantes lors de votre inscription et de vos achats : nom et prénom, adresse email, numéro de téléphone, et informations de paiement. Ces données sont nécessaires au traitement de vos commandes et à la gestion de votre compte client. Nous ne collectons aucune donnée superflue.</p>
+                <p>Mind Hub collecte les données personnelles suivantes lors de votre inscription et de vos achats : nom et prénom, adresse email, numéro de téléphone, et informations de paiement. Ces données sont nécessaires au traitement de vos commandes et à la gestion de votre compte client. Nous ne collectons aucune donnée superflue.</p>
               </section>
             </AnimateOnScroll>
 
@@ -47,21 +47,21 @@ const PolitiqueConfidentialite = () => {
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">5. Vos droits</h2>
-                <p>Vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données personnelles. Vous pouvez également vous opposer au traitement de vos données ou demander une limitation. Pour exercer ces droits, contactez-nous à : <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">contact@savoirhub.com</a></p>
+                <p>Vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données personnelles. Vous pouvez également vous opposer au traitement de vos données ou demander une limitation. Pour exercer ces droits, contactez-nous à : <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">contact@mindhub.com</a></p>
               </section>
             </AnimateOnScroll>
 
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">6. Conservation des données</h2>
-                <p>Vos données personnelles sont conservées pendant la durée de votre relation commerciale avec Savoir Hub et pendant une période de 3 ans après votre dernière interaction. Les données de facturation sont conservées conformément aux obligations légales en vigueur.</p>
+                <p>Vos données personnelles sont conservées pendant la durée de votre relation commerciale avec Mind Hub et pendant une période de 3 ans après votre dernière interaction. Les données de facturation sont conservées conformément aux obligations légales en vigueur.</p>
               </section>
             </AnimateOnScroll>
 
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">7. Contact</h2>
-                <p>Pour toute question concernant notre politique de confidentialité, contactez notre délégué à la protection des données à l'adresse : <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">contact@savoirhub.com</a></p>
+                <p>Pour toute question concernant notre politique de confidentialité, contactez notre délégué à la protection des données à l'adresse : <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">contact@mindhub.com</a></p>
               </section>
             </AnimateOnScroll>
           </div>

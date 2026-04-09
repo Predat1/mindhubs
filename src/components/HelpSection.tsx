@@ -9,7 +9,7 @@ const HelpSection = () => {
           <div className="stat-card rounded-2xl p-8 md:p-12 grid md:grid-cols-[auto_1fr_auto] gap-8 items-center max-w-4xl mx-auto">
             <div className="hidden md:block">
               <div className="text-2xl font-bold">
-                <span className="text-foreground">SAVOIR</span>
+                <span className="text-foreground">MIND</span>
                 <span className="text-gradient-brand">✦</span>
                 <span className="text-accent">HUB</span>
               </div>
@@ -20,8 +20,8 @@ const HelpSection = () => {
                 Nous sommes ravis de pouvoir répondre à vos questions et de vous
                 assister dans tous les aspects de notre plateforme. N'hésitez pas à
                 nous contacter par e-mail à{" "}
-                <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">
-                  contact@savoirhub.com
+                <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">
+                  contact@mindhub.com
                 </a>{" "}
                 ou en appuyant sur le bouton.
               </p>

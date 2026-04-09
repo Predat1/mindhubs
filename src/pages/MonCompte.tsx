@@ -32,7 +32,7 @@ const MonCompte = () => {
   if (user) {
     return (
       <div className="min-h-screen bg-background">
-        <SEO title="Mon Compte" description="Gérez votre compte SavoirHub, vos achats et vos informations personnelles." path="/mon-compte" />
+        <SEO title="Mon Compte" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" />
         <Navbar />
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-2xl">
@@ -112,7 +112,7 @@ const MonCompte = () => {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        toast({ title: "Connexion réussie", description: "Bienvenue sur Savoir Hub !" });
+        toast({ title: "Connexion réussie", description: "Bienvenue sur Mind Hub !" });
       }
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message || "Une erreur est survenue.", variant: "destructive" });
@@ -123,7 +123,7 @@ const MonCompte = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Mon Compte" description="Connectez-vous ou créez votre compte SavoirHub." path="/mon-compte" />
+      <SEO title="Mon Compte" description="Connectez-vous ou créez votre compte MindHub." path="/mon-compte" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-md">
@@ -137,7 +137,7 @@ const MonCompte = () => {
                   {mode === "login" ? "Connexion" : mode === "register" ? "Créer un compte" : "Mot de passe oublié"}
                 </h1>
                 <p className="text-muted-foreground text-sm mt-1">
-                  {mode === "login" ? "Connectez-vous à votre espace" : mode === "register" ? "Rejoignez la communauté Savoir Hub" : "Entrez votre email pour réinitialiser"}
+                  {mode === "login" ? "Connectez-vous à votre espace" : mode === "register" ? "Rejoignez la communauté Mind Hub" : "Entrez votre email pour réinitialiser"}
                 </p>
               </div>
 

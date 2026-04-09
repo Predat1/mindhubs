@@ -5,7 +5,7 @@ import SEO from "@/components/SEO";
 import { AlertCircle, CheckCircle, Clock, Mail } from "lucide-react";
 
 const steps = [
-  { icon: Mail, title: "Contactez-nous", desc: "Envoyez un email à contact@savoirhub.com avec votre numéro de commande et le motif de votre demande." },
+  { icon: Mail, title: "Contactez-nous", desc: "Envoyez un email à contact@mindhub.com avec votre numéro de commande et le motif de votre demande." },
   { icon: Clock, title: "Traitement", desc: "Notre équipe examine votre demande sous 48h ouvrées et vous répond avec une décision." },
   { icon: CheckCircle, title: "Remboursement", desc: "Si approuvé, le remboursement est effectué sous 7 jours ouvrés via le même moyen de paiement utilisé." },
 ];
@@ -27,7 +27,7 @@ const PolitiqueRemboursement = () => {
               <AlertCircle className="text-primary mt-1 shrink-0" size={24} />
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Satisfaction garantie</h3>
-                <p className="text-muted-foreground text-sm">Chez Savoir Hub, votre satisfaction est notre priorité. Nous proposons une garantie de remboursement sous conditions pour tous nos produits numériques.</p>
+                <p className="text-muted-foreground text-sm">Chez Mind Hub, votre satisfaction est notre priorité. Nous proposons une garantie de remboursement sous conditions pour tous nos produits numériques.</p>
               </div>
             </div>
           </AnimateOnScroll>
@@ -77,7 +77,7 @@ const PolitiqueRemboursement = () => {
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">Contact</h2>
-                <p>Pour toute demande de remboursement, contactez-nous à : <a href="mailto:contact@savoirhub.com" className="text-primary hover:underline">contact@savoirhub.com</a></p>
+                <p>Pour toute demande de remboursement, contactez-nous à : <a href="mailto:contact@mindhub.com" className="text-primary hover:underline">contact@mindhub.com</a></p>
               </section>
             </AnimateOnScroll>
           </div>

@@ -29,7 +29,7 @@ const faqCategories = [
     title: "Remboursement & Support",
     items: [
       { q: "Puis-je me faire rembourser ?", a: "Oui, sous conditions. Vous disposez de 14 jours après l'achat pour demander un remboursement si moins de 30% du contenu a été consulté. Consultez notre politique de remboursement pour plus de détails." },
-      { q: "Comment contacter le support ?", a: "Vous pouvez nous contacter par email à contact@savoirhub.com, via WhatsApp, ou en utilisant le formulaire de contact sur notre site. Notre équipe répond sous 24h ouvrées." },
+      { q: "Comment contacter le support ?", a: "Vous pouvez nous contacter par email à contact@mindhub.com, via WhatsApp, ou en utilisant le formulaire de contact sur notre site. Notre équipe répond sous 24h ouvrées." },
       { q: "Proposez-vous un accompagnement personnalisé ?", a: "Oui ! En plus des formations, nous offrons un support par email et WhatsApp pour répondre à vos questions et vous guider dans votre apprentissage." },
     ],
   },
@@ -46,7 +46,7 @@ const faqCategories = [
 const FAQ = () => {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="FAQ" description="Retrouvez les réponses aux questions fréquentes sur SavoirHub : paiement, accès, remboursement et plus." path="/faq" />
+      <SEO title="FAQ" description="Retrouvez les réponses aux questions fréquentes sur MindHub : paiement, accès, remboursement et plus." path="/faq" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
