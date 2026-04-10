@@ -4,7 +4,7 @@ import heroStudent from "@/assets/hero-student.png";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center bg-background pt-16 overflow-hidden">
+    <section className="relative min-h-screen flex items-center bg-background pt-28 md:pt-32 overflow-hidden">
       {/* Animated gradient mesh background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] rounded-full bg-primary/6 blur-[200px] animate-pulse-slow" />
@@ -27,7 +27,7 @@ const HeroSection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
               </span>
-              NOUVEAU — Formations 2025 disponibles
+              NOUVEAU — Formations 2026 disponibles
             </div>
 
             {/* Headline */}
