@@ -1,8 +1,22 @@
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import globalImpactLogo from "@/assets/logos/global-impact.png";
+import workatLogo from "@/assets/logos/workat.png";
+import coveLogo from "@/assets/logos/cove.png";
+import braikyLogo from "@/assets/logos/braiky.png";
+import leticiaLogo from "@/assets/logos/leticia.png";
+import africaTrainingLogo from "@/assets/logos/africa-training.png";
+import twoDDesignLogo from "@/assets/logos/2d-design.png";
+import magicLogo from "@/assets/logos/magic.png";
 
 const companyLogos = [
-  "GLOBAL IMPACT", "WORKAT", "COVE", "BRAIKY",
-  "LETICIA & CO.", "AFRICA TRAINING", "2D DESIGN", "MAGIC",
+  { name: "Global Impact", src: globalImpactLogo },
+  { name: "Workat", src: workatLogo },
+  { name: "Cove", src: coveLogo },
+  { name: "Braiky", src: braikyLogo },
+  { name: "Leticia & Co.", src: leticiaLogo },
+  { name: "Africa Training", src: africaTrainingLogo },
+  { name: "2D Design", src: twoDDesignLogo },
+  { name: "Magic", src: magicLogo },
 ];
 
 const TrustLogosSection = () => {
@@ -14,14 +28,18 @@ const TrustLogosSection = () => {
             Ils nous ont fait confiance
           </h2>
         </AnimateOnScroll>
-        <div className="grid grid-cols-4 gap-6 max-w-3xl mx-auto">
-          {companyLogos.map((name, i) => (
-            <AnimateOnScroll key={name} delay={i * 60}>
-              <div
-                className="flex items-center justify-center h-16 text-muted-foreground font-bold text-sm md:text-base tracking-wide opacity-60 hover:opacity-100 transition-all duration-300 hover-scale cursor-default"
-                style={{ fontFamily: "serif" }}
-              >
-                {name}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-4xl mx-auto items-center">
+          {companyLogos.map((logo, i) => (
+            <AnimateOnScroll key={logo.name} delay={i * 60}>
+              <div className="flex items-center justify-center h-20 opacity-70 hover:opacity-100 transition-all duration-300 hover-scale cursor-default grayscale hover:grayscale-0">
+                <img
+                  src={logo.src}
+                  alt={`Logo ${logo.name}`}
+                  loading="lazy"
+                  className="max-h-16 max-w-[140px] object-contain invert dark:invert-0"
+                  width={140}
+                  height={64}
+                />
               </div>
             </AnimateOnScroll>
           ))}
