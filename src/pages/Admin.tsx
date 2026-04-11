@@ -6,6 +6,7 @@ import { useIsAdmin } from "@/hooks/useAdminRole";
 import { useProducts } from "@/hooks/useProducts";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { categories } from "@/data/products";
@@ -35,7 +36,26 @@ const emptyTestimonial: TestimonialForm = {
   likes: "0", retweets: "0", replies: "0", verified: false,
 };
 
-type Tab = "products" | "testimonials";
+type Tab = "products" | "testimonials" | "orders";
+
+interface Order {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  payment_method: string;
+  total_price: number;
+  status: "pending" | "confirmed" | "delivered" | "cancelled";
+  items: { product_id: string; title: string; price: string; quantity: number; image?: string }[];
+  created_at: string;
+}
+
+const statusConfig = {
+  pending: { label: "En attente", icon: Clock, color: "text-yellow-500 bg-yellow-500/10" },
+  confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-accent bg-accent/10" },
+  delivered: { label: "Livrée", icon: Truck, color: "text-primary bg-primary/10" },
+  cancelled: { label: "Annulée", icon: XCircle, color: "text-destructive bg-destructive/10" },
+};
 
 const Admin = () => {
   const { user, loading: authLoading, signOut } = useAuth();
