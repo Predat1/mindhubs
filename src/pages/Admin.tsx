@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye, Upload, ImageIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdminRole";
 import { useProducts } from "@/hooks/useProducts";
@@ -85,6 +85,8 @@ const Admin = () => {
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [orderFilter, setOrderFilter] = useState<"all" | Order["status"]>("all");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
@@ -112,6 +114,38 @@ const Admin = () => {
       </div>
     );
   }
+
+  // ─── Image upload ───
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Fichier invalide", description: "Veuillez sélectionner une image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Fichier trop volumineux", description: "Maximum 5 Mo.", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(fileName, file, { upsert: true });
+    setUploading(false);
+    if (error) {
+      toast({ title: "Erreur d'upload", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+    if (productEditing) {
+      setProductEditing({ ...productEditing, image_url: urlData.publicUrl });
+    }
+    toast({ title: "Image uploadée ✓" });
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleImageUpload(file);
+  };
 
   // ─── Product CRUD ───
   const openNewProduct = () => { setProductEditing({ ...emptyProduct, sort_order: String(products.length) }); setIsNew(true); };
@@ -226,10 +260,10 @@ const Admin = () => {
   const InputField = ({ label, value, onChange, disabled, type = "text", placeholder }: {
     label: string; value: string; onChange: (v: string) => void; disabled?: boolean; type?: string; placeholder?: string;
   }) => (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+    <div className="space-y-2">
+      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
       <input value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} type={type} placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 transition-all" />
+        className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 transition-all" />
     </div>
   );
 
@@ -240,10 +274,13 @@ const Admin = () => {
 
       <div className="pt-20 pb-12 container mx-auto px-4 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft size={20} /></button>
-            <h1 className="text-2xl font-bold text-foreground">Administration</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Administration</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">Gérez votre boutique en un coup d'œil</p>
+            </div>
           </div>
           <button onClick={async () => { await signOut(); navigate("/"); }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
             <LogOut size={16} /> Déconnexion
@@ -253,15 +290,15 @@ const Admin = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
-            { label: "Produits", value: products.length, icon: Package },
-            { label: "Témoignages", value: testimonials.length, icon: MessageSquare },
-            { label: "Commandes", value: orders.length, icon: ShoppingBag },
-            { label: "En attente", value: orders.filter(o => o.status === "pending").length, icon: Clock },
-            { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink },
+            { label: "Produits", value: products.length, icon: Package, accent: "bg-primary/10 text-primary" },
+            { label: "Témoignages", value: testimonials.length, icon: MessageSquare, accent: "bg-accent/10 text-accent" },
+            { label: "Commandes", value: orders.length, icon: ShoppingBag, accent: "bg-primary/10 text-primary" },
+            { label: "En attente", value: orders.filter(o => o.status === "pending").length, icon: Clock, accent: "bg-yellow-500/10 text-yellow-500" },
+            { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink, accent: "bg-accent/10 text-accent" },
           ].map((s, i) => (
-            <div key={i} className="stat-card rounded-2xl p-4 border-glow">
+            <div key={i} className="stat-card rounded-2xl p-5 border-glow">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><s.icon size={18} className="text-primary" /></div>
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${s.accent}`}><s.icon size={20} /></div>
                 <div>
                   <p className="text-xl font-bold text-foreground">{s.value}</p>
                   <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -272,7 +309,7 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-8">
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
             { key: "testimonials" as Tab, label: "Témoignages", icon: MessageSquare },
@@ -303,32 +340,90 @@ const Admin = () => {
         {tab === "products" && (
           <>
             {productEditing && (
-              <div className="stat-card rounded-2xl p-6 mb-6 space-y-4 border-glow">
+              <div className="stat-card rounded-2xl p-8 mb-8 space-y-6 border-glow">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-foreground text-lg">{isNew ? "Nouveau produit" : "Modifier le produit"}</h2>
+                  <h2 className="font-bold text-foreground text-xl">{isNew ? "Nouveau produit" : "Modifier le produit"}</h2>
                   <button onClick={() => setProductEditing(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                {/* Image upload zone */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Image du produit</label>
+                  <div
+                    onDrop={handleDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative border-2 border-dashed border-border rounded-2xl p-6 cursor-pointer hover:border-primary/50 transition-colors bg-muted/20"
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file);
+                      }}
+                    />
+                    <div className="flex items-center gap-6">
+                      {/* Preview */}
+                      {productEditing.image_url ? (
+                        <img src={productEditing.image_url} alt="Preview" className="w-24 h-24 rounded-xl object-cover shrink-0 border border-border" />
+                      ) : (
+                        <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                          <ImageIcon size={32} className="text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        {uploading ? (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 size={16} className="animate-spin" /> Upload en cours...
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                              <Upload size={16} className="text-primary" />
+                              Glissez une image ou cliquez pour uploader
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP · Max 5 Mo</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Fallback URL input */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-muted-foreground">ou</span>
+                    <input
+                      value={productEditing.image_url}
+                      onChange={(e) => setProductEditing({ ...productEditing, image_url: e.target.value })}
+                      placeholder="Coller une URL d'image..."
+                      className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <InputField label="ID (slug unique)" value={productEditing.id} onChange={(v) => setProductEditing({ ...productEditing, id: v })} disabled={!isNew} />
                   <InputField label="Titre" value={productEditing.title} onChange={(v) => setProductEditing({ ...productEditing, title: v })} />
                   <InputField label="Ancien prix" value={productEditing.old_price} onChange={(v) => setProductEditing({ ...productEditing, old_price: v })} placeholder="15.000 CFA" />
                   <InputField label="Prix" value={productEditing.price} onChange={(v) => setProductEditing({ ...productEditing, price: v })} placeholder="5.000 CFA" />
                   <InputField label="Note (ex: 4.5)" value={productEditing.rating} onChange={(v) => setProductEditing({ ...productEditing, rating: v })} />
-                  <InputField label="URL de l'image" value={productEditing.image_url} onChange={(v) => setProductEditing({ ...productEditing, image_url: v })} />
                   <InputField label="Ordre d'affichage" value={productEditing.sort_order} onChange={(v) => setProductEditing({ ...productEditing, sort_order: v })} type="number" />
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Catégorie</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Catégorie</label>
                     <select value={productEditing.category} onChange={(e) => setProductEditing({ ...productEditing, category: e.target.value })}
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
                       {categories.filter(c => c !== "Tous").map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
+                  <InputField label="Tag (ex: Bestseller)" value={productEditing.tag} onChange={(v) => setProductEditing({ ...productEditing, tag: v })} placeholder="Nouveau, Promo..." />
                   <InputField label="🔗 Lien de paiement" value={productEditing.payment_link} onChange={(v) => setProductEditing({ ...productEditing, payment_link: v })} placeholder="https://pay.example.com/..." />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Description</label>
-                  <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={3}
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</label>
+                  <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="featured" checked={productEditing.featured} onChange={(e) => setProductEditing({ ...productEditing, featured: e.target.checked })} className="accent-primary" />
@@ -362,15 +457,29 @@ const Admin = () => {
                     <tbody>
                       {products.map((p) => (
                         <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-                          <td className="p-4"><img src={p.image} alt={p.title} className="w-10 h-10 rounded-lg object-cover" /></td>
-                          <td className="p-4"><p className="font-medium text-foreground truncate max-w-[200px]">{p.title}</p></td>
+                          <td className="p-4">
+                            {p.image ? (
+                              <img src={p.image} alt={p.title} className="w-14 h-14 rounded-xl object-cover border border-border" />
+                            ) : (
+                              <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
+                                <ImageIcon size={20} className="text-muted-foreground/40" />
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <p className="font-medium text-foreground truncate max-w-[200px]">{p.title}</p>
+                            {p.tag && <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium mt-1 inline-block">{p.tag}</span>}
+                          </td>
                           <td className="p-4 hidden md:table-cell"><span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">{p.category}</span></td>
-                          <td className="p-4"><span className="text-foreground font-semibold">{p.price}</span></td>
+                          <td className="p-4">
+                            <span className="text-foreground font-semibold">{p.price}</span>
+                            <span className="text-xs text-muted-foreground line-through block">{p.oldPrice}</span>
+                          </td>
                           <td className="p-4 hidden sm:table-cell text-center">
                             {p.paymentLink ? (
-                              <span className="inline-flex items-center gap-1 text-xs text-accent"><Link2 size={12} /> Actif</span>
+                              <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent font-medium"><Link2 size={12} /> Actif</span>
                             ) : (
-                              <span className="text-xs text-muted-foreground">—</span>
+                              <span className="text-xs text-muted-foreground/50">Non configuré</span>
                             )}
                           </td>
                           <td className="p-4 text-right">
@@ -395,12 +504,12 @@ const Admin = () => {
         {tab === "testimonials" && (
           <>
             {testimonialEditing && (
-              <div className="stat-card rounded-2xl p-6 mb-6 space-y-4 border-glow">
+              <div className="stat-card rounded-2xl p-8 mb-8 space-y-6 border-glow">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-foreground text-lg">{isNew ? "Nouveau témoignage" : "Modifier le témoignage"}</h2>
+                  <h2 className="font-bold text-foreground text-xl">{isNew ? "Nouveau témoignage" : "Modifier le témoignage"}</h2>
                   <button onClick={() => setTestimonialEditing(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <InputField label="Nom" value={testimonialEditing.name} onChange={(v) => setTestimonialEditing({ ...testimonialEditing, name: v })} />
                   <InputField label="Handle (@pseudo)" value={testimonialEditing.handle} onChange={(v) => setTestimonialEditing({ ...testimonialEditing, handle: v })} placeholder="@nom" />
                   <InputField label="Initiales avatar" value={testimonialEditing.avatar_initials} onChange={(v) => setTestimonialEditing({ ...testimonialEditing, avatar_initials: v })} placeholder="AB" />
@@ -408,10 +517,10 @@ const Admin = () => {
                   <InputField label="Retweets" value={testimonialEditing.retweets} onChange={(v) => setTestimonialEditing({ ...testimonialEditing, retweets: v })} type="number" />
                   <InputField label="Réponses" value={testimonialEditing.replies} onChange={(v) => setTestimonialEditing({ ...testimonialEditing, replies: v })} type="number" />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Contenu du témoignage</label>
-                  <textarea value={testimonialEditing.content} onChange={(e) => setTestimonialEditing({ ...testimonialEditing, content: e.target.value })} rows={3}
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contenu du témoignage</label>
+                  <textarea value={testimonialEditing.content} onChange={(e) => setTestimonialEditing({ ...testimonialEditing, content: e.target.value })} rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="verified" checked={testimonialEditing.verified} onChange={(e) => setTestimonialEditing({ ...testimonialEditing, verified: e.target.checked })} className="accent-primary" />
@@ -467,7 +576,7 @@ const Admin = () => {
           return (
           <>
             {/* Status filter */}
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
               {[
                 { key: "all" as const, label: "Toutes", count: orders.length },
                 { key: "pending" as const, label: "En attente", count: orders.filter(o => o.status === "pending").length },
@@ -478,7 +587,7 @@ const Admin = () => {
                 <button
                   key={f.key}
                   onClick={() => setOrderFilter(f.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                     orderFilter === f.key ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -496,20 +605,20 @@ const Admin = () => {
                     <button onClick={() => setViewingOrder(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><p className="text-xs text-muted-foreground">Client</p><p className="font-medium text-foreground">{viewingOrder.customer_name}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium text-foreground">{viewingOrder.customer_email}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Téléphone</p><p className="font-medium text-foreground">{viewingOrder.customer_phone}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Paiement</p><p className="font-medium text-foreground capitalize">{viewingOrder.payment_method.replace("_", " ")}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium text-foreground">{new Date(viewingOrder.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg">{viewingOrder.total_price.toLocaleString()} CFA</p></div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Client</p><p className="font-medium text-foreground mt-1">{viewingOrder.customer_name}</p></div>
+                    <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Email</p><p className="font-medium text-foreground mt-1 truncate">{viewingOrder.customer_email}</p></div>
+                    <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Téléphone</p><p className="font-medium text-foreground mt-1">{viewingOrder.customer_phone}</p></div>
+                    <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Paiement</p><p className="font-medium text-foreground mt-1 capitalize">{viewingOrder.payment_method.replace("_", " ")}</p></div>
+                    <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Date</p><p className="font-medium text-foreground mt-1">{new Date(viewingOrder.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
+                    <div className="bg-accent/10 rounded-xl p-3 border border-accent/20"><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg mt-1">{viewingOrder.total_price.toLocaleString()} CFA</p></div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">Produits commandés</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Produits commandés</p>
                     {viewingOrder.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
-                        {item.image && <img src={item.image} alt={item.title} className="w-10 h-10 rounded-lg object-cover" />}
+                      <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
+                        {item.image && <img src={item.image} alt={item.title} className="w-12 h-12 rounded-lg object-cover" />}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
                           <p className="text-xs text-muted-foreground">Qté: {item.quantity} · {item.price}</p>
@@ -519,7 +628,7 @@ const Admin = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">Changer le statut</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Changer le statut</p>
                     <div className="grid grid-cols-2 gap-2">
                       {(Object.keys(statusConfig) as Order["status"][]).map((s) => {
                         const cfg = statusConfig[s];
@@ -528,7 +637,7 @@ const Admin = () => {
                             key={s}
                             onClick={() => updateOrderStatus(viewingOrder.id, s)}
                             disabled={updatingStatus === viewingOrder.id || viewingOrder.status === s}
-                            className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all border ${
+                            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${
                               viewingOrder.status === s ? `${cfg.color} border-current` : "border-border text-muted-foreground hover:text-foreground"
                             } disabled:opacity-50`}
                           >
@@ -573,7 +682,7 @@ const Admin = () => {
                               <p className="font-medium text-foreground">{o.customer_name}</p>
                               <p className="text-xs text-muted-foreground">{o.items.length} produit(s)</p>
                             </td>
-                            <td className="p-4 hidden md:table-cell text-muted-foreground">{o.customer_email}</td>
+                            <td className="p-4 hidden md:table-cell text-muted-foreground truncate max-w-[180px]">{o.customer_email}</td>
                             <td className="p-4"><span className="text-foreground font-semibold">{o.total_price.toLocaleString()} CFA</span></td>
                             <td className="p-4 text-center">
                               <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.color}`}>
