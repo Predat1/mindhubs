@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] sm:min-h-screen flex flex-col items-center justify-center bg-background pt-32 sm:pt-36 pb-16 sm:pb-20 overflow-hidden">
+    <section className="relative min-h-[90vh] sm:min-h-screen flex flex-col items-center justify-center bg-background pt-32 sm:pt-36 pb-8 sm:pb-10 overflow-hidden">
       {/* Headline */}
       <h1
         className="text-center text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-foreground max-w-4xl px-6 animate-fade-in"

@@ -21,7 +21,7 @@ const DiscoverySection = () => {
   const displayProducts = showResults ? searchResults : featured.slice(0, 4);
 
   return (
-    <section className="py-14 sm:py-20 bg-background">
+    <section className="py-8 sm:py-12 bg-background">
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
           <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-6 sm:mb-8">
