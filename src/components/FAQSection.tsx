@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
@@ -12,6 +13,28 @@ const faqItems = [
 ];
 
 const FAQSection = () => {
+  useEffect(() => {
+    const faqLd = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    };
+    const id = "faq-json-ld";
+    let script = document.getElementById(id) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = id;
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(faqLd);
+    return () => { document.getElementById(id)?.remove(); };
+  }, []);
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4 max-w-3xl">
