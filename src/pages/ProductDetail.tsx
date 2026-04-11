@@ -13,11 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
-const FAKE_REVIEWS = [
-  { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
-  { name: "Ibrahim D.", rating: 5, text: "Contenu de qualité. Les templates inclus m'ont fait gagner un temps fou.", date: "il y a 1 semaine" },
-  { name: "Fatou S.", rating: 4, text: "Très bon rapport qualité-prix. Je recommande vivement !", date: "il y a 2 semaines" },
-];
+// Reviews will be loaded from database in a future update
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
