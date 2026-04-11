@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye, Upload, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye, Upload, ImageIcon, Search, Download, Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdminRole";
 import { useProducts } from "@/hooks/useProducts";
@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast";
 import { categories } from "@/data/products";
 import Navbar from "@/components/Navbar";
 import SEO from "@/components/SEO";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 // ─── Types ───
 interface ProductForm {
@@ -88,6 +90,45 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Search states
+  const [productSearch, setProductSearch] = useState("");
+  const [testimonialSearch, setTestimonialSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+
+  // AlertDialog state
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "order"; id: string; label: string } | null>(null);
+
+  // ─── Filtered data ───
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products;
+    const q = productSearch.toLowerCase();
+    return products.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+  }, [products, productSearch]);
+
+  const filteredTestimonials = useMemo(() => {
+    if (!testimonialSearch.trim()) return testimonials;
+    const q = testimonialSearch.toLowerCase();
+    return testimonials.filter(t => t.name.toLowerCase().includes(q) || t.handle.toLowerCase().includes(q) || t.content.toLowerCase().includes(q));
+  }, [testimonials, testimonialSearch]);
+
+  // Revenue chart data (last 7 days)
+  const revenueChartData = useMemo(() => {
+    const days: { date: string; revenue: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("fr-FR", { weekday: "short" });
+      const dayRevenue = orders
+        .filter(o => o.created_at.slice(0, 10) === key && o.status !== "cancelled")
+        .reduce((s, o) => s + o.total_price, 0);
+      days.push({ date: label, revenue: dayRevenue });
+    }
+    return days;
+  }, [orders]);
+
+  const pendingCount = useMemo(() => orders.filter(o => o.status === "pending").length, [orders]);
+
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>;
@@ -147,6 +188,31 @@ const Admin = () => {
     if (file) handleImageUpload(file);
   };
 
+  // ─── CSV Export ───
+  const exportCSV = () => {
+    if (orders.length === 0) return;
+    const headers = ["Client", "Email", "Téléphone", "Total (CFA)", "Statut", "Paiement", "Date", "Produits"];
+    const rows = orders.map(o => [
+      o.customer_name,
+      o.customer_email,
+      o.customer_phone,
+      o.total_price.toString(),
+      statusConfig[o.status].label,
+      o.payment_method,
+      new Date(o.created_at).toLocaleDateString("fr-FR"),
+      o.items.map(i => `${i.title} x${i.quantity}`).join(" | "),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `commandes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Export CSV téléchargé ✓" });
+  };
+
   // ─── Product CRUD ───
   const openNewProduct = () => { setProductEditing({ ...emptyProduct, sort_order: String(products.length) }); setIsNew(true); };
   const openEditProduct = (p: typeof products[0]) => {
@@ -157,6 +223,17 @@ const Admin = () => {
       payment_link: p.paymentLink ?? "",
     });
     setIsNew(false);
+  };
+
+  const duplicateProduct = (p: typeof products[0]) => {
+    setProductEditing({
+      id: `${p.id}-copie`, title: `${p.title} (copie)`, image_url: p.image, old_price: p.oldPrice, price: p.price,
+      category: p.category, rating: p.rating?.toString() ?? "", tag: p.tag ?? "",
+      description: p.description ?? "", featured: false, sort_order: String(products.length),
+      payment_link: p.paymentLink ?? "",
+    });
+    setIsNew(true);
+    toast({ title: "Produit dupliqué — modifiez et enregistrez" });
   };
 
   const saveProduct = async () => {
@@ -183,8 +260,7 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
-  const deleteProduct = async (id: string) => {
-    if (!confirm("Supprimer ce produit définitivement ?")) return;
+  const confirmDeleteProduct = async (id: string) => {
     setDeleting(id);
     const { error } = await supabase.from("products").delete().eq("id", id);
     setDeleting(null);
@@ -226,8 +302,7 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["testimonials"] });
   };
 
-  const deleteTestimonial = async (id: string) => {
-    if (!confirm("Supprimer ce témoignage ?")) return;
+  const confirmDeleteTestimonial = async (id: string) => {
     setDeleting(id);
     const { error } = await supabase.from("testimonials").delete().eq("id", id);
     setDeleting(null);
@@ -247,14 +322,23 @@ const Admin = () => {
     if (viewingOrder?.id === orderId) setViewingOrder({ ...viewingOrder, status: newStatus });
   };
 
-  const deleteOrder = async (id: string) => {
-    if (!confirm("Supprimer cette commande ?")) return;
+  const confirmDeleteOrder = async (id: string) => {
     setDeleting(id);
     const { error } = await supabase.from("orders").delete().eq("id", id);
     setDeleting(null);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Commande supprimée ✓" });
     queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+  };
+
+  // ─── Handle AlertDialog confirm ───
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    const { type, id } = deleteConfirm;
+    setDeleteConfirm(null);
+    if (type === "product") await confirmDeleteProduct(id);
+    else if (type === "testimonial") await confirmDeleteTestimonial(id);
+    else if (type === "order") await confirmDeleteOrder(id);
   };
 
   const InputField = ({ label, value, onChange, disabled, type = "text", placeholder }: {
@@ -264,6 +348,23 @@ const Admin = () => {
       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
       <input value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} type={type} placeholder={placeholder}
         className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 transition-all" />
+    </div>
+  );
+
+  const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) => (
+    <div className="relative mb-5">
+      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+      />
+      {value && (
+        <button onClick={() => onChange("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <X size={14} />
+        </button>
+      )}
     </div>
   );
 
@@ -287,14 +388,14 @@ const Admin = () => {
           </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        {/* Stats + Revenue Chart */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
             { label: "Produits", value: products.length, icon: Package, accent: "bg-primary/10 text-primary" },
             { label: "Témoignages", value: testimonials.length, icon: MessageSquare, accent: "bg-accent/10 text-accent" },
             { label: "Commandes", value: orders.length, icon: ShoppingBag, accent: "bg-primary/10 text-primary" },
-            { label: "En attente", value: orders.filter(o => o.status === "pending").length, icon: Clock, accent: "bg-yellow-500/10 text-yellow-500" },
-            { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink, accent: "bg-accent/10 text-accent" },
+            { label: "En attente", value: pendingCount, icon: Clock, accent: "bg-yellow-500/10 text-yellow-500" },
+            { label: "Revenu total", value: `${orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink, accent: "bg-accent/10 text-accent" },
           ].map((s, i) => (
             <div key={i} className="stat-card rounded-2xl p-5 border-glow">
               <div className="flex items-center gap-3">
@@ -308,24 +409,54 @@ const Admin = () => {
           ))}
         </div>
 
+        {/* Revenue chart */}
+        {orders.length > 0 && (
+          <div className="stat-card rounded-2xl p-5 border-glow mb-8">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Revenus des 7 derniers jours</p>
+            <div className="h-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueChartData}>
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} className="fill-muted-foreground" />
+                  <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={50} className="fill-muted-foreground" tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px" }}
+                    formatter={(value: number) => [`${value.toLocaleString()} CFA`, "Revenus"]}
+                  />
+                  <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex items-center gap-2 mb-8 flex-wrap">
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
             { key: "testimonials" as Tab, label: "Témoignages", icon: MessageSquare },
-            { key: "orders" as Tab, label: "Commandes", icon: ShoppingBag },
+            { key: "orders" as Tab, label: "Commandes", icon: ShoppingBag, badge: pendingCount },
           ]).map((t) => (
             <button
               key={t.key}
               onClick={() => { setTab(t.key); setProductEditing(null); setTestimonialEditing(null); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 tab === t.key ? "bg-primary text-primary-foreground shadow-glow" : "bg-secondary text-muted-foreground hover:text-foreground"
               }`}
             >
               <t.icon size={16} /> {t.label}
+              {t.badge && t.badge > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                  {t.badge}
+                </span>
+              )}
             </button>
           ))}
           <div className="flex-1" />
+          {tab === "orders" && orders.length > 0 && (
+            <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
+              <Download size={16} /> Export CSV
+            </button>
+          )}
           {tab !== "orders" && (
             <button
               onClick={tab === "products" ? openNewProduct : openNewTestimonial}
@@ -339,6 +470,8 @@ const Admin = () => {
         {/* ─── PRODUCTS TAB ─── */}
         {tab === "products" && (
           <>
+            <SearchBar value={productSearch} onChange={setProductSearch} placeholder="Rechercher un produit par titre, catégorie ou ID..." />
+
             {productEditing && (
               <div className="stat-card rounded-2xl p-8 mb-8 space-y-6 border-glow">
                 <div className="flex items-center justify-between">
@@ -366,7 +499,6 @@ const Admin = () => {
                       }}
                     />
                     <div className="flex items-center gap-6">
-                      {/* Preview */}
                       {productEditing.image_url ? (
                         <img src={productEditing.image_url} alt="Preview" className="w-24 h-24 rounded-xl object-cover shrink-0 border border-border" />
                       ) : (
@@ -391,7 +523,6 @@ const Admin = () => {
                       </div>
                     </div>
                   </div>
-                  {/* Fallback URL input */}
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-muted-foreground">ou</span>
                     <input
@@ -455,7 +586,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {products.map((p) => (
+                      {filteredProducts.map((p) => (
                         <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="p-4">
                             {p.image ? (
@@ -484,14 +615,25 @@ const Admin = () => {
                           </td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button onClick={() => openEditProduct(p)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"><Pencil size={16} /></button>
-                              <button onClick={() => deleteProduct(p.id)} disabled={deleting === p.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
+                              <a href={`/produit/${p.id}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/5 transition-all" title="Voir sur le site">
+                                <ExternalLink size={16} />
+                              </a>
+                              <button onClick={() => duplicateProduct(p)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all" title="Dupliquer">
+                                <Copy size={16} />
+                              </button>
+                              <button onClick={() => openEditProduct(p)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all" title="Modifier">
+                                <Pencil size={16} />
+                              </button>
+                              <button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} disabled={deleting === p.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50" title="Supprimer">
                                 {deleting === p.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                               </button>
                             </div>
                           </td>
                         </tr>
                       ))}
+                      {filteredProducts.length === 0 && (
+                        <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Aucun produit trouvé</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -503,6 +645,8 @@ const Admin = () => {
         {/* ─── TESTIMONIALS TAB ─── */}
         {tab === "testimonials" && (
           <>
+            <SearchBar value={testimonialSearch} onChange={setTestimonialSearch} placeholder="Rechercher par nom, pseudo ou contenu..." />
+
             {testimonialEditing && (
               <div className="stat-card rounded-2xl p-8 mb-8 space-y-6 border-glow">
                 <div className="flex items-center justify-between">
@@ -539,7 +683,7 @@ const Admin = () => {
               <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={28} /></div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {testimonials.map((t) => (
+                {filteredTestimonials.map((t) => (
                   <div key={t.id} className="stat-card rounded-2xl p-5 border-glow space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
@@ -551,7 +695,7 @@ const Admin = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <button onClick={() => openEditTestimonial(t)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"><Pencil size={14} /></button>
-                        <button onClick={() => deleteTestimonial(t.id)} disabled={deleting === t.id} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
+                        <button onClick={() => setDeleteConfirm({ type: "testimonial", id: t.id, label: t.name })} disabled={deleting === t.id} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
                           {deleting === t.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                         </button>
                       </div>
@@ -565,6 +709,9 @@ const Admin = () => {
                     </div>
                   </div>
                 ))}
+                {filteredTestimonials.length === 0 && (
+                  <div className="col-span-full p-8 text-center text-muted-foreground">Aucun témoignage trouvé</div>
+                )}
               </div>
             )}
           </>
@@ -572,9 +719,17 @@ const Admin = () => {
 
         {/* ─── ORDERS TAB ─── */}
         {tab === "orders" && (() => {
-          const filteredOrders = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+          const baseFiltered = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+          const filteredOrders = orderSearch.trim()
+            ? baseFiltered.filter(o => {
+                const q = orderSearch.toLowerCase();
+                return o.customer_name.toLowerCase().includes(q) || o.customer_email.toLowerCase().includes(q) || o.customer_phone.includes(q);
+              })
+            : baseFiltered;
           return (
           <>
+            <SearchBar value={orderSearch} onChange={setOrderSearch} placeholder="Rechercher par nom, email ou téléphone..." />
+
             {/* Status filter */}
             <div className="flex items-center gap-2 mb-6 flex-wrap">
               {[
@@ -693,7 +848,7 @@ const Admin = () => {
                             <td className="p-4 text-right">
                               <div className="flex items-center justify-end gap-1">
                                 <button onClick={() => setViewingOrder(o)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"><Eye size={16} /></button>
-                                <button onClick={() => deleteOrder(o.id)} disabled={deleting === o.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
+                                <button onClick={() => setDeleteConfirm({ type: "order", id: o.id, label: o.customer_name })} disabled={deleting === o.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
                                   {deleting === o.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                 </button>
                               </div>
@@ -710,6 +865,24 @@ const Admin = () => {
           );
         })()}
       </div>
+
+      {/* Delete confirmation AlertDialog */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer "{deleteConfirm?.label}" ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
