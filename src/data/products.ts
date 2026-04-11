@@ -32,6 +32,7 @@ export interface Product {
   rating?: number;
   tag?: string;
   description?: string;
+  paymentLink?: string;
 }
 
 export const allProducts: Product[] = [
