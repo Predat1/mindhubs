@@ -22,6 +22,7 @@ import FAQ from "./pages/FAQ.tsx";
 import Admin from "./pages/Admin.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ScrollToTop from "./components/ScrollToTop.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <BackgroundGlow className="min-h-0 items-stretch">
               <Routes>
                 <Route path="/" element={<Index />} />

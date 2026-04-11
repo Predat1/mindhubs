@@ -24,13 +24,7 @@ const DiscoverySection = () => {
     <section className="py-14 sm:py-20 bg-background">
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
-          <p className="text-center text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
-            Catalogue
-          </p>
-          <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4">
-            Trouvez la formation idéale
-          </h2>
-          <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-8 sm:mb-10">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-6 sm:mb-8">
             Explorez notre catalogue et trouvez la compétence qui fera la différence dans votre carrière.
           </p>
         </AnimateOnScroll>
