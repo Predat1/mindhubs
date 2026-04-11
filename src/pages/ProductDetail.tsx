@@ -127,7 +127,7 @@ const ProductDetail = () => {
                     <span>{120 + Math.floor(product.title.length * 2)} avis</span>
                   </div>
                   <button
-                    onClick={() => setPopupOpen(true)}
+                    onClick={handleBuyNow}
                     className="btn-primary-brand py-2.5 sm:py-3 px-6 sm:px-8 rounded-full font-semibold text-xs sm:text-sm tracking-wide inline-flex items-center gap-2 hover-scale w-full sm:w-auto justify-center"
                   >
                     <ShoppingCart size={16} />
@@ -239,8 +239,7 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
-      <StickyProductCTA productTitle={product.title} price={product.price} onBuy={() => setPopupOpen(true)} />
-      <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
+      <StickyProductCTA productTitle={product.title} price={product.price} onBuy={handleBuyNow} />
     </div>
   );
 };
