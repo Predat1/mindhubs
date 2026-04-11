@@ -22,8 +22,19 @@ const ProductDetail = () => {
   const { data: product, isLoading } = useProduct(id || "");
   const { data: allProducts = [] } = useProducts();
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
-  const [popupOpen, setPopupOpen] = useState(false);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const handleBuyNow = () => {
+    if (product) {
+      addToCart(product);
+      if (product.paymentLink) {
+        window.open(product.paymentLink, "_blank", "noopener,noreferrer");
+      } else {
+        navigate("/checkout");
+      }
+    }
+  };
 
   const viewerCount = 8 + Math.floor((id || "").length * 2.3);
 
