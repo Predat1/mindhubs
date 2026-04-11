@@ -5,7 +5,7 @@ import LogoMarquee from "@/components/LogoMarquee";
 import DiscoverySection from "@/components/DiscoverySection";
 import TrustLogosSection from "@/components/TrustLogosSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
-import VideoTestimonialsSection from "@/components/VideoTestimonialsSection";
+import RecentlyViewedSection from "@/components/RecentlyViewedSection";
 import GoogleReviewsSection from "@/components/GoogleReviewsSection";
 import FAQSection from "@/components/FAQSection";
 import NewsletterSection from "@/components/NewsletterSection";
@@ -28,8 +28,8 @@ const Index = () => {
       <DiscoverySection />
       <StatsBar />
       <TrustLogosSection />
+      <RecentlyViewedSection />
       <ExpertiseSection />
-      <VideoTestimonialsSection />
       <GoogleReviewsSection />
       <FAQSection />
       <NewsletterSection />

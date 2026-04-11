@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -11,6 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart, Eye, Star } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 const FAKE_REVIEWS = [
   { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
@@ -25,6 +26,11 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const { addViewed } = useRecentlyViewed();
+
+  useEffect(() => {
+    if (product) addViewed(product.id);
+  }, [product, addViewed]);
 
   const handleBuyNow = () => {
     if (product) {
