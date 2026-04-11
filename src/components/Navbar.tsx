@@ -18,7 +18,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const { totalItems } = useCart();
+  const { totalItems, cartBounce } = useCart();
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +110,7 @@ const Navbar = () => {
           </div>
 
           {/* Cart */}
-          <Link to="/panier" className="relative text-muted-foreground hover:text-foreground transition-colors hover-scale">
+          <Link to="/panier" className={`relative text-muted-foreground hover:text-foreground transition-colors hover-scale ${cartBounce ? "animate-cart-bounce" : ""}`}>
             <ShoppingCart size={20} />
             <span
               className={`absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold transition-transform ${

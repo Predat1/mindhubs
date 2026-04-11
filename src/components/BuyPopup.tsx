@@ -1,4 +1,4 @@
-import { ShoppingCart, Zap, X } from "lucide-react";
+import { ShoppingCart, Zap, X, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
@@ -30,20 +30,21 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={onClose}>
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-      {/* Popup */}
       <div
         className="relative w-full sm:w-auto sm:min-w-[360px] bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 shadow-glow"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          animation: "slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
+        style={{ animation: "slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
           <X size={20} />
         </button>
+
+        {/* Urgency banner */}
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20">
+          <Clock size={14} className="text-accent shrink-0" />
+          <span className="text-xs font-medium text-accent">Offre valable aujourd'hui uniquement !</span>
+        </div>
 
         <div className="flex items-center gap-4 mb-6">
           <img src={product.image} alt={product.title} className="w-16 h-16 rounded-lg object-cover border border-border" />
