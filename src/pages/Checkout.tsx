@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -15,9 +15,18 @@ import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2, Loader2 } from "lucide-re
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", paymentMethod: "mobile_money" });
+
+  // If all items have payment links, redirect to the first one
+  useEffect(() => {
+    if (items.length === 1 && items[0].product.paymentLink) {
+      window.open(items[0].product.paymentLink, "_blank", "noopener,noreferrer");
+      navigate("/boutique", { replace: true });
+    }
+  }, [items, navigate]);
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
@@ -26,11 +35,11 @@ const Checkout = () => {
       <div className="min-h-screen bg-background">
         <SEO title="Checkout" description="Finalisez votre commande MindHub" path="/checkout" />
         <Navbar />
-        <section className="pt-32 pb-20 container mx-auto px-4 text-center">
+        <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 container mx-auto px-4 text-center">
           <AnimateOnScroll>
-            <div className="stat-card rounded-2xl py-16 px-8 max-w-lg mx-auto space-y-6">
-              <h1 className="text-2xl font-bold text-foreground">Votre panier est vide</h1>
-              <Link to="/boutique" className="btn-primary-brand inline-block px-8 py-3 rounded-full font-semibold text-sm hover-scale">
+            <div className="stat-card rounded-xl sm:rounded-2xl py-12 sm:py-16 px-6 sm:px-8 max-w-lg mx-auto space-y-4 sm:space-y-6">
+              <h1 className="text-lg sm:text-2xl font-bold text-foreground">Votre panier est vide</h1>
+              <Link to="/boutique" className="btn-primary-brand inline-block px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm hover-scale">
                 VOIR NOS FORMATIONS
               </Link>
             </div>
@@ -46,15 +55,15 @@ const Checkout = () => {
       <div className="min-h-screen bg-background">
         <SEO title="Commande confirmée" description="Votre commande est confirmée" path="/checkout" />
         <Navbar />
-        <section className="pt-32 pb-20 container mx-auto px-4">
+        <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 container mx-auto px-4">
           <AnimateOnScroll>
-            <div className="stat-card rounded-2xl p-8 text-center space-y-6 max-w-lg mx-auto">
-              <CheckCircle2 className="mx-auto text-accent" size={64} />
-              <h1 className="text-2xl font-bold text-foreground">Commande confirmée !</h1>
-              <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                Merci {form.name} ! Vous recevrez un email de confirmation à <span className="text-accent">{form.email}</span> avec les détails de votre commande.
+            <div className="stat-card rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center space-y-4 sm:space-y-6 max-w-lg mx-auto">
+              <CheckCircle2 className="mx-auto text-accent" size={48} />
+              <h1 className="text-lg sm:text-2xl font-bold text-foreground">Commande confirmée !</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm max-w-md mx-auto">
+                Merci {form.name} ! Vous recevrez un email de confirmation à <span className="text-accent">{form.email}</span>.
               </p>
-              <Link to="/boutique" className="btn-primary-brand inline-block px-8 py-3 rounded-full font-semibold text-sm hover-scale">
+              <Link to="/boutique" className="btn-primary-brand inline-block px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm hover-scale">
                 CONTINUER MES ACHATS
               </Link>
             </div>
@@ -106,36 +115,36 @@ const Checkout = () => {
       <SEO title="Checkout" description="Finalisez votre commande MindHub" path="/checkout" />
       <Navbar />
 
-      <section className="pt-24 pb-20 container mx-auto px-4">
+      <section className="pt-28 sm:pt-24 pb-16 sm:pb-20 container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <AnimateOnScroll>
-            <Link to="/panier" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-6">
+            <Link to="/panier" className="inline-flex items-center gap-1 text-xs sm:text-sm text-primary hover:underline mb-4 sm:mb-6">
               <ArrowLeft size={14} /> Retour au panier
             </Link>
           </AnimateOnScroll>
 
-          <form onSubmit={handleSubmit} className="grid md:grid-cols-5 gap-6">
-            {/* Left: Form */}
-            <div className="md:col-span-3 space-y-6">
+          <form onSubmit={handleSubmit} className="flex flex-col md:grid md:grid-cols-5 gap-4 sm:gap-6">
+            {/* Form */}
+            <div className="md:col-span-3">
               <AnimateOnScroll>
-                <div className="stat-card rounded-2xl p-6 space-y-5">
-                  <h1 className="text-xl font-bold text-foreground">Vos informations</h1>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom complet</Label>
-                      <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Votre nom" required maxLength={100} />
+                <div className="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5">
+                  <h1 className="text-base sm:text-xl font-bold text-foreground">Vos informations</h1>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="name" className="text-xs sm:text-sm">Nom complet</Label>
+                      <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Votre nom" required maxLength={100} className="text-sm" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="votre@email.com" required maxLength={255} />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
+                      <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="votre@email.com" required maxLength={255} className="text-sm" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+225 XX XX XX XX" required maxLength={20} />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-xs sm:text-sm">Téléphone</Label>
+                      <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+225 XX XX XX XX" required maxLength={20} className="text-sm" />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Méthode de paiement</Label>
-                      <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs sm:text-sm">Méthode de paiement</Label>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
                         {[
                           { value: "mobile_money", label: "Mobile Money" },
                           { value: "carte", label: "Carte bancaire" },
@@ -144,7 +153,7 @@ const Checkout = () => {
                             key={m.value}
                             type="button"
                             onClick={() => update("paymentMethod", m.value)}
-                            className={`py-3 rounded-xl text-sm font-medium border transition-all ${
+                            className={`py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium border transition-all ${
                               form.paymentMethod === m.value
                                 ? "border-accent bg-accent/10 text-accent"
                                 : "border-border text-muted-foreground hover:border-accent/50"
@@ -156,42 +165,42 @@ const Checkout = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <ShieldCheck size={14} className="text-accent shrink-0" />
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                    <ShieldCheck size={12} className="text-accent shrink-0" />
                     <span>Paiement 100% sécurisé — vos données sont protégées</span>
                   </div>
                 </div>
               </AnimateOnScroll>
             </div>
 
-            {/* Right: Summary */}
+            {/* Summary */}
             <div className="md:col-span-2">
               <AnimateOnScroll delay={100}>
-                <div className="stat-card rounded-2xl p-6 space-y-4 md:sticky md:top-24">
-                  <h2 className="text-lg font-bold text-foreground">Récapitulatif</h2>
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                <div className="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 md:sticky md:top-24">
+                  <h2 className="text-sm sm:text-lg font-bold text-foreground">Récapitulatif</h2>
+                  <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto">
                     {items.map((item) => (
-                      <div key={item.product.id} className="flex items-center gap-3">
-                        <img src={item.product.image} alt={item.product.title} className="w-12 h-12 rounded-lg object-cover" />
+                      <div key={item.product.id} className="flex items-center gap-2 sm:gap-3">
+                        <img src={item.product.image} alt={item.product.title} className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{item.product.title}</p>
-                          <p className="text-xs text-muted-foreground">Qté: {item.quantity}</p>
+                          <p className="text-xs sm:text-sm font-medium text-foreground truncate">{item.product.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Qté: {item.quantity}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-accent font-bold text-sm whitespace-nowrap">{item.product.price}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-accent font-bold text-xs sm:text-sm whitespace-nowrap">{item.product.price}</span>
                           <button type="button" onClick={() => removeFromCart(item.product.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 size={14} />
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t border-border pt-4 flex justify-between items-center">
-                    <span className="text-foreground font-bold">Total</span>
-                    <span className="text-accent font-bold text-xl">{totalPrice.toLocaleString()} CFA</span>
+                  <div className="border-t border-border pt-3 sm:pt-4 flex justify-between items-center">
+                    <span className="text-foreground font-bold text-sm">Total</span>
+                    <span className="text-accent font-bold text-base sm:text-xl">{totalPrice.toLocaleString()} CFA</span>
                   </div>
-                  <button type="submit" disabled={submitting} className="w-full btn-primary-brand py-4 rounded-2xl font-bold text-base hover-scale shadow-glow flex items-center justify-center gap-2 disabled:opacity-70">
-                    {submitting && <Loader2 size={18} className="animate-spin" />}
+                  <button type="submit" disabled={submitting} className="w-full btn-primary-brand py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-base hover-scale shadow-glow flex items-center justify-center gap-2 disabled:opacity-70">
+                    {submitting && <Loader2 size={16} className="animate-spin" />}
                     {submitting ? "TRAITEMENT..." : "CONFIRMER LA COMMANDE"}
                   </button>
                 </div>
