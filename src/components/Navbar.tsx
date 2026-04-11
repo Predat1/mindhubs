@@ -46,8 +46,8 @@ const Navbar = () => {
       {announcementVisible && (
         <div className="fixed top-0 left-0 right-0 z-[60] bg-primary text-primary-foreground">
           <div className="container mx-auto flex items-center justify-center px-4 py-2 relative">
-            <p className="text-[11px] sm:text-xs font-medium text-center tracking-wide">
-              🔥 <span className="font-bold">-70% sur toutes les formations</span> — Offre limitée, profitez-en maintenant !
+            <p className="text-[10px] sm:text-xs font-medium text-center tracking-wide leading-tight">
+              🔥 <span className="font-bold">-70% sur toutes les formations</span> — Offre limitée !
             </p>
             <button
               onClick={() => setAnnouncementVisible(false)}
