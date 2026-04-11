@@ -5,13 +5,41 @@ import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProducts } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
   User, Mail, Lock, LogOut, Eye, EyeOff, ShoppingBag,
-  Calendar, Shield, BookOpen, ArrowRight
+  Calendar, Shield, BookOpen, ArrowRight, Package, Clock,
+  CheckCircle2, XCircle, Truck
 } from "lucide-react";
+
+interface OrderItem {
+  product_id: string;
+  title: string;
+  price: string;
+  quantity: number;
+  image?: string;
+}
+
+interface UserOrder {
+  id: string;
+  total_price: number;
+  status: "pending" | "confirmed" | "delivered" | "cancelled";
+  items: OrderItem[];
+  created_at: string;
+  payment_method: string;
+}
+
+const statusConfig = {
+  pending: { label: "En attente", icon: Clock, color: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" },
+  confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-accent bg-accent/10 border-accent/20" },
+  delivered: { label: "Livrée", icon: Truck, color: "text-primary bg-primary/10 border-primary/20" },
+  cancelled: { label: "Annulée", icon: XCircle, color: "text-destructive bg-destructive/10 border-destructive/20" },
+};
 
 const MonCompte = () => {
   const { user, loading, signIn, signUp, signOut, resetPassword } = useAuth();
@@ -22,6 +50,25 @@ const MonCompte = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Fetch user orders
+  const { data: orders = [] } = useQuery({
+    queryKey: ["user-orders", user?.id],
+    queryFn: async (): Promise<UserOrder[]> => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as any) ?? [];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch all products for recommendations
+  const { data: allProducts = [] } = useProducts();
 
   if (loading) {
     return (
@@ -38,6 +85,16 @@ const MonCompte = () => {
     });
     const initials = (user.user_metadata?.full_name || user.email || "U")
       .split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+
+    // Compute recommended products based on purchased categories
+    const purchasedProductIds = new Set(
+      orders.flatMap(o => o.items.map(i => i.product_id))
+    );
+    const recommendedProducts = allProducts
+      .filter(p => !purchasedProductIds.has(p.id))
+      .slice(0, 4);
+
+    const totalSpent = orders.reduce((s, o) => s + o.total_price, 0);
 
     return (
       <div className="min-h-screen bg-background">
@@ -85,9 +142,9 @@ const MonCompte = () => {
             <AnimateOnScroll delay={100}>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 {[
-                  { icon: ShoppingBag, label: "Achats", value: "0" },
-                  { icon: BookOpen, label: "Formations", value: "0" },
-                  { icon: Shield, label: "Statut", value: "Actif" },
+                  { icon: ShoppingBag, label: "Achats", value: String(orders.length) },
+                  { icon: BookOpen, label: "Formations", value: String(orders.filter(o => o.status !== "cancelled").length) },
+                  { icon: Package, label: "Dépensé", value: `${totalSpent.toLocaleString()} CFA` },
                 ].map((stat) => (
                   <div key={stat.label} className="stat-card rounded-xl p-4 text-center border-glow">
                     <stat.icon className="mx-auto text-primary mb-2" size={20} />
@@ -117,25 +174,83 @@ const MonCompte = () => {
               </div>
             </AnimateOnScroll>
 
-            {/* Purchases */}
+            {/* Order History */}
             <AnimateOnScroll delay={200}>
-              <div className="stat-card rounded-2xl p-6">
+              <div className="stat-card rounded-2xl p-6 mb-6">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
                   <ShoppingBag size={16} className="text-primary" /> Mes achats
                 </h3>
-                <div className="text-center py-8">
-                  <ShoppingBag className="mx-auto text-muted-foreground/30 mb-3" size={40} />
-                  <p className="text-sm text-muted-foreground mb-4">Vous n'avez pas encore de formations.</p>
-                  <Link
-                    to="/boutique"
-                    className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-all"
-                  >
-                    Explorer le catalogue
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </div>
+                {orders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingBag className="mx-auto text-muted-foreground/30 mb-3" size={40} />
+                    <p className="text-sm text-muted-foreground mb-4">Vous n'avez pas encore de commandes.</p>
+                    <Link
+                      to="/boutique"
+                      className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-all"
+                    >
+                      Explorer le catalogue
+                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {orders.map((order) => {
+                      const cfg = statusConfig[order.status];
+                      return (
+                        <div key={order.id} className="bg-background rounded-xl border border-border p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border ${cfg.color}`}>
+                                <cfg.icon size={12} /> {cfg.label}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-foreground">{order.total_price.toLocaleString()} CFA</span>
+                          </div>
+                          <div className="space-y-2">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-3">
+                                {item.image && <img src={item.image} alt={item.title} className="w-10 h-10 rounded-lg object-cover" />}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                                  <p className="text-xs text-muted-foreground">Qté: {item.quantity} · {item.price}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </AnimateOnScroll>
+
+            {/* Recommended Products */}
+            {recommendedProducts.length > 0 && (
+              <AnimateOnScroll delay={250}>
+                <div className="stat-card rounded-2xl p-6">
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
+                    <BookOpen size={16} className="text-primary" /> Produits recommandés
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {recommendedProducts.map((p) => (
+                      <Link
+                        key={p.id}
+                        to={`/produit/${p.id}`}
+                        className="bg-background rounded-xl border border-border p-3 hover:border-primary/30 transition-all group"
+                      >
+                        <img src={p.image} alt={p.title} className="w-full h-24 object-cover rounded-lg mb-2" />
+                        <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">{p.title}</p>
+                        <p className="text-xs text-primary font-bold mt-1">{p.price}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </AnimateOnScroll>
+            )}
           </div>
         </main>
         <FooterSection />

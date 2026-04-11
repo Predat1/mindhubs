@@ -84,6 +84,7 @@ const Admin = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [orderFilter, setOrderFilter] = useState<"all" | Order["status"]>("all");
 
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
@@ -255,7 +256,7 @@ const Admin = () => {
             { label: "Produits", value: products.length, icon: Package },
             { label: "Témoignages", value: testimonials.length, icon: MessageSquare },
             { label: "Commandes", value: orders.length, icon: ShoppingBag },
-            { label: "Avec lien paiement", value: products.filter(p => p.paymentLink).length, icon: Link2 },
+            { label: "En attente", value: orders.filter(o => o.status === "pending").length, icon: Clock },
             { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink },
           ].map((s, i) => (
             <div key={i} className="stat-card rounded-2xl p-4 border-glow">
@@ -461,8 +462,30 @@ const Admin = () => {
         )}
 
         {/* ─── ORDERS TAB ─── */}
-        {tab === "orders" && (
+        {tab === "orders" && (() => {
+          const filteredOrders = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+          return (
           <>
+            {/* Status filter */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              {[
+                { key: "all" as const, label: "Toutes", count: orders.length },
+                { key: "pending" as const, label: "En attente", count: orders.filter(o => o.status === "pending").length },
+                { key: "confirmed" as const, label: "Confirmées", count: orders.filter(o => o.status === "confirmed").length },
+                { key: "delivered" as const, label: "Livrées", count: orders.filter(o => o.status === "delivered").length },
+                { key: "cancelled" as const, label: "Annulées", count: orders.filter(o => o.status === "cancelled").length },
+              ].map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setOrderFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    orderFilter === f.key ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.label} ({f.count})
+                </button>
+              ))}
+            </div>
             {/* Order detail modal */}
             {viewingOrder && (
               <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setViewingOrder(null)}>
@@ -521,10 +544,10 @@ const Admin = () => {
 
             {ordersLoading ? (
               <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={28} /></div>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <div className="stat-card rounded-2xl p-12 text-center border-glow">
                 <ShoppingBag size={40} className="mx-auto text-muted-foreground mb-3" />
-                <p className="text-foreground font-medium">Aucune commande pour le moment</p>
+                <p className="text-foreground font-medium">Aucune commande {orderFilter !== "all" ? "avec ce statut" : "pour le moment"}</p>
                 <p className="text-sm text-muted-foreground mt-1">Les commandes apparaîtront ici quand des clients passeront commande.</p>
               </div>
             ) : (
@@ -542,7 +565,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((o) => {
+                      {filteredOrders.map((o) => {
                         const cfg = statusConfig[o.status];
                         return (
                           <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
@@ -575,7 +598,8 @@ const Admin = () => {
               </div>
             )}
           </>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
