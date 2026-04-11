@@ -6,14 +6,16 @@ import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
 import { useProducts } from "@/hooks/useProducts";
+import { useSmartRanking } from "@/hooks/useSmartRanking";
 import { categories, type Category } from "@/data/products";
 
 const Boutique = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const { data: products = [], isLoading } = useProducts();
+  const rankedProducts = useSmartRanking(products);
 
-  const filtered = products
+  const filtered = rankedProducts
     .filter((p) => activeCategory === "Tous" || p.category === activeCategory)
     .filter((p) => !searchQuery.trim() || p.title.toLowerCase().includes(searchQuery.toLowerCase()));
 

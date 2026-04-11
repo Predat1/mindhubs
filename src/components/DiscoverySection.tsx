@@ -4,6 +4,7 @@ import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen } from "lucide-react
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ProductCard from "@/components/ProductCard";
 import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
+import { useSmartRanking } from "@/hooks/useSmartRanking";
 
 const categories = [
   { label: "Populaire", icon: TrendingUp },
@@ -15,10 +16,11 @@ const DiscoverySection = () => {
   const [query, setQuery] = useState("");
   const { data: searchResults = [] } = useSearchProducts(query);
   const { data: featured = [] } = useFeaturedProducts();
+  const rankedFeatured = useSmartRanking(featured);
   const navigate = useNavigate();
 
   const showResults = query.trim().length >= 2 && searchResults.length > 0;
-  const displayProducts = showResults ? searchResults : featured.slice(0, 4);
+  const displayProducts = showResults ? searchResults : rankedFeatured.slice(0, 4);
 
   return (
     <section className="py-8 sm:py-12 bg-background">

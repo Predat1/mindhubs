@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -13,17 +13,12 @@ import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
-const FAKE_REVIEWS = [
-  { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
-  { name: "Ibrahim D.", rating: 5, text: "Contenu de qualité. Les templates inclus m'ont fait gagner un temps fou.", date: "il y a 1 semaine" },
-  { name: "Fatou S.", rating: 4, text: "Très bon rapport qualité-prix. Je recommande vivement !", date: "il y a 2 semaines" },
-];
+// Reviews will be loaded from database in a future update
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useProduct(id || "");
   const { data: allProducts = [] } = useProducts();
-  const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { addViewed } = useRecentlyViewed();
@@ -89,13 +84,7 @@ const ProductDetail = () => {
       availability: "https://schema.org/InStock",
       seller: { "@type": "Organization", name: "MindHub" },
     },
-    aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating || 4.7, bestRating: 5, ratingCount: 120 + Math.floor(product.title.length * 2) },
-    review: FAKE_REVIEWS.map((r) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: r.name },
-      reviewRating: { "@type": "Rating", ratingValue: r.rating },
-      reviewBody: r.text,
-    })),
+    aggregateRating: product.rating ? { "@type": "AggregateRating", ratingValue: product.rating, bestRating: 5, ratingCount: 120 + Math.floor(product.title.length * 2) } : undefined,
   };
 
   return (
@@ -168,62 +157,29 @@ const ProductDetail = () => {
         </AnimateOnScroll>
       </section>
 
-      {/* Description / Avis Tabs */}
+      {/* Description */}
       <section className="container mx-auto px-4 pb-8 sm:pb-10">
         <AnimateOnScroll>
           <div className="max-w-4xl mx-auto">
             <div className="flex gap-0 mb-0">
-              <button
-                onClick={() => setActiveTab("description")}
-                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "description" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
-              >
+              <div className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg bg-card text-foreground border border-border border-b-0">
                 Description
-              </button>
-              <button
-                onClick={() => setActiveTab("avis")}
-                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "avis" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
-              >
-                Avis ({FAKE_REVIEWS.length})
-              </button>
+              </div>
             </div>
             <div className="stat-card rounded-b-xl sm:rounded-b-2xl rounded-tr-xl sm:rounded-tr-2xl p-4 sm:p-6 md:p-8">
-              {activeTab === "description" ? (
-                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
-                  <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
-                  {product.description?.split("\n\n").map((block, idx) => (
-                    <div key={idx}>
-                      {block.split("\n").map((line, li) => {
-                        if (line.startsWith("**") && line.endsWith("**")) {
-                          return <p key={li} className="font-bold text-foreground mt-3 text-xs sm:text-sm">{line.replace(/\*\*/g, "")}</p>;
-                        }
-                        return <p key={li} className="text-xs sm:text-sm">{line}</p>;
-                      })}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  {FAKE_REVIEWS.map((review, i) => (
-                    <div key={i} className="stat-card rounded-xl p-3 sm:p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] sm:text-xs font-bold text-accent">
-                            {review.name.charAt(0)}
-                          </div>
-                          <span className="text-xs sm:text-sm font-medium text-foreground">{review.name}</span>
-                        </div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground">{review.date}</span>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} size={10} className={j < review.rating ? "text-accent fill-accent" : "text-muted-foreground"} />
-                        ))}
-                      </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{review.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
+                <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
+                {product.description?.split("\n\n").map((block, idx) => (
+                  <div key={idx}>
+                    {block.split("\n").map((line, li) => {
+                      if (line.startsWith("**") && line.endsWith("**")) {
+                        return <p key={li} className="font-bold text-foreground mt-3 text-xs sm:text-sm">{line.replace(/\*\*/g, "")}</p>;
+                      }
+                      return <p key={li} className="text-xs sm:text-sm">{line}</p>;
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </AnimateOnScroll>
