@@ -5,15 +5,18 @@ import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2 } from "lucide-react";
+import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2, Loader2 } from "lucide-react";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [confirmed, setConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", paymentMethod: "mobile_money" });
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
@@ -62,15 +65,40 @@ const Checkout = () => {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
       toast({ title: "Veuillez remplir tous les champs", variant: "destructive" });
       return;
     }
-    clearCart();
-    setConfirmed(true);
-    toast({ title: "Commande confirmée ✅", description: "Merci pour votre achat !" });
+    setSubmitting(true);
+    try {
+      const orderItems = items.map((item) => ({
+        product_id: item.product.id,
+        title: item.product.title,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.image,
+      }));
+      const { error } = await supabase.from("orders").insert({
+        user_id: user?.id ?? null,
+        customer_name: form.name.trim(),
+        customer_email: form.email.trim(),
+        customer_phone: form.phone.trim(),
+        payment_method: form.paymentMethod,
+        total_price: totalPrice,
+        items: orderItems,
+        status: "pending",
+      } as any);
+      if (error) throw error;
+      clearCart();
+      setConfirmed(true);
+      toast({ title: "Commande confirmée ✅", description: "Merci pour votre achat !" });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Une erreur est survenue", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
