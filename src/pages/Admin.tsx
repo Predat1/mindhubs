@@ -201,6 +201,27 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["testimonials"] });
   };
 
+  // ─── Order actions ───
+  const updateOrderStatus = async (orderId: string, newStatus: Order["status"]) => {
+    setUpdatingStatus(orderId);
+    const { error } = await supabase.from("orders").update({ status: newStatus } as any).eq("id", orderId);
+    setUpdatingStatus(null);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: `Statut mis à jour → ${statusConfig[newStatus].label}` });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    if (viewingOrder?.id === orderId) setViewingOrder({ ...viewingOrder, status: newStatus });
+  };
+
+  const deleteOrder = async (id: string) => {
+    if (!confirm("Supprimer cette commande ?")) return;
+    setDeleting(id);
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    setDeleting(null);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Commande supprimée ✓" });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+  };
+
   const InputField = ({ label, value, onChange, disabled, type = "text", placeholder }: {
     label: string; value: string; onChange: (v: string) => void; disabled?: boolean; type?: string; placeholder?: string;
   }) => (
@@ -229,18 +250,19 @@ const Admin = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
             { label: "Produits", value: products.length, icon: Package },
             { label: "Témoignages", value: testimonials.length, icon: MessageSquare },
+            { label: "Commandes", value: orders.length, icon: ShoppingBag },
             { label: "Avec lien paiement", value: products.filter(p => p.paymentLink).length, icon: Link2 },
-            { label: "Produits phares", value: products.filter(p => (p as any).featured).length, icon: ExternalLink },
+            { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink },
           ].map((s, i) => (
             <div key={i} className="stat-card rounded-2xl p-4 border-glow">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><s.icon size={18} className="text-primary" /></div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-xl font-bold text-foreground">{s.value}</p>
                   <p className="text-xs text-muted-foreground">{s.label}</p>
                 </div>
               </div>
@@ -253,6 +275,7 @@ const Admin = () => {
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
             { key: "testimonials" as Tab, label: "Témoignages", icon: MessageSquare },
+            { key: "orders" as Tab, label: "Commandes", icon: ShoppingBag },
           ]).map((t) => (
             <button
               key={t.key}
