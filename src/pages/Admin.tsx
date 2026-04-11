@@ -288,12 +288,14 @@ const Admin = () => {
             </button>
           ))}
           <div className="flex-1" />
-          <button
-            onClick={tab === "products" ? openNewProduct : openNewTestimonial}
-            className="btn-primary-brand flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
-          >
-            <Plus size={16} /> Ajouter
-          </button>
+          {tab !== "orders" && (
+            <button
+              onClick={tab === "products" ? openNewProduct : openNewTestimonial}
+              className="btn-primary-brand flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
+            >
+              <Plus size={16} /> Ajouter
+            </button>
+          )}
         </div>
 
         {/* ─── PRODUCTS TAB ─── */}
@@ -453,6 +455,123 @@ const Admin = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ─── ORDERS TAB ─── */}
+        {tab === "orders" && (
+          <>
+            {/* Order detail modal */}
+            {viewingOrder && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setViewingOrder(null)}>
+                <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+                <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl p-6 space-y-5 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-bold text-foreground text-lg">Détails de la commande</h2>
+                    <button onClick={() => setViewingOrder(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><p className="text-xs text-muted-foreground">Client</p><p className="font-medium text-foreground">{viewingOrder.customer_name}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium text-foreground">{viewingOrder.customer_email}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Téléphone</p><p className="font-medium text-foreground">{viewingOrder.customer_phone}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Paiement</p><p className="font-medium text-foreground capitalize">{viewingOrder.payment_method.replace("_", " ")}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium text-foreground">{new Date(viewingOrder.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg">{viewingOrder.total_price.toLocaleString()} CFA</p></div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Produits commandés</p>
+                    {viewingOrder.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                        {item.image && <img src={item.image} alt={item.title} className="w-10 h-10 rounded-lg object-cover" />}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">Qté: {item.quantity} · {item.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Changer le statut</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(Object.keys(statusConfig) as Order["status"][]).map((s) => {
+                        const cfg = statusConfig[s];
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => updateOrderStatus(viewingOrder.id, s)}
+                            disabled={updatingStatus === viewingOrder.id || viewingOrder.status === s}
+                            className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all border ${
+                              viewingOrder.status === s ? `${cfg.color} border-current` : "border-border text-muted-foreground hover:text-foreground"
+                            } disabled:opacity-50`}
+                          >
+                            <cfg.icon size={13} /> {cfg.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ordersLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={28} /></div>
+            ) : orders.length === 0 ? (
+              <div className="stat-card rounded-2xl p-12 text-center border-glow">
+                <ShoppingBag size={40} className="mx-auto text-muted-foreground mb-3" />
+                <p className="text-foreground font-medium">Aucune commande pour le moment</p>
+                <p className="text-sm text-muted-foreground mt-1">Les commandes apparaîtront ici quand des clients passeront commande.</p>
+              </div>
+            ) : (
+              <div className="stat-card rounded-2xl overflow-hidden border-glow">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="text-left p-4 font-semibold text-muted-foreground">Client</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground hidden md:table-cell">Email</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground">Total</th>
+                        <th className="text-center p-4 font-semibold text-muted-foreground">Statut</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
+                        <th className="text-right p-4 font-semibold text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o) => {
+                        const cfg = statusConfig[o.status];
+                        return (
+                          <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                            <td className="p-4">
+                              <p className="font-medium text-foreground">{o.customer_name}</p>
+                              <p className="text-xs text-muted-foreground">{o.items.length} produit(s)</p>
+                            </td>
+                            <td className="p-4 hidden md:table-cell text-muted-foreground">{o.customer_email}</td>
+                            <td className="p-4"><span className="text-foreground font-semibold">{o.total_price.toLocaleString()} CFA</span></td>
+                            <td className="p-4 text-center">
+                              <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.color}`}>
+                                <cfg.icon size={12} /> {cfg.label}
+                              </span>
+                            </td>
+                            <td className="p-4 hidden sm:table-cell text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString("fr-FR")}</td>
+                            <td className="p-4 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <button onClick={() => setViewingOrder(o)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"><Eye size={16} /></button>
+                                <button onClick={() => deleteOrder(o.id)} disabled={deleting === o.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
+                                  {deleting === o.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </>
