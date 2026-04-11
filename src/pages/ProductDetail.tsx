@@ -165,55 +165,25 @@ const ProductDetail = () => {
             <div className="flex gap-0 mb-0">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "description" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
+                className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors bg-card text-foreground border border-border border-b-0"
               >
                 Description
               </button>
-              <button
-                onClick={() => setActiveTab("avis")}
-                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "avis" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
-              >
-                Avis ({FAKE_REVIEWS.length})
-              </button>
             </div>
             <div className="stat-card rounded-b-xl sm:rounded-b-2xl rounded-tr-xl sm:rounded-tr-2xl p-4 sm:p-6 md:p-8">
-              {activeTab === "description" ? (
-                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
-                  <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
-                  {product.description?.split("\n\n").map((block, idx) => (
-                    <div key={idx}>
-                      {block.split("\n").map((line, li) => {
-                        if (line.startsWith("**") && line.endsWith("**")) {
-                          return <p key={li} className="font-bold text-foreground mt-3 text-xs sm:text-sm">{line.replace(/\*\*/g, "")}</p>;
-                        }
-                        return <p key={li} className="text-xs sm:text-sm">{line}</p>;
-                      })}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  {FAKE_REVIEWS.map((review, i) => (
-                    <div key={i} className="stat-card rounded-xl p-3 sm:p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] sm:text-xs font-bold text-accent">
-                            {review.name.charAt(0)}
-                          </div>
-                          <span className="text-xs sm:text-sm font-medium text-foreground">{review.name}</span>
-                        </div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground">{review.date}</span>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} size={10} className={j < review.rating ? "text-accent fill-accent" : "text-muted-foreground"} />
-                        ))}
-                      </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{review.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
+                <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
+                {product.description?.split("\n\n").map((block, idx) => (
+                  <div key={idx}>
+                    {block.split("\n").map((line, li) => {
+                      if (line.startsWith("**") && line.endsWith("**")) {
+                        return <p key={li} className="font-bold text-foreground mt-3 text-xs sm:text-sm">{line.replace(/\*\*/g, "")}</p>;
+                      }
+                      return <p key={li} className="text-xs sm:text-sm">{line}</p>;
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </AnimateOnScroll>
