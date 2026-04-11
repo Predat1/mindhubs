@@ -1,73 +1,12 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const logos = [
-  { name: "Stripe", svg: (
-    <svg className="h-7 w-auto" viewBox="0 0 120 50" fill="currentColor">
-      <path d="M17.4 18.2c0-1.7 1.4-2.4 3.7-2.4 3.3 0 7.5 1 10.8 2.8V9.2C28.5 7.7 25.2 7 21.8 7 12.8 7 7 11.7 7 19c0 11.4 15.7 9.6 15.7 14.5 0 2-1.7 2.7-4.2 2.7-3.6 0-8.3-1.5-12-3.5v9.3c4.1 1.8 8.2 2.5 12 2.5 9.2 0 15.5-4.5 15.5-11.8C34.1 21 17.4 23.2 17.4 18.2z"/>
-      <path d="M52.4 7.3l-6.2 1.3v5.6h6.2V7.3zM46.2 18h6.2v25.8h-6.2V18z"/>
-      <path d="M65 18l-.4 2.5c-1.5-2-4.1-3.1-7.1-3.1v7.8c1.2 0 2.8.3 3.8 1 1.4.9 2 2.2 2 4.2v13.4h6.2V26.3C69.5 17.5 65 18 65 18z"/>
-      <path d="M83.7 7c-3.4 0-5.8 1.6-7.2 2.7l-.4-2.1H70v42.8l6.2-1.3v-10.5c1.2.9 3 1.8 5.8 1.8 5.9 0 11.3-4.7 11.3-15.2C93.3 14.5 89.5 7 83.7 7zm-1.9 23.5c-1.9 0-3-0.7-3.8-1.5V17.7c.8-.9 2-1.7 3.8-1.7 2.9 0 4.9 3.2 4.9 7.6 0 4.6-1.9 6.9-4.9 6.9z"/>
-      <path d="M107.5 7c-7.3 0-12 6.2-12 15.6 0 10.3 5.3 15.3 13 15.3 3.7 0 6.6-.9 8.7-2.1v-7.7c-2.1 1.1-4.5 1.7-7.5 1.7-3 0-5.6-1.1-5.9-4.6h15.5c0-.4.1-2.1.1-2.9C119.4 13 115.6 7 107.5 7zm-4.3 12.5c0-3.5 2.1-5 4.2-5 2 0 4 1.5 4 5h-8.2z"/>
-    </svg>
-  )},
-  { name: "Spotify", svg: (
-    <svg className="h-7 w-auto" viewBox="0 0 170 50" fill="currentColor">
-      <path d="M25 3C12.8 3 3 12.8 3 25s9.8 22 22 22 22-9.8 22-22S37.2 3 25 3zm10.1 31.7c-.4.6-1.1.8-1.7.5-4.8-2.9-10.8-3.6-17.8-2-0.7.2-1.3-.3-1.5-.9-.2-.7.3-1.3.9-1.5 7.8-1.8 14.4-.9 19.8 2.3.6.3.7 1.1.3 1.6zm2.7-6c-.5.8-1.4 1-2.2.5-5.5-3.4-13.8-4.4-20.3-2.4-.8.2-1.6-.2-1.9-1-.2-.8.2-1.6 1-1.9 7.4-2.2 16.5-1.2 22.8 2.7.7.4.9 1.4.6 2.1zm.2-6.2C31.5 18.5 19.6 18 12.6 20c-.9.3-1.9-.3-2.2-1.2-.3-.9.3-1.9 1.2-2.2 8-2.4 21.4-2 29.8 2.8.9.5 1.2 1.6.7 2.4-.5.7-1.6 1-2.3.7z"/>
-      <path d="M61.3 22.8c-3.4-.8-4-1.4-4-2.6 0-1.1 1.1-1.9 2.7-1.9 1.6 0 3.1.6 4.6 1.8.1.1.3.1.5.1.1 0 .3-.1.4-.2l2-2.5c.2-.3.2-.6-.1-.9-2-1.7-4.4-2.6-7.3-2.6-4.1 0-7 2.4-7 5.8 0 3.7 2.4 5 6.3 5.9 3.3.8 3.9 1.4 3.9 2.6 0 1.3-1.2 2-3 2-2 0-3.7-.7-5.4-2.2-.1-.1-.3-.2-.5-.2-.2 0-.3.1-.4.2l-2.2 2.4c-.2.3-.2.6 0 .9 2.2 2.2 5.1 3.3 8.4 3.3 4.4 0 7.3-2.3 7.3-6 0-3.3-2.1-4.8-6.2-5.7zM78 14.4c-1.7 0-3 .7-4.2 2.2v-1.4c0-.3-.3-.6-.6-.6h-3.5c-.3 0-.6.3-.6.6v23.6c0 .3.3.6.6.6h3.5c.3 0 .6-.3.6-.6V30c1.2 1.3 2.5 1.9 4.2 1.9 3.1 0 6.3-2.4 6.3-8.8 0-6.3-3.2-8.7-6.3-8.7zm1.8 13.5c-1.6 0-2.6-1-3.4-2.2v-5.1c.8-1.3 1.9-2.3 3.4-2.3 2.3 0 3.6 1.9 3.6 4.8 0 2.9-1.3 4.8-3.6 4.8zM96.6 14.4c-5.2 0-8.8 3.8-8.8 8.8 0 4.9 3.6 8.7 8.7 8.7 5.2 0 8.8-3.8 8.8-8.8 0-4.9-3.6-8.7-8.7-8.7zm0 13.5c-2.6 0-4.4-2-4.4-4.8 0-2.8 1.7-4.8 4.4-4.8 2.6 0 4.4 2 4.4 4.8 0 2.8-1.7 4.8-4.4 4.8zM114.1 14.8h-3.8V10c0-.3-.3-.6-.6-.6h-3.5c-.3 0-.6.3-.6.6v4.8h-1.7c-.3 0-.6.3-.6.6v3c0 .3.3.6.6.6h1.7v7.8c0 3.2 1.6 4.8 4.7 4.8 1.3 0 2.4-.3 3.4-.8.2-.1.3-.3.3-.5v-2.8c0-.2-.1-.4-.3-.5-.1-.1-.3-.1-.5 0-.6.3-1.2.4-1.8.4-1 0-1.4-.5-1.4-1.5v-6.9h3.8c.3 0 .6-.3.6-.6v-3c.3-.3 0-.6-.3-.6zM126.7 14.8v-.5c0-1.5.6-2.2 1.7-2.2.6 0 1.2.1 1.8.4.2.1.4 0 .5-.1.1-.1.2-.3.2-.5v-3c0-.3-.1-.5-.4-.6-.7-.2-1.6-.4-2.8-.4-3.1 0-4.8 1.7-4.8 5.1v1.3h-1.7c-.3 0-.6.3-.6.6v3c0 .3.3.6.6.6h1.7v12.6c0 .3.3.6.6.6h3.5c.3 0 .6-.3.6-.6V18.5h3.2l4.9 12.6--2.6 5.9c-.1.3 0 .6.3.8l.3.1h.2l3-1.3c.2-.1.3-.2.4-.5l7-18.1c.1-.2.1-.4-.1-.6-.1-.1-.3-.2-.5-.2h-3.7c-.3 0-.5.2-.6.4l-3 8.7-3.3-8.7c-.1-.3-.3-.4-.6-.4h-6zM138.5 14.4c-5.2 0-8.8 3.8-8.8 8.8 0 4.9 3.6 8.7 8.7 8.7 5.2 0 8.8-3.8 8.8-8.8.1-4.9-3.5-8.7-8.7-8.7zm0 13.5c-2.6 0-4.4-2-4.4-4.8 0-2.8 1.7-4.8 4.4-4.8 2.6 0 4.4 2 4.4 4.8 0 2.8-1.8 4.8-4.4 4.8z"/>
-    </svg>
-  )},
-  { name: "Slack", svg: (
-    <svg className="h-7 w-auto" viewBox="0 0 130 34" fill="currentColor">
-      <path d="M27.2 0c-1.8 0-3.2 1.5-3.2 3.2 0 1.8 1.5 3.2 3.2 3.2h3.2V3.2C30.5 1.5 29 0 27.2 0zm0 8.6H8.6c-1.8 0-3.2 1.5-3.2 3.2 0 1.8 1.5 3.2 3.2 3.2h18.6c1.8 0 3.2-1.5 3.2-3.2 0-1.8-1.4-3.2-3.2-3.2z"/>
-      <path d="M42.8 11.8c0-1.8-1.5-3.2-3.2-3.2-1.8 0-3.2 1.5-3.2 3.2v3.2h3.2c1.8 0 3.2-1.4 3.2-3.2zm-8.6 0V3.2C34.2 1.5 32.8 0 31 0c-1.8 0-3.2 1.5-3.2 3.2v8.6c0 1.8 1.5 3.2 3.2 3.2 1.8 0 3.2-1.4 3.2-3.2z"/>
-      <path d="M31 33.8c1.8 0 3.2-1.5 3.2-3.2 0-1.8-1.5-3.2-3.2-3.2h-3.2v3.2c0 1.7 1.4 3.2 3.2 3.2zm0-8.6h8.6c1.8 0 3.2-1.5 3.2-3.2 0-1.8-1.5-3.2-3.2-3.2H31c-1.8 0-3.2 1.5-3.2 3.2 0 1.8 1.4 3.2 3.2 3.2z"/>
-      <path d="M15.4 22c0 1.8 1.5 3.2 3.2 3.2 1.8 0 3.2-1.5 3.2-3.2v-3.2h-3.2c-1.8 0-3.2 1.4-3.2 3.2zm8.6 0v8.6c0 1.8 1.5 3.2 3.2 3.2 1.8 0 3.2-1.5 3.2-3.2V22c0-1.8-1.5-3.2-3.2-3.2-1.7 0-3.2 1.4-3.2 3.2z"/>
-      <path d="M56.3 8.3c-2.4 0-4 .9-5.3 2.5l-.3-2.1h-3.5v24.9h4.1V23.4c1.1 1.1 2.7 1.8 4.7 1.8 4.4 0 7.6-3.6 7.6-8.5s-3-8.4-7.3-8.4zm-.8 13.2c-2.3 0-4-1.8-4-4.7 0-2.9 1.7-4.7 4-4.7s3.8 1.8 3.8 4.7c0 2.9-1.5 4.7-3.8 4.7zM72 8.3c-4.8 0-8.1 3.5-8.1 8.5 0 5 3.3 8.5 8.1 8.5 3 0 5.2-1.1 6.6-3.2l-2.9-1.8c-.8 1.1-2 1.7-3.6 1.7-2.3 0-3.8-1.2-4.2-3.5h11.2c.1-.5.1-1.1.1-1.7-.2-5-3.3-8.5-7.2-8.5zm-3.8 6.8c.4-2.1 1.8-3.5 3.8-3.5 2.1 0 3.2 1.3 3.4 3.5H68.2z"/>
-    </svg>
-  )},
-  { name: "Notion", svg: (
-    <svg className="h-7 w-auto" viewBox="0 0 120 34" fill="currentColor">
-      <path d="M8.3 2.4c1.2.9 1.6 .9 3.8.7l20.8-1.2c.4 0 .1-.4-.1-.5l-3.4-2.5c-.7-.5-1.5-1-3.2-.9L6.3.1C5.5.2 5.3.6 5.6.9l2.7 1.5zM9.6 7.6v21.9c0 1.2.6 1.6 1.9 1.5l22.8-1.3c1.3-.1 1.5-.8 1.5-1.7V6.5c0-.9-.3-1.3-1.1-1.2l-23.8 1.4c-.9.1-1.3.5-1.3 1.4v-.5zM31 9.4c.2.8 0 1.5-.8 1.6l-1.1.2v16.2c-1 .5-1.8.8-2.6.8-.9 0-1.3-.3-2-.1.2l-6.7-10.5v10.2l2.3.5s0 1.5-2.1 1.5l-5.7.3c-.2-.3 0-.8.4-1l1.5-.5V13.3l-2-.2c-.2-.8.3-1.9 1.4-2l5.9-.4 7 10.7V12l-1.9-.2c-.2-.9.5-1.6 1.3-1.7l6.1-.4z"/>
-      <path d="M55.5 5.5c-4 0-6.2 2-6.2 4.6 0 3.2 2.4 4.1 6 4.5 2.7.3 3.3.9 3.3 1.8 0 1.1-1.1 1.7-3.1 1.7-2.8 0-4.3-.9-5.7-2l-2 3c1.9 1.6 4.5 2.5 7.6 2.5 4.5 0 7-2.1 7-4.8 0-3.5-2.6-4.3-6.2-4.8-2.7-.4-3.2-.7-3.2-1.6 0-.8.7-1.4 2.3-1.4 2 0 3.8.7 5.1 1.5l1.8-3.1c-1.7-1.1-4-1.9-6.7-1.9z"/>
-      <path d="M74.3 5.5c-1.8 0-3.2.9-4.3 2.3V.5l-4.5.7v20.3h4.1l.2-1.6c1.1 1.2 2.5 1.9 4.3 1.9 3.7 0 6.6-3.2 6.6-8.2 0-4.9-2.6-8.1-6.4-8.1zm-1.2 12.7c-1.4 0-2.3-.6-3.1-1.6v-5.5c.8-1.1 1.8-1.8 3.1-1.8 2.1 0 3.3 1.8 3.3 4.5 0 2.7-1.3 4.4-3.3 4.4z"/>
-    </svg>
-  )},
-  { name: "Figma", svg: (
-    <svg className="h-7 w-auto" viewBox="0 0 90 34" fill="currentColor">
-      <path d="M12 33.8c3.6 0 6.5-2.9 6.5-6.5V20.8H12c-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5z"/>
-      <path d="M5.5 17c0-3.6 2.9-6.5 6.5-6.5h6.5v13H12c-3.6 0-6.5-2.9-6.5-6.5z"/>
-      <path d="M5.5 3.7c0-3.6 2.9-6.5 6.5-6.5h6.5v13H12C8.4 10.2 5.5 7.3 5.5 3.7z"/>
-      <path d="M18.5-2.8h6.5c3.6 0 6.5 2.9 6.5 6.5S28.6 10.2 25 10.2h-6.5v-13z"/>
-      <path d="M31.5 17c0 3.6-2.9 6.5-6.5 6.5S18.5 20.6 18.5 17s2.9-6.5 6.5-6.5 6.5 2.9 6.5 6.5z"/>
-      <path d="M44 3h14.3v3.7H48.2v5.5h8.6v3.6h-8.6v8.5H44V3zM61.8 7.5c0-1.4 1.1-2.4 2.4-2.4 1.4 0 2.4 1 2.4 2.4s-1 2.4-2.4 2.4-2.4-1-2.4-2.4zM62.1 11.7h4v12.6h-4V11.7zM69.8 25.3l1.4-2.8c.7.6 2.1 1.4 3.7 1.4 1.1 0 2-.3 2-1.2 0-2-6.7-.6-6.7-5.4 0-2.7 2.3-4 5.2-4 2 0 3.6.6 4.6 1.3l-1.4 2.7c-.6-.5-1.8-1.1-3.2-1.1-1 0-1.6.3-1.6 1 0 1.9 6.7.5 6.7 5.5 0 2.8-2.2 4.1-5.5 4.1-2.2-.1-4.1-.8-5.2-1.5zM83.1 11.7h3.8l.2 1.7c1.2-1.3 2.7-2 4.3-2 3.1 0 4.8 2.1 4.8 5.6v7.3h-4v-6.4c0-1.9-.7-3-2.3-3-1.4 0-2.3.7-2.9 1.5v7.9h-4V11.7z"/>
-    </svg>
-  )},
-  { name: "Vercel", svg: (
-    <svg className="h-6 w-auto" viewBox="0 0 116 30" fill="currentColor">
-      <path d="M15 2L0 28h30L15 2z"/>
-      <path d="M47.3 24.2h-4.5L37.5 14l-5.3 10.2h-4.5L36.4 6h2.2l8.7 18.2zM60.5 9.3c-2.3 0-3.8 1-4.7 2.3V6h-3.9v18.2h3.9v-8.7c0-2.4 1.5-3.5 3.5-3.5 2 0 3.1 1.1 3.1 3.4v8.8h3.9V15c0-3.7-2.3-5.7-5.8-5.7zM74.1 24.5c-5 0-8.5-3.5-8.5-7.8s3.4-7.5 8-7.5c4.7 0 7.7 3.4 7.7 8.2v.9H69.6c.5 2.2 2.2 3.4 4.6 3.4 1.6 0 3.2-.6 4.5-1.7l1.8 2.4c-1.8 1.4-4 2.1-6.4 2.1zm3.6-9.3c-.2-2-1.6-3.4-3.8-3.4-2.1 0-3.6 1.3-4 3.4h7.8zM93.2 9.3c-1.5 0-3 .6-3.9 1.7V9.6h-3.9v14.6h3.9V16c0-2.5 1.4-3.8 3.3-3.8.6 0 1.3.1 1.9.4l.8-3.4c-.7 0-1.4.1-2.1.1zM104.2 9.3c-4.7 0-8 3.4-8 7.7s3.3 7.7 8 7.7c2.5 0 4.7-.9 6.2-2.4l-2.2-2.3c-1 .9-2.4 1.5-3.9 1.5-2.5 0-4.3-1.6-4.3-4.5s1.8-4.5 4.3-4.5c1.5 0 2.8.6 3.9 1.5l2.2-2.3c-1.6-1.5-3.8-2.4-6.2-2.4z"/>
-    </svg>
-  )},
-];
-
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-background pt-28 md:pt-32 pb-20 overflow-hidden">
-      {/* Announcement badge */}
-      <div className="mb-8 animate-fade-in">
-        <Link
-          to="/boutique"
-          className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
-        >
-          NOUVEAU — Formations 2026 disponibles
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-
+    <section className="relative min-h-[90vh] sm:min-h-screen flex flex-col items-center justify-center bg-background pt-32 sm:pt-36 pb-16 sm:pb-20 overflow-hidden">
       {/* Headline */}
       <h1
-        className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-foreground max-w-4xl px-4 animate-fade-in"
+        className="text-center text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-foreground max-w-4xl px-6 animate-fade-in"
         style={{ animationDelay: "0.1s" }}
       >
         Libérez votre potentiel,
@@ -77,7 +16,7 @@ const HeroSection = () => {
 
       {/* Subtitle */}
       <p
-        className="mt-6 text-center text-base md:text-lg text-muted-foreground max-w-xl px-4 leading-relaxed animate-fade-in"
+        className="mt-5 sm:mt-6 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl px-6 leading-relaxed animate-fade-in"
         style={{ animationDelay: "0.2s" }}
       >
         Des compétences concrètes, un paiement unique,
@@ -86,10 +25,10 @@ const HeroSection = () => {
       </p>
 
       {/* CTA Button */}
-      <div className="mt-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+      <div className="mt-8 sm:mt-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
         <Link
           to="/boutique"
-          className="group inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-sm shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
+          className="group inline-flex items-center gap-3 px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl font-semibold text-sm shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
         >
           Découvrir les formations
           <ArrowRight
@@ -99,21 +38,20 @@ const HeroSection = () => {
         </Link>
       </div>
 
-      {/* Logo Cloud */}
-      <div className="mt-20 w-full max-w-4xl px-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-        <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-8">
-          Ils nous font confiance
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-          {logos.map((logo) => (
-            <div
-              key={logo.name}
-              className="text-muted-foreground/40 hover:text-foreground transition-all duration-300 hover-scale cursor-default"
-            >
-              {logo.svg}
-            </div>
-          ))}
-        </div>
+      {/* Trust badges */}
+      <div className="mt-12 sm:mt-16 flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+        {[
+          "🔒 Paiement sécurisé",
+          "♾️ Accès à vie",
+          "⭐ 4.9/5 satisfaction",
+        ].map((badge) => (
+          <span
+            key={badge}
+            className="text-[11px] sm:text-xs text-muted-foreground font-medium"
+          >
+            {badge}
+          </span>
+        ))}
       </div>
     </section>
   );
