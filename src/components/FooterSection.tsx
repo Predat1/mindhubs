@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ShareButtons from "@/components/ShareButtons";
 import payMtn from "@/assets/pay-mtn.png";
 import payMoov from "@/assets/pay-moov.png";
 import payOrange from "@/assets/pay-orange.png";
@@ -80,10 +81,13 @@ const FooterSection = () => {
               />
             ))}
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground text-center">
-            © 2023-{new Date().getFullYear()}{" "}
-            <span className="text-primary font-semibold">Mind Hub</span>
-          </p>
+          <div className="flex flex-col items-center gap-2">
+            <ShareButtons compact />
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">
+              © 2023-{new Date().getFullYear()}{" "}
+              <span className="text-primary font-semibold">Mind Hub</span>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

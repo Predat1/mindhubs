@@ -10,6 +10,7 @@ import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart, Eye, Star } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import ShareButtons from "@/components/ShareButtons";
 
 const FAKE_REVIEWS = [
   { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
@@ -136,6 +137,9 @@ const ProductDetail = () => {
                   <div className="text-[10px] sm:text-xs text-muted-foreground space-y-1 pt-2">
                     <p><span className="text-foreground font-medium">Catégorie</span> {product.category}</p>
                     {product.tag && <p><span className="text-foreground font-medium">Étiquette</span> {product.tag}</p>}
+                  </div>
+                  <div className="pt-2">
+                    <ShareButtons url={`/produit/${product.id}`} title={product.title} />
                   </div>
                 </div>
 
