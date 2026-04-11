@@ -14,6 +14,7 @@ export interface DbProduct {
   description: string | null;
   featured: boolean;
   sort_order: number;
+  payment_link: string | null;
 }
 
 const mapDbToProduct = (db: DbProduct): Product => ({
@@ -26,6 +27,7 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   rating: db.rating ?? undefined,
   tag: db.tag ?? undefined,
   description: db.description ?? undefined,
+  paymentLink: db.payment_link ?? undefined,
 });
 
 export const useProducts = () => {

@@ -25,7 +25,11 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
   const handleBuyNow = () => {
     addToCart(product);
     onClose();
-    navigate("/checkout");
+    if (product.paymentLink) {
+      window.open(product.paymentLink, "_blank", "noopener,noreferrer");
+    } else {
+      navigate("/checkout");
+    }
   };
 
   return (
