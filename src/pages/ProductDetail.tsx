@@ -19,7 +19,6 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useProduct(id || "");
   const { data: allProducts = [] } = useProducts();
-  const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { addViewed } = useRecentlyViewed();
