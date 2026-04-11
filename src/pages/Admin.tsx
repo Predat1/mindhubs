@@ -63,6 +63,17 @@ const Admin = () => {
   const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: testimonials = [], isLoading: testimonialsLoading } = useTestimonials();
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: async (): Promise<Order[]> => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as any) ?? [];
+    },
+  });
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useState<Tab>("products");
@@ -71,6 +82,8 @@ const Admin = () => {
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
