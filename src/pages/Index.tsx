@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StatsBar from "@/components/StatsBar";
+import LogoMarquee from "@/components/LogoMarquee";
 import DiscoverySection from "@/components/DiscoverySection";
 import TrustLogosSection from "@/components/TrustLogosSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
@@ -23,6 +24,7 @@ const Index = () => {
       />
       <Navbar />
       <HeroSection />
+      <LogoMarquee />
       <DiscoverySection />
       <StatsBar />
       <TrustLogosSection />
