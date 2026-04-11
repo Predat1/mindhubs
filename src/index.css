@@ -246,4 +246,8 @@
   .animate-marquee {
     animation: marquee 20s linear infinite;
   }
+
+  .animate-marquee-logos {
+    animation: marquee 25s linear infinite;
+  }
 }
