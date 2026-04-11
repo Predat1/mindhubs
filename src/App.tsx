@@ -32,24 +32,26 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/boutique" element={<Boutique />} />
-              <Route path="/produit/:id" element={<ProductDetail />} />
-              <Route path="/panier" element={<CartPage />} />
-              <Route path="/a-propos" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/mon-compte" element={<MonCompte />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/conditions-generales" element={<ConditionsGenerales />} />
-              <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
-              <Route path="/politique-remboursement" element={<PolitiqueRemboursement />} />
-              <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/admin" element={<Admin />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <BackgroundGlow className="min-h-0 items-stretch">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/boutique" element={<Boutique />} />
+                <Route path="/produit/:id" element={<ProductDetail />} />
+                <Route path="/panier" element={<CartPage />} />
+                <Route path="/a-propos" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/mon-compte" element={<MonCompte />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/conditions-generales" element={<ConditionsGenerales />} />
+                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+                <Route path="/politique-remboursement" element={<PolitiqueRemboursement />} />
+                <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/admin" element={<Admin />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BackgroundGlow>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
