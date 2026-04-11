@@ -21,24 +21,27 @@ const companyLogos = [
 
 const TrustLogosSection = () => {
   return (
-    <section className="py-16 bg-background border-t border-border">
+    <section className="py-20 bg-background border-t border-border">
       <div className="container mx-auto px-4 text-center">
         <AnimateOnScroll>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-10">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
+            Partenaires
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-12">
             Ils nous ont fait confiance
           </h2>
         </AnimateOnScroll>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-4xl mx-auto items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-4xl mx-auto items-center">
           {companyLogos.map((logo, i) => (
             <AnimateOnScroll key={logo.name} delay={i * 60}>
-              <div className="flex items-center justify-center h-20 opacity-70 hover:opacity-100 transition-all duration-300 hover-scale cursor-default grayscale hover:grayscale-0">
+              <div className="flex items-center justify-center h-20 stat-card rounded-xl border-glow p-4 opacity-60 hover:opacity-100 transition-all duration-300 hover-scale cursor-default">
                 <img
                   src={logo.src}
                   alt={`Logo ${logo.name}`}
                   loading="lazy"
-                  className="max-h-16 max-w-[140px] object-contain invert-0"
-                  width={140}
-                  height={64}
+                  className="max-h-12 max-w-[120px] object-contain invert-0"
+                  width={120}
+                  height={48}
                 />
               </div>
             </AnimateOnScroll>
