@@ -84,6 +84,7 @@ const Admin = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [orderFilter, setOrderFilter] = useState<"all" | Order["status"]>("all");
 
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
