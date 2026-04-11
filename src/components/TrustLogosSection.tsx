@@ -134,8 +134,8 @@ const TweetCard = ({ tweet }: { tweet: Tweet }) => (
         <span className="flex items-center gap-1 text-xs">
           <Repeat2 className="w-3.5 h-3.5" /> {tweet.retweets}
         </span>
-        <span className="flex items-center gap-1 text-xs text-red-400">
-          <Heart className="w-3.5 h-3.5 fill-red-400" /> {tweet.likes}
+        <span className="flex items-center gap-1 text-xs text-destructive">
+          <Heart className="w-3.5 h-3.5 fill-destructive" /> {tweet.likes}
         </span>
       </div>
     </div>
