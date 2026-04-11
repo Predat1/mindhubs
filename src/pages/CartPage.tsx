@@ -47,10 +47,10 @@ const CartPage = () => {
       <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
       <Navbar />
 
-      <section className="pt-20 sm:pt-16">
-        <div className="relative py-8 sm:py-12 text-center overflow-hidden">
+      <section className="pt-28 sm:pt-24">
+        <div className="relative py-6 sm:py-12 text-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent" />
-          <h1 className="relative text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Mon Panier</h1>
+          <h1 className="relative text-xl sm:text-3xl md:text-4xl font-bold text-foreground">Mon Panier</h1>
         </div>
       </section>
 
