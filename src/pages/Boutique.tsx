@@ -23,8 +23,9 @@ const Boutique = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Boutique – Formations & E-books"
-        description="Explorez notre catalogue complet de formations digitales premium, e-books et kits. Paiement sécurisé, accès illimité à vie."
+        description="Catalogue complet de formations digitales premium, e-books et kits business. Paiement sécurisé par Mobile Money, Wave, Visa. Accès illimité à vie."
         path="/boutique"
+        keywords="acheter formation en ligne, e-books business, formation marketing digital Afrique, cours en ligne, kit business"
       />
       <Navbar />
 
