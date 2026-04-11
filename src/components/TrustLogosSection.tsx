@@ -36,7 +36,7 @@ const TrustLogosSection = () => {
                   src={logo.src}
                   alt={`Logo ${logo.name}`}
                   loading="lazy"
-                  className="max-h-16 max-w-[140px] object-contain invert dark:invert-0"
+                  className="max-h-16 max-w-[140px] object-contain invert-0"
                   width={140}
                   height={64}
                 />
