@@ -10,6 +10,8 @@ import type { Product } from "@/data/products";
 // Base scores reflecting conversion potential & market demand
 const BASE_SCORES: Record<string, number> = {
   anglais: 95,
+  "kit-agriculture": 90,
+  "kit-fiscalite": 88,
 };
 
 // Category demand multipliers
