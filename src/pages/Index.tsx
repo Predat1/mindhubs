@@ -17,8 +17,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Formations Digitales Premium"
-        description="Accédez à des formations digitales premium et transformez votre avenir professionnel. Paiement unique, accès illimité à vie."
+        description="MindHub : la plateforme N°1 de formations digitales en Afrique. E-books, kits business, marketing digital. Paiement unique, accès illimité à vie. +500 étudiants formés."
         path="/"
+        keywords="formations digitales, e-books, formation en ligne Afrique, marketing digital, business en ligne, MindHub, formation premium, compétences digitales"
       />
       <Navbar />
       <HeroSection />
