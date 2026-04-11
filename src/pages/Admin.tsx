@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdminRole";
 import { useProducts } from "@/hooks/useProducts";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { categories } from "@/data/products";
@@ -35,7 +36,26 @@ const emptyTestimonial: TestimonialForm = {
   likes: "0", retweets: "0", replies: "0", verified: false,
 };
 
-type Tab = "products" | "testimonials";
+type Tab = "products" | "testimonials" | "orders";
+
+interface Order {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  payment_method: string;
+  total_price: number;
+  status: "pending" | "confirmed" | "delivered" | "cancelled";
+  items: { product_id: string; title: string; price: string; quantity: number; image?: string }[];
+  created_at: string;
+}
+
+const statusConfig = {
+  pending: { label: "En attente", icon: Clock, color: "text-yellow-500 bg-yellow-500/10" },
+  confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-accent bg-accent/10" },
+  delivered: { label: "Livrée", icon: Truck, color: "text-primary bg-primary/10" },
+  cancelled: { label: "Annulée", icon: XCircle, color: "text-destructive bg-destructive/10" },
+};
 
 const Admin = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -43,6 +63,17 @@ const Admin = () => {
   const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: testimonials = [], isLoading: testimonialsLoading } = useTestimonials();
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: async (): Promise<Order[]> => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as any) ?? [];
+    },
+  });
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useState<Tab>("products");
@@ -51,6 +82,8 @@ const Admin = () => {
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   // ─── Auth guards ───
   if (authLoading || roleLoading) {
@@ -168,6 +201,27 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["testimonials"] });
   };
 
+  // ─── Order actions ───
+  const updateOrderStatus = async (orderId: string, newStatus: Order["status"]) => {
+    setUpdatingStatus(orderId);
+    const { error } = await supabase.from("orders").update({ status: newStatus } as any).eq("id", orderId);
+    setUpdatingStatus(null);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: `Statut mis à jour → ${statusConfig[newStatus].label}` });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    if (viewingOrder?.id === orderId) setViewingOrder({ ...viewingOrder, status: newStatus });
+  };
+
+  const deleteOrder = async (id: string) => {
+    if (!confirm("Supprimer cette commande ?")) return;
+    setDeleting(id);
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    setDeleting(null);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Commande supprimée ✓" });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+  };
+
   const InputField = ({ label, value, onChange, disabled, type = "text", placeholder }: {
     label: string; value: string; onChange: (v: string) => void; disabled?: boolean; type?: string; placeholder?: string;
   }) => (
@@ -196,18 +250,19 @@ const Admin = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
             { label: "Produits", value: products.length, icon: Package },
             { label: "Témoignages", value: testimonials.length, icon: MessageSquare },
+            { label: "Commandes", value: orders.length, icon: ShoppingBag },
             { label: "Avec lien paiement", value: products.filter(p => p.paymentLink).length, icon: Link2 },
-            { label: "Produits phares", value: products.filter(p => (p as any).featured).length, icon: ExternalLink },
+            { label: "Revenu total", value: `${orders.reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink },
           ].map((s, i) => (
             <div key={i} className="stat-card rounded-2xl p-4 border-glow">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><s.icon size={18} className="text-primary" /></div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-xl font-bold text-foreground">{s.value}</p>
                   <p className="text-xs text-muted-foreground">{s.label}</p>
                 </div>
               </div>
@@ -220,6 +275,7 @@ const Admin = () => {
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
             { key: "testimonials" as Tab, label: "Témoignages", icon: MessageSquare },
+            { key: "orders" as Tab, label: "Commandes", icon: ShoppingBag },
           ]).map((t) => (
             <button
               key={t.key}
@@ -232,12 +288,14 @@ const Admin = () => {
             </button>
           ))}
           <div className="flex-1" />
-          <button
-            onClick={tab === "products" ? openNewProduct : openNewTestimonial}
-            className="btn-primary-brand flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
-          >
-            <Plus size={16} /> Ajouter
-          </button>
+          {tab !== "orders" && (
+            <button
+              onClick={tab === "products" ? openNewProduct : openNewTestimonial}
+              className="btn-primary-brand flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
+            >
+              <Plus size={16} /> Ajouter
+            </button>
+          )}
         </div>
 
         {/* ─── PRODUCTS TAB ─── */}
@@ -397,6 +455,123 @@ const Admin = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ─── ORDERS TAB ─── */}
+        {tab === "orders" && (
+          <>
+            {/* Order detail modal */}
+            {viewingOrder && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setViewingOrder(null)}>
+                <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+                <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl p-6 space-y-5 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-bold text-foreground text-lg">Détails de la commande</h2>
+                    <button onClick={() => setViewingOrder(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><p className="text-xs text-muted-foreground">Client</p><p className="font-medium text-foreground">{viewingOrder.customer_name}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium text-foreground">{viewingOrder.customer_email}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Téléphone</p><p className="font-medium text-foreground">{viewingOrder.customer_phone}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Paiement</p><p className="font-medium text-foreground capitalize">{viewingOrder.payment_method.replace("_", " ")}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium text-foreground">{new Date(viewingOrder.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg">{viewingOrder.total_price.toLocaleString()} CFA</p></div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Produits commandés</p>
+                    {viewingOrder.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                        {item.image && <img src={item.image} alt={item.title} className="w-10 h-10 rounded-lg object-cover" />}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">Qté: {item.quantity} · {item.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Changer le statut</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(Object.keys(statusConfig) as Order["status"][]).map((s) => {
+                        const cfg = statusConfig[s];
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => updateOrderStatus(viewingOrder.id, s)}
+                            disabled={updatingStatus === viewingOrder.id || viewingOrder.status === s}
+                            className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all border ${
+                              viewingOrder.status === s ? `${cfg.color} border-current` : "border-border text-muted-foreground hover:text-foreground"
+                            } disabled:opacity-50`}
+                          >
+                            <cfg.icon size={13} /> {cfg.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ordersLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={28} /></div>
+            ) : orders.length === 0 ? (
+              <div className="stat-card rounded-2xl p-12 text-center border-glow">
+                <ShoppingBag size={40} className="mx-auto text-muted-foreground mb-3" />
+                <p className="text-foreground font-medium">Aucune commande pour le moment</p>
+                <p className="text-sm text-muted-foreground mt-1">Les commandes apparaîtront ici quand des clients passeront commande.</p>
+              </div>
+            ) : (
+              <div className="stat-card rounded-2xl overflow-hidden border-glow">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="text-left p-4 font-semibold text-muted-foreground">Client</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground hidden md:table-cell">Email</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground">Total</th>
+                        <th className="text-center p-4 font-semibold text-muted-foreground">Statut</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
+                        <th className="text-right p-4 font-semibold text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o) => {
+                        const cfg = statusConfig[o.status];
+                        return (
+                          <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                            <td className="p-4">
+                              <p className="font-medium text-foreground">{o.customer_name}</p>
+                              <p className="text-xs text-muted-foreground">{o.items.length} produit(s)</p>
+                            </td>
+                            <td className="p-4 hidden md:table-cell text-muted-foreground">{o.customer_email}</td>
+                            <td className="p-4"><span className="text-foreground font-semibold">{o.total_price.toLocaleString()} CFA</span></td>
+                            <td className="p-4 text-center">
+                              <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.color}`}>
+                                <cfg.icon size={12} /> {cfg.label}
+                              </span>
+                            </td>
+                            <td className="p-4 hidden sm:table-cell text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString("fr-FR")}</td>
+                            <td className="p-4 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <button onClick={() => setViewingOrder(o)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"><Eye size={16} /></button>
+                                <button onClick={() => deleteOrder(o.id)} disabled={deleting === o.id} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all disabled:opacity-50">
+                                  {deleting === o.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </>
