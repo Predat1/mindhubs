@@ -105,7 +105,7 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
       style={{ animation: "popup-backdrop 0.25s ease-out forwards" }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/95 backdrop-blur-md" />
 
       {/* Card — compact & minimal */}
       <div
