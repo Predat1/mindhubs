@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
 import { useProducts } from "@/hooks/useProducts";
+import { useSmartRanking } from "@/hooks/useSmartRanking";
 import { categories, type Category } from "@/data/products";
 
 const Boutique = () => {

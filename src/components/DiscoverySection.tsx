@@ -4,6 +4,7 @@ import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen } from "lucide-react
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ProductCard from "@/components/ProductCard";
 import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
+import { useSmartRanking } from "@/hooks/useSmartRanking";
 
 const categories = [
   { label: "Populaire", icon: TrendingUp },
