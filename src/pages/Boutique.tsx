@@ -13,8 +13,9 @@ const Boutique = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const { data: products = [], isLoading } = useProducts();
+  const rankedProducts = useSmartRanking(products);
 
-  const filtered = products
+  const filtered = rankedProducts
     .filter((p) => activeCategory === "Tous" || p.category === activeCategory)
     .filter((p) => !searchQuery.trim() || p.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
