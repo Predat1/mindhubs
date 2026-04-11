@@ -60,66 +60,66 @@
 
 @layer utilities {
   .text-gradient-brand {
-    background: linear-gradient(135deg, hsl(220 70% 55%), hsl(42 92% 56%));
+    background: linear-gradient(135deg, hsl(190 80% 55%), hsl(170 60% 45%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .bg-gradient-hero {
-    background: linear-gradient(180deg, hsl(222 30% 7%) 0%, hsl(222 30% 11%) 50%, hsl(222 30% 7%) 100%);
+    background: linear-gradient(180deg, hsl(220 15% 8%) 0%, hsl(220 15% 12%) 50%, hsl(220 15% 8%) 100%);
   }
 
   .bg-gradient-card {
-    background: linear-gradient(145deg, hsl(222 25% 13%) 0%, hsl(222 25% 9%) 100%);
+    background: linear-gradient(145deg, hsl(220 12% 15%) 0%, hsl(220 12% 10%) 100%);
   }
 
   .border-glow {
-    border: 1px solid hsl(220 40% 30%);
+    border: 1px solid hsl(190 40% 25%);
   }
 
   .shadow-glow {
-    box-shadow: 0 0 30px hsl(220 70% 50% / 0.15);
+    box-shadow: 0 0 30px hsl(190 80% 50% / 0.1);
   }
 
   .badge-purple {
-    background: hsl(220 70% 50% / 0.15);
-    border: 1px solid hsl(220 70% 50% / 0.25);
-    color: hsl(220 70% 75%);
+    background: hsl(190 80% 50% / 0.12);
+    border: 1px solid hsl(190 80% 50% / 0.2);
+    color: hsl(190 70% 70%);
   }
 
   .stat-card {
-    background: hsl(222 25% 11%);
-    border: 1px solid hsl(222 15% 16%);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
+    background: hsl(220 12% 13%);
+    border: 1px solid hsl(215 10% 18%);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
   }
 
   .course-card {
-    background: hsl(222 25% 11%);
-    border: 1px solid hsl(222 15% 16%);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
+    background: hsl(220 12% 13%);
+    border: 1px solid hsl(215 10% 18%);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
     transition: all 0.3s ease;
   }
 
   .course-card:hover {
-    border-color: hsl(220 70% 50% / 0.4);
-    box-shadow: 0 4px 20px hsl(220 70% 50% / 0.12);
+    border-color: hsl(190 80% 50% / 0.35);
+    box-shadow: 0 4px 20px hsl(190 80% 50% / 0.1);
     transform: translateY(-4px);
   }
 
   .btn-primary-brand {
-    background: linear-gradient(135deg, hsl(220 70% 50%), hsl(220 60% 40%));
+    background: linear-gradient(135deg, hsl(190 80% 45%), hsl(190 70% 35%));
     color: white;
     transition: all 0.3s ease;
   }
 
   .btn-primary-brand:hover {
-    background: linear-gradient(135deg, hsl(220 70% 55%), hsl(220 60% 45%));
-    box-shadow: 0 4px 20px hsl(220 70% 50% / 0.4);
+    background: linear-gradient(135deg, hsl(190 80% 50%), hsl(190 70% 40%));
+    box-shadow: 0 4px 20px hsl(190 80% 50% / 0.3);
   }
 
   .newsletter-section {
-    background: linear-gradient(145deg, hsl(222 30% 9%) 0%, hsl(222 30% 13%) 100%);
+    background: linear-gradient(145deg, hsl(220 15% 9%) 0%, hsl(220 15% 13%) 100%);
   }
 
   /* Animation utilities */
@@ -135,7 +135,7 @@
   }
 
   .drop-shadow-hero {
-    filter: drop-shadow(0 20px 40px hsl(220 70% 50% / 0.2)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.3));
+    filter: drop-shadow(0 20px 40px hsl(190 80% 50% / 0.15)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.4));
   }
 
   @keyframes cursor-blink {
