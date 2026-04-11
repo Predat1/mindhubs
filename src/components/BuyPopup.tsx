@@ -1,4 +1,4 @@
-import { ShoppingCart, Zap, X, Clock } from "lucide-react";
+import { ShoppingCart, Zap, X, Clock, Star, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
@@ -25,53 +25,87 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
   const handleBuyNow = () => {
     addToCart(product);
     onClose();
-    navigate("/panier");
+    navigate("/checkout");
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-background/95 backdrop-blur-md" />
+
+      {/* Content */}
       <div
-        className="relative w-full sm:w-auto sm:min-w-[360px] bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 shadow-glow"
+        className="relative w-full max-w-md bg-card border border-border rounded-3xl overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: "slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
+        style={{ animation: "popup-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+        >
           <X size={20} />
         </button>
 
-        {/* Urgency banner */}
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20">
-          <Clock size={14} className="text-accent shrink-0" />
-          <span className="text-xs font-medium text-accent">Offre valable aujourd'hui uniquement !</span>
-        </div>
-
-        <div className="flex items-center gap-4 mb-6">
-          <img src={product.image} alt={product.title} className="w-16 h-16 rounded-lg object-cover border border-border" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground truncate">{product.title}</p>
-            <div className="flex items-center gap-2 mt-1">
-              {product.oldPrice && <span className="text-xs text-muted-foreground line-through">{product.oldPrice}</span>}
-              <span className="text-accent font-bold">{product.price}</span>
-            </div>
+        {/* Product image */}
+        <div className="relative w-full aspect-[4/3] bg-muted overflow-hidden">
+          <img
+            src={product.image}
+            alt={product.title}
+            className="w-full h-full object-cover"
+          />
+          {/* Urgency badge */}
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/90 text-accent-foreground text-xs font-bold backdrop-blur-sm">
+            <Clock size={12} />
+            Offre limitée
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleAddToCart}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm border border-border bg-secondary text-foreground hover:bg-muted transition-colors duration-300"
-          >
-            <ShoppingCart size={18} />
-            Ajouter au panier
-          </button>
-          <button
-            onClick={handleBuyNow}
-            className="btn-primary-brand flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm shadow-glow"
-          >
-            <Zap size={18} />
-            Acheter maintenant
-          </button>
+        {/* Info */}
+        <div className="p-6 space-y-5">
+          <div>
+            <h2 className="text-lg font-bold text-foreground leading-tight">{product.title}</h2>
+            <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className="w-3.5 h-3.5 fill-primary text-primary" />
+                ))}
+              </div>
+              <span className="text-xs text-muted-foreground">4.9/5</span>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-extrabold text-accent">{product.price}</span>
+            {product.oldPrice && (
+              <span className="text-lg text-muted-foreground line-through">{product.oldPrice}</span>
+            )}
+          </div>
+
+          {/* Trust */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck size={14} className="text-accent shrink-0" />
+            <span>Accès immédiat · Paiement sécurisé · Satisfait ou remboursé</span>
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleBuyNow}
+              className="btn-primary-brand flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-base shadow-glow"
+            >
+              <Zap size={20} />
+              Acheter maintenant
+            </button>
+            <button
+              onClick={handleAddToCart}
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm border border-border bg-secondary text-foreground hover:bg-muted transition-colors duration-300"
+            >
+              <ShoppingCart size={18} />
+              Ajouter au panier
+            </button>
+          </div>
         </div>
       </div>
     </div>
