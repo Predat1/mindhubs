@@ -10,26 +10,6 @@ import type { Product } from "@/data/products";
 // Base scores reflecting conversion potential & market demand
 const BASE_SCORES: Record<string, number> = {
   anglais: 95,
-  ai: 90,
-  smma: 85,
-  ecommerce: 82,
-  affiliation: 78,
-  blog: 75,
-  youtube: 73,
-  livres: 70,
-  "business-africa": 68,
-  contrats: 65,
-  excel: 63,
-  eloquence: 58,
-  "business-plan": 60,
-  fournisseurs: 55,
-  "dessins-animes": 50,
-  audit: 45,
-  marketing: 43,
-  rh: 40,
-  gestion: 38,
-  logistique: 35,
-  chien: 25,
 };
 
 // Category demand multipliers
