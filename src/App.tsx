@@ -20,6 +20,7 @@ import PolitiqueRemboursement from "./pages/PolitiqueRemboursement.tsx";
 import PolitiqueLivraison from "./pages/PolitiqueLivraison.tsx";
 import FAQ from "./pages/FAQ.tsx";
 import Admin from "./pages/Admin.tsx";
+import Checkout from "./pages/Checkout.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/checkout" element={<Checkout />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

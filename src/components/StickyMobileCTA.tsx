@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 
 const StickyMobileCTA = () => {
   const [visible, setVisible] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     let ticking = false;
-
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
@@ -19,10 +20,11 @@ const StickyMobileCTA = () => {
         ticking = false;
       });
     };
-
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const hasItems = totalItems > 0;
 
   return (
     <div
@@ -35,11 +37,20 @@ const StickyMobileCTA = () => {
     >
       <div className="pointer-events-auto bg-background/80 backdrop-blur-xl border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <Link
-          to="/boutique"
+          to={hasItems ? "/panier" : "/boutique"}
           className="btn-primary-brand flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm shadow-glow"
         >
-          VOIR NOS FORMATIONS
-          <ShoppingBag size={18} />
+          {hasItems ? (
+            <>
+              VOIR LE PANIER ({totalItems})
+              <ShoppingCart size={18} />
+            </>
+          ) : (
+            <>
+              VOIR NOS FORMATIONS
+              <ShoppingBag size={18} />
+            </>
+          )}
         </Link>
       </div>
     </div>

@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/data/products";
+import { Flame, Users } from "lucide-react";
+
+const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
 
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex justify-center gap-0.5">
@@ -20,6 +23,7 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
+  const isBestSeller = BEST_SELLERS.includes(product.id);
 
   const handleBuy = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,9 +39,15 @@ const ProductCard = ({ product }: { product: Product }) => {
     <Link to={`/produit/${product.id}`} className="block group">
       <div className="course-card rounded-xl overflow-hidden h-full flex flex-col">
         <div className="relative overflow-hidden">
-          <span className="absolute top-2 left-2 badge-purple text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
-            VENTE !
-          </span>
+          {isBestSeller ? (
+            <span className="absolute top-2 left-2 bg-accent/90 text-accent-foreground text-[10px] font-bold px-2.5 py-1 rounded-full z-10 flex items-center gap-1">
+              <Flame size={12} /> BEST-SELLER
+            </span>
+          ) : (
+            <span className="absolute top-2 left-2 badge-purple text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
+              VENTE !
+            </span>
+          )}
           <img
             src={product.image}
             alt={product.title}
@@ -52,6 +62,10 @@ const ProductCard = ({ product }: { product: Product }) => {
             {product.title}
           </h3>
           {product.rating && <StarRating rating={product.rating} />}
+          <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
+            <Users size={12} />
+            <span>{120 + Math.floor(product.title.length * 3)}+ entrepreneurs</span>
+          </div>
           <div className="flex items-center justify-center gap-2">
             <span className="text-muted-foreground line-through text-xs">{product.oldPrice}</span>
             <span className="text-accent font-bold text-base underline">{product.price}</span>
