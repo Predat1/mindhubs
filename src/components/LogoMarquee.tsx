@@ -23,11 +23,7 @@ const LogoMarquee = () => {
   const doubled = [...logos, ...logos];
 
   return (
-    <section className="relative py-6 sm:py-8 bg-background overflow-hidden">
-      <p className="text-center text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-4 sm:mb-5">
-        Ils nous font confiance
-      </p>
-
+    <section className="relative py-4 sm:py-6 bg-background overflow-hidden">
       <div className="relative">
         {/* Left fade */}
         <ProgressiveBlur
