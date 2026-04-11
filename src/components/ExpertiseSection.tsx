@@ -22,36 +22,36 @@ const features = [
 
 const ExpertiseSection = () => {
   return (
-    <section id="expertise" className="py-20 bg-background">
+    <section id="expertise" className="py-14 sm:py-20 bg-background">
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
-          <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          <p className="text-center text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
             Notre approche
           </p>
-          <h2 className="text-center text-2xl md:text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4">
             Votre passage vers l'expertise numérique
           </h2>
-          <p className="text-center text-sm text-muted-foreground max-w-lg mx-auto mb-14">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto mb-10 sm:mb-14">
             Des formations conçues pour vous propulser dans le monde digital avec confiance et efficacité.
           </p>
         </AnimateOnScroll>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
           {features.map((f, i) => (
             <AnimateOnScroll key={f.title} delay={i * 120}>
-              <div className="stat-card rounded-2xl p-7 text-center border-glow hover-scale cursor-default group transition-all duration-400">
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <f.icon className="text-primary" size={26} />
+              <div className="stat-card rounded-xl sm:rounded-2xl p-5 sm:p-7 text-center border-glow hover-scale cursor-default group transition-all duration-400">
+                <div className="mx-auto mb-4 sm:mb-5 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <f.icon className="text-primary" size={22} />
                 </div>
-                <h3 className="text-base font-bold text-foreground mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="text-sm sm:text-base font-bold text-foreground mb-2">{f.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </div>
             </AnimateOnScroll>
           ))}
         </div>
 
         <AnimateOnScroll delay={400}>
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12">
             <Link
               to="/boutique"
               className="group inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"

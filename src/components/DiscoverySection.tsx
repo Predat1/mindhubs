@@ -21,25 +21,25 @@ const DiscoverySection = () => {
   const displayProducts = showResults ? searchResults : featured.slice(0, 4);
 
   return (
-    <section className="py-20 bg-background">
+    <section className="py-14 sm:py-20 bg-background">
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
-          <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          <p className="text-center text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
             Catalogue
           </p>
-          <h2 className="text-center text-2xl md:text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4">
             Trouvez la formation idéale
           </h2>
-          <p className="text-center text-sm text-muted-foreground max-w-md mx-auto mb-10">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-8 sm:mb-10">
             Explorez notre catalogue et trouvez la compétence qui fera la différence dans votre carrière.
           </p>
         </AnimateOnScroll>
 
         {/* Search Bar */}
         <AnimateOnScroll delay={100}>
-          <div className="max-w-xl mx-auto mb-6">
+          <div className="max-w-xl mx-auto mb-5 sm:mb-6">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
                 placeholder="Rechercher une formation..."
@@ -48,7 +48,7 @@ const DiscoverySection = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && query.trim()) navigate(`/boutique`);
                 }}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                className="w-full pl-9 sm:pl-11 pr-4 py-3 sm:py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
               />
             </div>
           </div>
@@ -56,14 +56,14 @@ const DiscoverySection = () => {
 
         {/* Quick Category Tags */}
         <AnimateOnScroll delay={150}>
-          <div className="flex items-center justify-center gap-3 mb-12 flex-wrap">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 flex-wrap">
             {categories.map((cat) => (
               <button
                 key={cat.label}
                 onClick={() => navigate("/boutique")}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium stat-card border-glow hover-scale cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium stat-card border-glow hover-scale cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
               >
-                <cat.icon size={14} className="text-primary" />
+                <cat.icon size={12} className="text-primary" />
                 {cat.label}
               </button>
             ))}
@@ -71,7 +71,7 @@ const DiscoverySection = () => {
         </AnimateOnScroll>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
           {displayProducts.map((product, i) => (
             <AnimateOnScroll key={product.id} delay={i * 80}>
               <ProductCard product={product} />
@@ -80,10 +80,10 @@ const DiscoverySection = () => {
         </div>
 
         <AnimateOnScroll delay={400}>
-          <div className="text-center mt-10">
+          <div className="text-center mt-8 sm:mt-10">
             <Link
               to="/boutique"
-              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all hover-scale"
+              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm hover:bg-primary/90 transition-all hover-scale"
             >
               Voir tout le catalogue
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />

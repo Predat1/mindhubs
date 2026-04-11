@@ -32,7 +32,7 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 pt-32 text-center">
-          <div className="stat-card rounded-xl h-96 max-w-4xl mx-auto animate-pulse" />
+          <div className="stat-card rounded-xl h-64 sm:h-96 max-w-4xl mx-auto animate-pulse" />
         </div>
       </div>
     );
@@ -43,8 +43,8 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 pt-32 text-center">
-          <h1 className="text-2xl font-bold text-foreground">Produit introuvable</h1>
-          <Link to="/boutique" className="text-primary underline mt-4 inline-block">Retour à la boutique</Link>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Produit introuvable</h1>
+          <Link to="/boutique" className="text-primary underline mt-4 inline-block text-sm">Retour à la boutique</Link>
         </div>
         <FooterSection />
       </div>
@@ -85,58 +85,58 @@ const ProductDetail = () => {
       <SEO title={product.title} description={product.description || `Découvrez ${product.title} sur MindHub.`} path={`/produit/${product.id}`} jsonLd={productJsonLd} />
       <Navbar />
 
-      <section className="container mx-auto px-4 pt-24 pb-10">
+      <section className="container mx-auto px-4 pt-28 sm:pt-24 pb-8 sm:pb-10">
         <AnimateOnScroll>
-          <div className="stat-card rounded-2xl p-6 md:p-10 max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
+          <div className="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-10 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-5 sm:gap-8">
               <div className="relative group overflow-hidden rounded-lg">
-                <span className="absolute top-3 left-3 badge-purple text-xs font-semibold px-3 py-1 rounded-full z-10">VENTE !</span>
+                <span className="absolute top-2 sm:top-3 left-2 sm:left-3 badge-purple text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full z-10">VENTE !</span>
                 <img src={product.image} alt={product.title} className="w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 {/* Social proof banner */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20">
-                  <Eye size={14} className="text-accent urgency-pulse" />
-                  <span className="text-xs font-medium text-accent">🔥 {viewerCount} personnes consultent ce produit</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-lg bg-accent/10 border border-accent/20">
+                  <Eye size={12} className="text-accent urgency-pulse" />
+                  <span className="text-[10px] sm:text-xs font-medium text-accent">🔥 {viewerCount} personnes consultent ce produit</span>
                 </div>
 
-                <div className="stat-card rounded-xl p-5 space-y-4">
-                  <h1 className="text-lg md:text-xl font-bold text-foreground">{product.title}</h1>
+                <div className="stat-card rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
+                  <h1 className="text-base sm:text-lg md:text-xl font-bold text-foreground">{product.title}</h1>
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground line-through text-sm">{product.oldPrice}</span>
-                    <span className="text-accent font-bold text-2xl">{product.price}</span>
+                    <span className="text-muted-foreground line-through text-xs sm:text-sm">{product.oldPrice}</span>
+                    <span className="text-accent font-bold text-xl sm:text-2xl">{product.price}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} size={12} className={i < Math.floor(product.rating || 4.7) ? "text-accent fill-accent" : "text-muted-foreground"} />
+                        <Star key={i} size={10} className={i < Math.floor(product.rating || 4.7) ? "text-accent fill-accent" : "text-muted-foreground"} />
                       ))}
                     </div>
                     <span>{120 + Math.floor(product.title.length * 2)} avis</span>
                   </div>
                   <button
                     onClick={() => setPopupOpen(true)}
-                    className="btn-primary-brand py-3 px-8 rounded-full font-semibold text-sm tracking-wide inline-flex items-center gap-2 hover-scale"
+                    className="btn-primary-brand py-2.5 sm:py-3 px-6 sm:px-8 rounded-full font-semibold text-xs sm:text-sm tracking-wide inline-flex items-center gap-2 hover-scale w-full sm:w-auto justify-center"
                   >
                     <ShoppingCart size={16} />
                     ACHETER MAINTENANT
                   </button>
-                  <div className="text-xs text-muted-foreground space-y-1 pt-2">
+                  <div className="text-[10px] sm:text-xs text-muted-foreground space-y-1 pt-2">
                     <p><span className="text-foreground font-medium">Catégorie</span> {product.category}</p>
                     {product.tag && <p><span className="text-foreground font-medium">Étiquette</span> {product.tag}</p>}
                   </div>
                 </div>
 
-                <div className="stat-card rounded-xl p-5 space-y-3">
-                  <h3 className="text-base font-bold text-foreground">Processus de commande</h3>
-                  <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="stat-card rounded-xl p-4 sm:p-5 space-y-2 sm:space-y-3">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Processus de commande</h3>
+                  <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                     <div className="flex items-start gap-2">
-                      <CheckSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                      <CheckSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 shrink-0" />
                       <span>Appuyez sur acheter maintenant, puis appuyez sur Commander.</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                      <CheckSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 shrink-0" />
                       <span>Remplissez vos informations, entrez votre numéro pour le paiement et validez la commande.</span>
                     </div>
                   </div>
@@ -148,57 +148,57 @@ const ProductDetail = () => {
       </section>
 
       {/* Description / Avis Tabs */}
-      <section className="container mx-auto px-4 pb-10">
+      <section className="container mx-auto px-4 pb-8 sm:pb-10">
         <AnimateOnScroll>
           <div className="max-w-4xl mx-auto">
             <div className="flex gap-0 mb-0">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "description" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "description" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
               >
                 Description
               </button>
               <button
                 onClick={() => setActiveTab("avis")}
-                className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "avis" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors ${activeTab === "avis" ? "bg-card text-foreground border border-border border-b-0" : "bg-muted/50 text-muted-foreground hover:text-foreground"}`}
               >
                 Avis ({FAKE_REVIEWS.length})
               </button>
             </div>
-            <div className="stat-card rounded-b-2xl rounded-tr-2xl p-6 md:p-8">
+            <div className="stat-card rounded-b-xl sm:rounded-b-2xl rounded-tr-xl sm:rounded-tr-2xl p-4 sm:p-6 md:p-8">
               {activeTab === "description" ? (
                 <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
-                  <h3 className="text-foreground font-bold text-base">Description</h3>
+                  <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
                   {product.description?.split("\n\n").map((block, idx) => (
                     <div key={idx}>
                       {block.split("\n").map((line, li) => {
                         if (line.startsWith("**") && line.endsWith("**")) {
-                          return <p key={li} className="font-bold text-foreground mt-3">{line.replace(/\*\*/g, "")}</p>;
+                          return <p key={li} className="font-bold text-foreground mt-3 text-xs sm:text-sm">{line.replace(/\*\*/g, "")}</p>;
                         }
-                        return <p key={li}>{line}</p>;
+                        return <p key={li} className="text-xs sm:text-sm">{line}</p>;
                       })}
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {FAKE_REVIEWS.map((review, i) => (
-                    <div key={i} className="stat-card rounded-xl p-4 space-y-2">
+                    <div key={i} className="stat-card rounded-xl p-3 sm:p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-accent">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] sm:text-xs font-bold text-accent">
                             {review.name.charAt(0)}
                           </div>
-                          <span className="text-sm font-medium text-foreground">{review.name}</span>
+                          <span className="text-xs sm:text-sm font-medium text-foreground">{review.name}</span>
                         </div>
-                        <span className="text-xs text-muted-foreground">{review.date}</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">{review.date}</span>
                       </div>
                       <div className="flex gap-0.5">
                         {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} size={12} className={j < review.rating ? "text-accent fill-accent" : "text-muted-foreground"} />
+                          <Star key={j} size={10} className={j < review.rating ? "text-accent fill-accent" : "text-muted-foreground"} />
                         ))}
                       </div>
-                      <p className="text-sm text-muted-foreground">{review.text}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{review.text}</p>
                     </div>
                   ))}
                 </div>
@@ -209,15 +209,15 @@ const ProductDetail = () => {
       </section>
 
       {/* Similar Products */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 pb-16 sm:pb-20">
         <div className="max-w-5xl mx-auto">
           <AnimateOnScroll>
-            <div className="flex items-center gap-4 mb-8">
-              <h2 className="text-xl font-bold text-foreground whitespace-nowrap">Produits similaires</h2>
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <h2 className="text-base sm:text-xl font-bold text-foreground whitespace-nowrap">Produits similaires</h2>
               <div className="flex-1 h-px bg-border" />
             </div>
           </AnimateOnScroll>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {similar.map((p, i) => (
               <AnimateOnScroll key={p.id} delay={i * 100}>
                 <ProductCard product={p} />

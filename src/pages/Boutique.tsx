@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, SlidersHorizontal, LayoutGrid, List } from "lucide-react";
+import { Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
@@ -29,17 +29,17 @@ const Boutique = () => {
       <Navbar />
 
       {/* Hero Header */}
-      <section className="pt-24 pb-6">
+      <section className="pt-28 sm:pt-24 pb-4 sm:pb-6">
         <div className="container mx-auto px-4">
           <AnimateOnScroll>
             <div className="text-center max-w-2xl mx-auto">
-              <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary mb-3">
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-primary mb-2 sm:mb-3">
                 Catalogue
               </p>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground mb-2 sm:mb-3">
                 Nos formations & ressources
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Trouvez la formation parfaite pour développer vos compétences digitales.
               </p>
             </div>
@@ -48,29 +48,29 @@ const Boutique = () => {
       </section>
 
       {/* Search + Filters Bar */}
-      <section className="container mx-auto px-4 mb-8">
+      <section className="container mx-auto px-4 mb-6 sm:mb-8">
         <AnimateOnScroll delay={100}>
-          <div className="max-w-2xl mx-auto mb-6">
+          <div className="max-w-2xl mx-auto mb-4 sm:mb-6">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
                 placeholder="Rechercher une formation, un e-book..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                className="w-full pl-9 sm:pl-11 pr-4 py-3 sm:py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
               />
             </div>
           </div>
         </AnimateOnScroll>
 
         <AnimateOnScroll delay={150}>
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full text-xs font-medium border transition-all hover-scale ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium border transition-all hover-scale ${
                   activeCategory === cat
                     ? "bg-primary text-primary-foreground border-primary"
                     : "stat-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
@@ -84,9 +84,9 @@ const Boutique = () => {
       </section>
 
       {/* Results Count */}
-      <section className="container mx-auto px-4 mb-4">
+      <section className="container mx-auto px-4 mb-3 sm:mb-4">
         <div className="flex items-center justify-between max-w-5xl mx-auto">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
             {isLoading ? "Chargement..." : `${resultCount} résultat${resultCount !== 1 ? "s" : ""}`}
             {activeCategory !== "Tous" && ` dans "${activeCategory}"`}
             {searchQuery.trim() && ` pour "${searchQuery}"`}
@@ -95,31 +95,31 @@ const Boutique = () => {
       </section>
 
       {/* Products Grid */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 pb-16 sm:pb-20">
         {isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="stat-card rounded-xl h-72 animate-pulse" />
+              <div key={i} className="stat-card rounded-xl h-56 sm:h-72 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <AnimateOnScroll>
-            <div className="text-center py-20 max-w-md mx-auto">
-              <Search className="mx-auto text-muted-foreground mb-4" size={40} />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Aucun résultat</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="text-center py-16 sm:py-20 max-w-md mx-auto">
+              <Search className="mx-auto text-muted-foreground mb-4" size={36} />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Aucun résultat</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                 Essayez avec d'autres mots-clés ou explorez une autre catégorie.
               </p>
               <button
                 onClick={() => { setSearchQuery(""); setActiveCategory("Tous"); }}
-                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                className="text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Réinitialiser les filtres
               </button>
             </div>
           </AnimateOnScroll>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
             {filtered.map((product, i) => (
               <AnimateOnScroll key={product.id} delay={i * 40}>
                 <ProductCard product={product} />
