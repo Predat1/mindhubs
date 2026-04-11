@@ -92,6 +92,12 @@
     background: hsl(0 0% 10%);
     border: 1px solid hsl(0 0% 18%);
     box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
+    transition: all 0.4s ease;
+  }
+
+  .stat-card:hover {
+    border-color: hsl(43 80% 55% / 0.5);
+    box-shadow: 0 0 20px hsl(43 80% 55% / 0.12), 0 0 40px hsl(43 80% 55% / 0.06), 0 4px 20px hsl(0 0% 0% / 0.3);
   }
 
   .course-card {
