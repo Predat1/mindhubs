@@ -544,10 +544,10 @@ const Admin = () => {
 
             {ordersLoading ? (
               <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={28} /></div>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <div className="stat-card rounded-2xl p-12 text-center border-glow">
                 <ShoppingBag size={40} className="mx-auto text-muted-foreground mb-3" />
-                <p className="text-foreground font-medium">Aucune commande pour le moment</p>
+                <p className="text-foreground font-medium">Aucune commande {orderFilter !== "all" ? "avec ce statut" : "pour le moment"}</p>
                 <p className="text-sm text-muted-foreground mt-1">Les commandes apparaîtront ici quand des clients passeront commande.</p>
               </div>
             ) : (
@@ -565,7 +565,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((o) => {
+                      {filteredOrders.map((o) => {
                         const cfg = statusConfig[o.status];
                         return (
                           <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
