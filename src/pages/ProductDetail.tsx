@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
-import BuyPopup from "@/components/BuyPopup";
 import SEO from "@/components/SEO";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart, Eye, Star } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const FAKE_REVIEWS = [
   { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
