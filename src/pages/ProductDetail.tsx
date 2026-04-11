@@ -85,13 +85,7 @@ const ProductDetail = () => {
       availability: "https://schema.org/InStock",
       seller: { "@type": "Organization", name: "MindHub" },
     },
-    aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating || 4.7, bestRating: 5, ratingCount: 120 + Math.floor(product.title.length * 2) },
-    review: FAKE_REVIEWS.map((r) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: r.name },
-      reviewRating: { "@type": "Rating", ratingValue: r.rating },
-      reviewBody: r.text,
-    })),
+    aggregateRating: product.rating ? { "@type": "AggregateRating", ratingValue: product.rating, bestRating: 5, ratingCount: 120 + Math.floor(product.title.length * 2) } : undefined,
   };
 
   return (
