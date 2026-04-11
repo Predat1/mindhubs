@@ -59,6 +59,45 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          avatar_initials: string
+          content: string
+          created_at: string
+          handle: string
+          id: string
+          likes: number
+          name: string
+          replies: number
+          retweets: number
+          verified: boolean
+        }
+        Insert: {
+          avatar_initials?: string
+          content: string
+          created_at?: string
+          handle: string
+          id?: string
+          likes?: number
+          name: string
+          replies?: number
+          retweets?: number
+          verified?: boolean
+        }
+        Update: {
+          avatar_initials?: string
+          content?: string
+          created_at?: string
+          handle?: string
+          id?: string
+          likes?: number
+          name?: string
+          replies?: number
+          retweets?: number
+          verified?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
