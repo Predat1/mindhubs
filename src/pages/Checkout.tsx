@@ -190,8 +190,9 @@ const Checkout = () => {
                     <span className="text-foreground font-bold">Total</span>
                     <span className="text-accent font-bold text-xl">{totalPrice.toLocaleString()} CFA</span>
                   </div>
-                  <button type="submit" className="w-full btn-primary-brand py-4 rounded-2xl font-bold text-base hover-scale shadow-glow">
-                    CONFIRMER LA COMMANDE
+                  <button type="submit" disabled={submitting} className="w-full btn-primary-brand py-4 rounded-2xl font-bold text-base hover-scale shadow-glow flex items-center justify-center gap-2 disabled:opacity-70">
+                    {submitting && <Loader2 size={18} className="animate-spin" />}
+                    {submitting ? "TRAITEMENT..." : "CONFIRMER LA COMMANDE"}
                   </button>
                 </div>
               </AnimateOnScroll>
