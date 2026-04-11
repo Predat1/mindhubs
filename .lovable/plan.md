@@ -1,30 +1,58 @@
+# Plan : Upload images produits, popup amélioré et admin optimisé
+
+## Constats actuels
+
+1. **BuyPopup** : Le popup actuel est fonctionnel mais basique -- il n'est pas vraiment "plein écran immersif" comme demandé. Il reste une petite carte centrée (`max-w-md`). et stylé 
+2. **Admin - Images produits** : Actuellement on ne peut qu'entrer une URL d'image manuellement. Pas d'upload de fichier.
+3. **Admin - UX** : Le panel fonctionne mais manque de polish (pas de preview d'image, pas d'upload, formulaires denses).
+
+## Changements prévus
+
+### 1. Storage bucket pour les images produits
+
+Creer un bucket `product-images` dans le storage pour permettre l'upload d'images directement depuis l'admin.
+
+**Migration SQL :**
+
+- Creer le bucket `product-images` (public)
+- RLS : lecture publique, upload/delete pour admins uniquement
+
+### 2. Upload d'images dans le formulaire produit (Admin)
+
+**Fichier modifie : `src/pages/Admin.tsx**`
+
+- Remplacer le champ "URL de l'image" par un composant d'upload avec drag & drop
+- Preview de l'image actuelle dans le formulaire
+- Upload vers le bucket `product-images` via le SDK Storage
+- Generer automatiquement l'URL publique apres upload
+- Conserver l'option de coller une URL externe en fallback
+
+### 3. Popup d'achat vraiment plein ecran
+
+**Fichier modifie : `src/components/BuyPopup.tsx**`
+
+- Passer le popup en vrai plein ecran (`w-full h-full` ou `max-w-2xl` large)
+- Layout split : image a gauche (ou en haut sur mobile), infos + CTAs a droite
+- Ajouter un compteur de personnes qui consultent ("X personnes regardent ce produit")
+- Boutons plus grands et plus impactants
+- Animation d'entree plus fluide (scale from center)
+
+### 4. Ameliorations globales du panel Admin
+
+**Fichier modifie : `src/pages/Admin.tsx**`
+
+- Preview d'image dans la table produits (plus grande, avec fallback)
+- Preview d'image dans le formulaire d'edition
+- Meilleur espacement et typographie dans les formulaires
+- Badge "lien de paiement" plus visible dans la liste produits
+- Indicateur visuel pour les produits sans image
+
+## Details techniques
 
 
-# Plan : Historique commandes Mon Compte + Admin amélioré
-
-## 1. Historique de commandes dans Mon Compte
-
-Ajouter une section "Mes achats" qui affiche les commandes de l'utilisateur connecté depuis la base de données, avec statut, date, produits commandés et montant. Inclure une section "Produits similaires" suggérant des produits basés sur les catégories des achats passés.
-
-**Fichier modifié :** `src/pages/MonCompte.tsx`
-- Fetch des commandes via `supabase.from("orders").select("*").eq("user_id", user.id)`
-- Afficher chaque commande avec badge de statut coloré, liste des produits, et total
-- Section "Produits recommandés" en bas avec des produits de catégories similaires via `useProducts()`
-- Mettre à jour les stats (nombre d'achats, nombre de formations)
-
-## 2. Amélioration globale du panel Admin
-
-**Fichier modifié :** `src/pages/Admin.tsx`
-- La gestion des témoignages (CRUD) est déjà en place
-- Le champ `payment_link` est déjà dans le formulaire produit
-- Améliorations : meilleur dashboard avec stats de revenus, commandes récentes en aperçu rapide, filtrage par statut dans l'onglet commandes, design plus aéré
-
-## Détails techniques
-
-| Fichier | Action |
-|---|---|
-| `src/pages/MonCompte.tsx` | Fetch commandes user, affichage historique, produits similaires |
-| `src/pages/Admin.tsx` | Dashboard amélioré, filtre commandes, UX globale |
-
-Pas de migration SQL nécessaire : les tables et RLS sont déjà en place (les users peuvent voir leurs propres commandes via la policy existante `auth.uid() = user_id`).
-
+| Element           | Fichier                       | Action                                             |
+| ----------------- | ----------------------------- | -------------------------------------------------- |
+| Bucket storage    | Migration SQL                 | Creer bucket + RLS                                 |
+| Upload images     | `src/pages/Admin.tsx`         | Composant upload + preview dans formulaire produit |
+| Popup plein ecran | `src/components/BuyPopup.tsx` | Redesign layout split immersif                     |
+| Admin UX          | `src/pages/Admin.tsx`         | Previews, espacement, polish global                |
