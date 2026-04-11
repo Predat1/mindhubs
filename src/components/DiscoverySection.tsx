@@ -1,0 +1,98 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen } from "lucide-react";
+import AnimateOnScroll from "@/components/AnimateOnScroll";
+import ProductCard from "@/components/ProductCard";
+import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
+
+const categories = [
+  { label: "Populaire", icon: TrendingUp },
+  { label: "Nouveautés", icon: Sparkles },
+  { label: "E-books", icon: BookOpen },
+];
+
+const DiscoverySection = () => {
+  const [query, setQuery] = useState("");
+  const { data: searchResults = [] } = useSearchProducts(query);
+  const { data: featured = [] } = useFeaturedProducts();
+  const navigate = useNavigate();
+
+  const showResults = query.trim().length >= 2 && searchResults.length > 0;
+  const displayProducts = showResults ? searchResults : featured.slice(0, 4);
+
+  return (
+    <section className="py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <AnimateOnScroll>
+          <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
+            Catalogue
+          </p>
+          <h2 className="text-center text-2xl md:text-3xl font-bold text-foreground mb-4">
+            Trouvez la formation idéale
+          </h2>
+          <p className="text-center text-sm text-muted-foreground max-w-md mx-auto mb-10">
+            Explorez notre catalogue et trouvez la compétence qui fera la différence dans votre carrière.
+          </p>
+        </AnimateOnScroll>
+
+        {/* Search Bar */}
+        <AnimateOnScroll delay={100}>
+          <div className="max-w-xl mx-auto mb-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <input
+                type="text"
+                placeholder="Rechercher une formation..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && query.trim()) navigate(`/boutique`);
+                }}
+                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+              />
+            </div>
+          </div>
+        </AnimateOnScroll>
+
+        {/* Quick Category Tags */}
+        <AnimateOnScroll delay={150}>
+          <div className="flex items-center justify-center gap-3 mb-12 flex-wrap">
+            {categories.map((cat) => (
+              <button
+                key={cat.label}
+                onClick={() => navigate("/boutique")}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium stat-card border-glow hover-scale cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <cat.icon size={14} className="text-primary" />
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </AnimateOnScroll>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-5xl mx-auto">
+          {displayProducts.map((product, i) => (
+            <AnimateOnScroll key={product.id} delay={i * 80}>
+              <ProductCard product={product} />
+            </AnimateOnScroll>
+          ))}
+        </div>
+
+        <AnimateOnScroll delay={400}>
+          <div className="text-center mt-10">
+            <Link
+              to="/boutique"
+              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all hover-scale"
+            >
+              Voir tout le catalogue
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </AnimateOnScroll>
+      </div>
+    </section>
+  );
+};
+
+export default DiscoverySection;

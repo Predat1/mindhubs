@@ -47,9 +47,36 @@ const ProductDetail = () => {
 
   const similar = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
+  const priceNum = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+  const oldPriceNum = parseFloat(product.oldPrice.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description || `Découvrez ${product.title} sur MindHub.`,
+    image: product.image,
+    url: `https://snap-clone-wonder.lovable.app/produit/${product.id}`,
+    brand: { "@type": "Brand", name: "MindHub" },
+    category: product.category,
+    offers: {
+      "@type": "Offer",
+      price: priceNum,
+      priceCurrency: "XOF",
+      availability: "https://schema.org/InStock",
+      seller: { "@type": "Organization", name: "MindHub" },
+    },
+    ...(product.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, bestRating: 5, ratingCount: 120 } } : {}),
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={product.title} description={product.description || `Découvrez ${product.title} sur MindHub.`} path={`/produit/${product.id}`} />
+      <SEO
+        title={product.title}
+        description={product.description || `Découvrez ${product.title} sur MindHub.`}
+        path={`/produit/${product.id}`}
+        jsonLd={productJsonLd}
+      />
       <Navbar />
 
       {/* Product Info */}
