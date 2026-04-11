@@ -1,58 +1,55 @@
-# Plan : Upload images produits, popup amélioré et admin optimisé
-
-## Constats actuels
-
-1. **BuyPopup** : Le popup actuel est fonctionnel mais basique -- il n'est pas vraiment "plein écran immersif" comme demandé. Il reste une petite carte centrée (`max-w-md`). et stylé 
-2. **Admin - Images produits** : Actuellement on ne peut qu'entrer une URL d'image manuellement. Pas d'upload de fichier.
-3. **Admin - UX** : Le panel fonctionne mais manque de polish (pas de preview d'image, pas d'upload, formulaires denses).
-
-## Changements prévus
-
-### 1. Storage bucket pour les images produits
-
-Creer un bucket `product-images` dans le storage pour permettre l'upload d'images directement depuis l'admin.
-
-**Migration SQL :**
-
-- Creer le bucket `product-images` (public)
-- RLS : lecture publique, upload/delete pour admins uniquement
-
-### 2. Upload d'images dans le formulaire produit (Admin)
-
-**Fichier modifie : `src/pages/Admin.tsx**`
-
-- Remplacer le champ "URL de l'image" par un composant d'upload avec drag & drop
-- Preview de l'image actuelle dans le formulaire
-- Upload vers le bucket `product-images` via le SDK Storage
-- Generer automatiquement l'URL publique apres upload
-- Conserver l'option de coller une URL externe en fallback
-
-### 3. Popup d'achat vraiment plein ecran
-
-**Fichier modifie : `src/components/BuyPopup.tsx**`
-
-- Passer le popup en vrai plein ecran (`w-full h-full` ou `max-w-2xl` large)
-- Layout split : image a gauche (ou en haut sur mobile), infos + CTAs a droite
-- Ajouter un compteur de personnes qui consultent ("X personnes regardent ce produit")
-- Boutons plus grands et plus impactants
-- Animation d'entree plus fluide (scale from center)
-
-### 4. Ameliorations globales du panel Admin
-
-**Fichier modifie : `src/pages/Admin.tsx**`
-
-- Preview d'image dans la table produits (plus grande, avec fallback)
-- Preview d'image dans le formulaire d'edition
-- Meilleur espacement et typographie dans les formulaires
-- Badge "lien de paiement" plus visible dans la liste produits
-- Indicateur visuel pour les produits sans image
-
-## Details techniques
 
 
-| Element           | Fichier                       | Action                                             |
-| ----------------- | ----------------------------- | -------------------------------------------------- |
-| Bucket storage    | Migration SQL                 | Creer bucket + RLS                                 |
-| Upload images     | `src/pages/Admin.tsx`         | Composant upload + preview dans formulaire produit |
-| Popup plein ecran | `src/components/BuyPopup.tsx` | Redesign layout split immersif                     |
-| Admin UX          | `src/pages/Admin.tsx`         | Previews, espacement, polish global                |
+# Plan : Amélioration complète du panel Admin
+
+## Améliorations prioritaires
+
+### 1. Recherche dans les onglets
+Ajouter une barre de recherche en haut de chaque onglet (Produits, Témoignages, Commandes) qui filtre en temps réel par titre/nom/email.
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 2. Export CSV des commandes
+Bouton "Exporter CSV" dans l'onglet Commandes qui génère un fichier CSV téléchargeable avec toutes les colonnes (client, email, téléphone, total, statut, date, produits).
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 3. Graphique de revenus sur le dashboard
+Ajouter un mini-graphique en barres montrant les revenus des 7 derniers jours directement sur le dashboard stats, en utilisant Recharts (déjà disponible via shadcn/ui chart).
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 4. Bouton dupliquer un produit
+Ajouter un bouton "Dupliquer" à côté de Modifier/Supprimer dans la table produits. Pré-remplit le formulaire avec les données du produit existant + un nouvel ID.
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 5. Modal de confirmation stylé
+Remplacer les `confirm()` natifs par un dialog stylé (AlertDialog de shadcn) pour les suppressions de produits, témoignages et commandes.
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 6. Lien "Voir sur le site"
+Ajouter un bouton œil/lien dans chaque ligne produit qui ouvre `/produit/:id` dans un nouvel onglet.
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+### 7. Compteur "nouvelles commandes" sur l'onglet
+Afficher un badge rouge sur l'onglet Commandes quand il y a des commandes en statut "pending".
+
+**Fichier modifié :** `src/pages/Admin.tsx`
+
+## Détails techniques
+
+| Élément | Action |
+|---|---|
+| Recherche | State `searchQuery` + `.filter()` sur les données |
+| Export CSV | Fonction JS `downloadCSV()` avec `Blob` + `URL.createObjectURL` |
+| Graphique | `recharts` BarChart avec données groupées par jour depuis `orders` |
+| Dupliquer | `openEditProduct(p)` avec `isNew=true` et ID modifié |
+| AlertDialog | Import `AlertDialog` de shadcn, remplacer 3 `confirm()` |
+| Voir sur site | `<a href="/produit/${id}" target="_blank">` |
+| Badge commandes | `orders.filter(o => o.status === "pending").length` affiché en badge |
+
+Tout se passe dans `src/pages/Admin.tsx`. Aucune migration SQL nécessaire.
+
