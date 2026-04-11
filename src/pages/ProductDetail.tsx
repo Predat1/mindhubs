@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import StickyProductCTA from "@/components/StickyProductCTA";
-import BuyPopup from "@/components/BuyPopup";
 import SEO from "@/components/SEO";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart, Eye, Star } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const FAKE_REVIEWS = [
   { name: "Aminata K.", rating: 5, text: "Formation très complète, j'ai pu lancer mon business en 2 semaines !", date: "il y a 3 jours" },
@@ -22,8 +22,19 @@ const ProductDetail = () => {
   const { data: product, isLoading } = useProduct(id || "");
   const { data: allProducts = [] } = useProducts();
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
-  const [popupOpen, setPopupOpen] = useState(false);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const handleBuyNow = () => {
+    if (product) {
+      addToCart(product);
+      if (product.paymentLink) {
+        window.open(product.paymentLink, "_blank", "noopener,noreferrer");
+      } else {
+        navigate("/checkout");
+      }
+    }
+  };
 
   const viewerCount = 8 + Math.floor((id || "").length * 2.3);
 
@@ -116,7 +127,7 @@ const ProductDetail = () => {
                     <span>{120 + Math.floor(product.title.length * 2)} avis</span>
                   </div>
                   <button
-                    onClick={() => setPopupOpen(true)}
+                    onClick={handleBuyNow}
                     className="btn-primary-brand py-2.5 sm:py-3 px-6 sm:px-8 rounded-full font-semibold text-xs sm:text-sm tracking-wide inline-flex items-center gap-2 hover-scale w-full sm:w-auto justify-center"
                   >
                     <ShoppingCart size={16} />
@@ -228,8 +239,7 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
-      <StickyProductCTA productTitle={product.title} price={product.price} onBuy={() => setPopupOpen(true)} />
-      <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
+      <StickyProductCTA productTitle={product.title} price={product.price} onBuy={handleBuyNow} />
     </div>
   );
 };
