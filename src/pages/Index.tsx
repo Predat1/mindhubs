@@ -6,6 +6,7 @@ import TrustLogosSection from "@/components/TrustLogosSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
 import VideoTestimonialsSection from "@/components/VideoTestimonialsSection";
 import GoogleReviewsSection from "@/components/GoogleReviewsSection";
+import FAQSection from "@/components/FAQSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import HelpSection from "@/components/HelpSection";
 import FooterSection from "@/components/FooterSection";
@@ -28,6 +29,7 @@ const Index = () => {
       <ExpertiseSection />
       <VideoTestimonialsSection />
       <GoogleReviewsSection />
+      <FAQSection />
       <NewsletterSection />
       <HelpSection />
       <FooterSection />
