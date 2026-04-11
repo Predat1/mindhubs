@@ -4,6 +4,7 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/data/products";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   product: Product;
@@ -20,9 +21,13 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
     if (open) {
       setViewerCount(Math.floor(Math.random() * 30) + 15);
       const interval = setInterval(() => {
-        setViewerCount((prev) => prev + Math.floor(Math.random() * 3) - 1);
+        setViewerCount((prev) => Math.max(10, prev + Math.floor(Math.random() * 3) - 1));
       }, 4000);
-      return () => clearInterval(interval);
+      document.body.style.overflow = "hidden";
+      return () => {
+        clearInterval(interval);
+        document.body.style.overflow = "";
+      };
     }
   }, [open]);
 
@@ -44,121 +49,122 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/98 backdrop-blur-xl" />
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      onClick={onClose}
+      style={{ animation: "popup-backdrop 0.3s ease-out forwards" }}
+    >
+      {/* Backdrop with blur */}
+      <div className="absolute inset-0 bg-background/90 backdrop-blur-md" />
 
-      {/* Content — fullscreen on mobile, large card on desktop */}
+      {/* Content card */}
       <div
-        className="relative w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl md:mx-4 bg-card md:rounded-3xl overflow-hidden md:border md:border-border md:shadow-2xl flex flex-col"
+        className="relative w-full max-w-lg bg-card rounded-2xl sm:rounded-3xl overflow-hidden border border-border shadow-2xl flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: "popup-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
+        style={{ animation: "popup-zoom-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute top-3 right-3 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Scrollable inner */}
         <div className="flex-1 overflow-y-auto">
-          {/* Split layout */}
-          <div className="md:grid md:grid-cols-2">
-            {/* Image side */}
-            <div className="relative w-full aspect-[4/3] md:aspect-auto md:min-h-full bg-muted overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-background/20" />
+          {/* Image */}
+          <div className="relative w-full aspect-[16/9] bg-muted overflow-hidden">
+            <img
+              src={product.image}
+              alt={product.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
 
-              {/* Live viewers badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-full bg-destructive/90 text-destructive-foreground text-xs font-bold backdrop-blur-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive-foreground opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive-foreground" />
-                </span>
-                {viewerCount} personnes regardent
-              </div>
+            {/* Live viewers badge */}
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-destructive/90 text-destructive-foreground text-[10px] sm:text-xs font-bold backdrop-blur-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive-foreground opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive-foreground" />
+              </span>
+              {viewerCount} personnes regardent
+            </div>
 
-              {/* Urgency badge */}
-              <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-2 rounded-full bg-accent/90 text-accent-foreground text-xs font-bold backdrop-blur-sm">
-                <Flame size={14} />
-                Offre limitée
+            {/* Urgency badge */}
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-accent/90 text-accent-foreground text-[10px] sm:text-xs font-bold backdrop-blur-sm">
+              <Flame size={12} />
+              Offre limitée
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="p-5 sm:p-6 space-y-4">
+            {/* Title & rating */}
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">{product.title}</h2>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-primary text-primary" />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground">4.9/5 · +2000 clients</span>
               </div>
             </div>
 
-            {/* Info side */}
-            <div className="p-6 md:p-8 flex flex-col justify-center space-y-6">
-              {/* Title & rating */}
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-foreground leading-tight">{product.title}</h2>
-                <div className="flex items-center gap-3 mt-3">
-                  <div className="flex items-center gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground">4.9/5 · +2000 clients</span>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-extrabold text-accent">{product.price}</span>
-                {product.oldPrice && (
-                  <span className="text-lg text-muted-foreground line-through">{product.oldPrice}</span>
-                )}
-              </div>
-
-              {/* Description preview */}
-              {product.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                  {product.description}
-                </p>
+            {/* Price */}
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl sm:text-4xl font-extrabold text-accent">{product.price}</span>
+              {product.oldPrice && (
+                <span className="text-base text-muted-foreground line-through">{product.oldPrice}</span>
               )}
+            </div>
 
-              {/* Trust badges */}
-              <div className="grid grid-cols-1 gap-2">
-                {[
-                  { icon: ShieldCheck, text: "Paiement 100% sécurisé" },
-                  { icon: Clock, text: "Accès immédiat après achat" },
-                  { icon: Users, text: "Satisfait ou remboursé" },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                    <Icon size={16} className="text-accent shrink-0" />
-                    <span>{text}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Description */}
+            {product.description && (
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                {product.description}
+              </p>
+            )}
 
-              {/* CTAs */}
-              <div className="flex flex-col gap-3 pt-2">
-                <button
-                  onClick={handleBuyNow}
-                  className="btn-primary-brand flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-bold text-base shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                >
-                  <Zap size={22} />
-                  Acheter maintenant
-                </button>
-                <button
-                  onClick={handleAddToCart}
-                  className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-semibold text-sm border border-border bg-secondary text-foreground hover:bg-muted transition-all duration-300"
-                >
-                  <ShoppingCart size={18} />
-                  Ajouter au panier
-                </button>
-              </div>
+            {/* Trust badges */}
+            <div className="flex flex-col gap-1.5">
+              {[
+                { icon: ShieldCheck, text: "Paiement 100% sécurisé" },
+                { icon: Clock, text: "Accès immédiat après achat" },
+                { icon: Users, text: "Satisfait ou remboursé" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Icon size={14} className="text-accent shrink-0" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col gap-2.5 pt-1">
+              <button
+                onClick={handleBuyNow}
+                className="btn-primary-brand flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-transform"
+              >
+                <Zap size={18} />
+                Acheter maintenant
+              </button>
+              <button
+                onClick={handleAddToCart}
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm border border-border bg-secondary text-foreground hover:bg-muted transition-all"
+              >
+                <ShoppingCart size={16} />
+                Ajouter au panier
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
