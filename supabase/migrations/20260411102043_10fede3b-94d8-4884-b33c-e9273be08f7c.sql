@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN payment_link TEXT DEFAULT NULL;

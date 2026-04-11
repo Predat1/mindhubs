@@ -23,6 +23,7 @@ export type Database = {
           id: string
           image_url: string
           old_price: string
+          payment_link: string | null
           price: string
           rating: number | null
           sort_order: number
@@ -37,6 +38,7 @@ export type Database = {
           id: string
           image_url?: string
           old_price: string
+          payment_link?: string | null
           price: string
           rating?: number | null
           sort_order?: number
@@ -51,6 +53,7 @@ export type Database = {
           id?: string
           image_url?: string
           old_price?: string
+          payment_link?: string | null
           price?: string
           rating?: number | null
           sort_order?: number
