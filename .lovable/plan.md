@@ -1,49 +1,30 @@
 
 
-# Plan : Témoignages dynamiques, popup plein écran et checkout simplifié
+# Plan : Historique commandes Mon Compte + Admin amélioré
 
-## 1. Témoignages dynamiques en base de données
+## 1. Historique de commandes dans Mon Compte
 
-Créer une table `testimonials` dans la base pour stocker les avis clients et les afficher dynamiquement dans la section "Ils nous ont fait confiance".
+Ajouter une section "Mes achats" qui affiche les commandes de l'utilisateur connecté depuis la base de données, avec statut, date, produits commandés et montant. Inclure une section "Produits similaires" suggérant des produits basés sur les catégories des achats passés.
 
-**Table SQL :**
-- `id` (uuid, PK), `name` (text), `handle` (text), `avatar_initials` (text), `content` (text), `likes` (int), `retweets` (int), `replies` (int), `verified` (boolean), `created_at` (timestamptz)
-- RLS : lecture publique (anon + authenticated), écriture admin uniquement
-- Pré-remplir avec les 6 témoignages existants via INSERT
+**Fichier modifié :** `src/pages/MonCompte.tsx`
+- Fetch des commandes via `supabase.from("orders").select("*").eq("user_id", user.id)`
+- Afficher chaque commande avec badge de statut coloré, liste des produits, et total
+- Section "Produits recommandés" en bas avec des produits de catégories similaires via `useProducts()`
+- Mettre à jour les stats (nombre d'achats, nombre de formations)
 
-**Fichiers modifiés :**
-- `src/components/TrustLogosSection.tsx` : fetch depuis la base via React Query au lieu du tableau hardcodé
+## 2. Amélioration globale du panel Admin
 
----
-
-## 2. Popup d'achat plein écran
-
-Remplacer le petit popup actuel par une overlay plein écran immersive avec :
-- Image du produit en grand
-- Titre, prix barré + prix actuel, badge urgence
-- 2 boutons larges : "Ajouter au panier" et "Acheter maintenant"
-- Animation d'entrée (scale + fade)
-- Bouton fermer (X) en haut à droite
-
-**Fichier modifié :** `src/components/BuyPopup.tsx`
-
----
-
-## 3. Réduire le parcours de paiement
-
-Fusionner les 3 étapes du checkout en une seule page : le récapitulatif des produits + le formulaire d'informations + le bouton de confirmation, le tout visible sur un seul écran sans navigation entre étapes.
-
-**Fichier modifié :** `src/pages/Checkout.tsx`
-
----
+**Fichier modifié :** `src/pages/Admin.tsx`
+- La gestion des témoignages (CRUD) est déjà en place
+- Le champ `payment_link` est déjà dans le formulaire produit
+- Améliorations : meilleur dashboard avec stats de revenus, commandes récentes en aperçu rapide, filtrage par statut dans l'onglet commandes, design plus aéré
 
 ## Détails techniques
 
-| Élément | Fichier | Action |
-|---|---|---|
-| Table `testimonials` | Migration SQL | Créer table + RLS + seed data |
-| Fetch témoignages | `TrustLogosSection.tsx` | React Query + supabase client |
-| Hook témoignages | `src/hooks/useTestimonials.ts` | Nouveau hook React Query |
-| Popup plein écran | `BuyPopup.tsx` | Redesign complet fullscreen |
-| Checkout 1 page | `Checkout.tsx` | Fusionner les 3 étapes en 1 |
+| Fichier | Action |
+|---|---|
+| `src/pages/MonCompte.tsx` | Fetch commandes user, affichage historique, produits similaires |
+| `src/pages/Admin.tsx` | Dashboard amélioré, filtre commandes, UX globale |
+
+Pas de migration SQL nécessaire : les tables et RLS sont déjà en place (les users peuvent voir leurs propres commandes via la policy existante `auth.uid() = user_id`).
 
