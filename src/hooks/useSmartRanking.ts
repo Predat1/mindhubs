@@ -14,6 +14,7 @@ const BASE_SCORES: Record<string, number> = {
   "kit-fiscalite": 88,
   "progiciel-budget": 92,
   "kit-logistique": 87,
+  "premiers-clients": 93,
 };
 
 // Category demand multipliers
