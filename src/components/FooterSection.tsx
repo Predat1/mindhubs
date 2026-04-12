@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, ExternalLink } from "lucide-react";
+import { Mail, ExternalLink, Instagram, Music2, MessageCircle } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import payMtn from "@/assets/pay-mtn.png";
 import payMoov from "@/assets/pay-moov.png";
