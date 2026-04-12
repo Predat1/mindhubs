@@ -4,6 +4,7 @@ import kitFiscalite from "@/assets/kit-fiscalite.png";
 import progicielBudget from "@/assets/progiciel-budget.png";
 import kitLogistique from "@/assets/kit-logistique.png";
 import premiersClients from "@/assets/premiers-clients.png";
+import demarreMaintenantImg from "@/assets/demarre-maintenant.png";
 
 export type Category = "Tous" | "Business" | "Formations" | "Kits" | "Livres" | "Logiciels" | "Packs Enfants";
 
@@ -87,9 +88,20 @@ export const allProducts: Product[] = [
     description: "Tu n'as jamais eu de client en ligne ? Découvre comment trouver tes 10 premiers clients en moins de 30 jours sans dépenser un centime et uniquement avec ton téléphone grâce au guide PREMIERS CLIENTS SANS BUDGET.\n\nBeaucoup postent sans jamais vendre, regardent des vidéos sans résultats, et veulent gagner de l'argent en ligne sans savoir par où commencer. Le résultat ? 0 client, 0 revenu, frustration totale.\n\nAvec ce guide simple, réaliste et spécialement conçu pour l'Afrique, tu vas apprendre à :\n\n- Trouver tes premiers clients même en partant de zéro\n- Utiliser WhatsApp comme une machine à vendre\n- Communiquer efficacement avec tes prospects pour les convaincre\n- Vendre sans avoir besoin d'être un expert\n\n**Ce que tu obtiens avec PREMIERS CLIENTS SANS BUDGET :**\n\n**📘 Guide principal**\n\n- Stratégies pour attirer et convertir des clients sans budget\n- Techniques pour exploiter WhatsApp et générer des ventes\n- Conseils pour transformer tes échanges en revenus\n\n**📩 Bonus 1 – Scripts WhatsApp**\n\nDes messages prêts à envoyer pour :\n- Contacter tes prospects efficacement\n- Relancer sans être insistant\n- Convertir tes contacts en clients\n\nTu copies, tu envoies, tu encaisses.\n\n**📅 Bonus 2 – Plan d'action 30 jours**\n\nUn programme précis pour :\n- Jour 1 à 7 : Trouver tes premiers prospects\n- Jour 8 à 15 : Générer des conversations qualitatives\n- Jour 16 à 30 : Convertir ces prospects en clients fidèles\n\nTu sais exactement quoi faire chaque jour.\n\n**🎯 Bonus 3 – Méthode Groupes & Réseaux**\n\n- Identifier des clients dans les groupes Facebook\n- Attirer des prospects sans dépenser en publicité\n- Transformer des inconnus en acheteurs\n\n**Pour qui est conçu le guide PREMIERS CLIENTS SANS BUDGET ?**\n\n- Toi qui es en Afrique et veux gagner de l'argent en ligne\n- Sans budget à investir\n- Sans expérience préalable\n- Avec seulement un téléphone en main\n\n**Ce guide n'est pas pour toi si :**\n\n- Tu veux devenir riche sans effort\n- Tu refuses de contacter tes prospects\n- Tu n'es pas prêt à passer à l'action\n\nDes jeunes comme toi ont déjà utilisé PREMIERS CLIENTS SANS BUDGET pour :\n\n- Trouver leurs premiers clients rapidement\n- Gagner leurs premiers 10 000 / 50 000 / 100 000 FCFA\n- Lancer leur activité en ligne sans investir d'argent\n\nCe n'est pas une théorie, c'est une méthode pratique qui marche sur le terrain.\n\nLe véritable problème, ce n'est pas ton téléphone. C'est de ne pas encore disposer de la bonne méthode.\n\nAvec PREMIERS CLIENTS SANS BUDGET, tu as maintenant la solution pour démarrer.",
     paymentLink: "https://nhvjjgbn.mychariow.shop/prd_64t1hp/checkout",
   },
+  {
+    id: "demarre-maintenant",
+    title: "Le plan exact pour lancer ton business en ligne en Afrique en 30 jours",
+    image: demarreMaintenantImg,
+    oldPrice: "15.000 CFA",
+    price: "5.000 CFA",
+    category: "Business",
+    rating: 4.9,
+    description: "**🔥 DÉMARRE MAINTENANT**\n\nLe plan exact pour lancer ton business en ligne en Afrique en 30 jours\n\nSans expérience. Sans capital. Depuis ton téléphone.\n\n❌ Tu regardes des vidéos business depuis des mois…\n❌ Tu lis des conseils partout…\n❌ Mais tu n'as toujours gagné aucun franc en ligne\n\nTu n'es pas le problème.\n\n👉 Le vrai problème, c'est que personne ne t'a donné une méthode claire, adaptée à ta réalité en Afrique.\n\n**💡 IMAGINE PLUTÔT :**\n\n- Savoir exactement quoi faire chaque jour\n- Lancer ton activité depuis ton téléphone\n- Faire ta première vente en ligne en moins de 30 jours\n\n**📘 Voici la solution :**\n\nDÉMARRE MAINTENANT – Un guide complet + plan d'action qui te montre étape par étape comment :\n\n- Trouver une idée rentable même sans expérience\n- Créer un produit ou service que les gens veulent vraiment\n- Vendre avec WhatsApp, Facebook et TikTok\n- Encaisser avec Mobile Money (MTN, Orange, Wave…)\n- Obtenir tes premiers clients sans publicité\n\n**🎯 CE QUE TU VAS APPRENDRE :**\n\n- Les 4 modèles de business qui marchent en Afrique\n- Comment créer une offre irrésistible\n- Le script exact pour vendre sur WhatsApp\n- Comment trouver tes premiers clients gratuitement\n- Le plan 7 jours pour lancer rapidement\n\n**🎁 BONUS INCLUS :**\n\n🔥 Scripts WhatsApp prêts à copier-coller\n🔥 Modèles de pages de vente\n🔥 Plan d'action 30 jours étape par étape\n\n**⚠️ Pourquoi ce prix ?**\n\nParce que le but n'est pas juste de vendre… c'est de t'aider à faire tes premiers revenus rapidement.\n\n**🚨 IMPORTANT :**\n\nCe guide n'est PAS pour tout le monde.\n\n❌ Si tu veux devenir riche sans rien faire\n❌ Si tu cherches encore \"la méthode magique\"\n\nPasse ton chemin.\n\n✅ Par contre, il est pour toi si :\n\n- Tu veux vraiment passer à l'action\n- Tu es prêt à travailler 30 minutes par jour\n- Tu veux changer ta situation financière\n\n🔥 Des centaines de jeunes africains commencent déjà.\n\nLa seule question : Est-ce que tu continues à regarder… ou tu passes enfin à l'action ?",
+    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_2354xd/checkout",
+  },
 ];
 
-export const featuredProductIds = ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients"];
+export const featuredProductIds = ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
 
 export const categories: Category[] = ["Tous", "Business", "Formations", "Kits", "Livres", "Logiciels", "Packs Enfants"];
 
