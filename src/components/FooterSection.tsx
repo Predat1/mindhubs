@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, ExternalLink } from "lucide-react";
+import { Mail, ExternalLink, Instagram, Music2, MessageCircle } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import payMtn from "@/assets/pay-mtn.png";
 import payMoov from "@/assets/pay-moov.png";
@@ -85,8 +85,17 @@ const FooterSection = () => {
             </nav>
           </div>
 
-          {/* Social + payment */}
-          <div className="flex items-center gap-4">
+          {/* Social links */}
+          <div className="flex items-center gap-3">
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Instagram">
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="TikTok">
+              <Music2 className="w-5 h-5" />
+            </a>
+            <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="WhatsApp">
+              <MessageCircle className="w-5 h-5" />
+            </a>
             <ShareButtons compact />
           </div>
         </div>
