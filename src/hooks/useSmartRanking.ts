@@ -12,6 +12,8 @@ const BASE_SCORES: Record<string, number> = {
   anglais: 95,
   "kit-agriculture": 90,
   "kit-fiscalite": 88,
+  "progiciel-budget": 92,
+  "kit-logistique": 87,
 };
 
 // Category demand multipliers
