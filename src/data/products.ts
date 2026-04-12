@@ -1,6 +1,8 @@
 import courseAnglais from "@/assets/course-anglais.jpg";
 import kitAgriculture from "@/assets/kit-agriculture.png";
 import kitFiscalite from "@/assets/kit-fiscalite.png";
+import progicielBudget from "@/assets/progiciel-budget.png";
+import kitLogistique from "@/assets/kit-logistique.png";
 
 export type Category = "Tous" | "Business" | "Formations" | "Kits" | "Livres" | "Logiciels" | "Packs Enfants";
 
