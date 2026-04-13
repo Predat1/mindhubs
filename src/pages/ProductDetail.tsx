@@ -12,6 +12,7 @@ import { CheckSquare, ShoppingCart, Eye, Star } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import fbPixel from "@/hooks/useFacebookPixel";
 
 // Reviews will be loaded from database in a future update
 
@@ -24,12 +25,29 @@ const ProductDetail = () => {
   const { addViewed } = useRecentlyViewed();
 
   useEffect(() => {
-    if (product) addViewed(product.id);
+    if (product) {
+      addViewed(product.id);
+      const price = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+      fbPixel.viewContent({
+        content_name: product.title,
+        content_ids: [product.id],
+        content_type: "product",
+        value: price,
+        currency: "XOF",
+      });
+    }
   }, [product, addViewed]);
 
   const handleBuyNow = () => {
     if (product) {
       addToCart(product);
+      const price = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+      fbPixel.initiateCheckout({
+        content_ids: [product.id],
+        value: price,
+        currency: "XOF",
+        num_items: 1,
+      });
       if (product.paymentLink) {
         window.open(product.paymentLink, "_blank", "noopener,noreferrer");
       } else {

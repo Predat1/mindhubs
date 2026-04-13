@@ -59,6 +59,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return [...prev, { product, quantity: 1 }];
     });
     triggerBounce();
+    // Facebook Pixel AddToCart
+    if (typeof window !== "undefined" && window.fbq) {
+      const price = parseCFA(product.price);
+      window.fbq("track", "AddToCart", {
+        content_ids: [product.id],
+        content_name: product.title,
+        content_type: "product",
+        value: price,
+        currency: "XOF",
+      });
+    }
   }, []);
 
   const removeFromCart = useCallback((productId: string) => {
