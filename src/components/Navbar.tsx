@@ -22,6 +22,7 @@ const Navbar = () => {
   const { totalItems, cartBounce } = useCart();
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -39,6 +40,21 @@ const Navbar = () => {
     setSearchQuery("");
     setOpen(false);
   }, [location.pathname]);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim()) {
+      navigate(`/boutique?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <>
@@ -94,46 +110,74 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Search */}
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors p-1.5 sm:p-1 sm:px-3 sm:py-1.5 sm:rounded-lg sm:bg-muted/50 sm:border sm:border-border sm:hover:border-primary/40"
+                aria-label="Rechercher"
               >
                 <Search size={18} />
+                <span className="hidden sm:inline text-xs text-muted-foreground">Rechercher…</span>
+                <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
+                  ⌘K
+                </kbd>
               </button>
 
               {searchOpen && (
-                <div className="absolute right-0 top-10 w-[calc(100vw-2rem)] sm:w-80 bg-background border border-border rounded-xl shadow-lg p-3 animate-fade-in z-50">
-                  <input
-                    autoFocus
-                    type="text"
-                    placeholder="Rechercher un produit…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
+                <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-[calc(100%+8px)] sm:top-10 sm:w-96 bg-background border border-border rounded-xl shadow-2xl p-3 sm:p-4 animate-fade-in z-50">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Rechercher un produit…"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearchSubmit();
+                        if (e.key === "Escape") {
+                          setSearchOpen(false);
+                          setSearchQuery("");
+                        }
+                      }}
+                      className="w-full pl-9 pr-4 py-2.5 bg-muted/50 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
                   {searchQuery.trim().length >= 2 && (
-                    <div className="mt-2 max-h-60 overflow-y-auto space-y-1">
+                    <div className="mt-3 max-h-72 overflow-y-auto space-y-1">
                       {searchResults.length === 0 ? (
-                        <p className="text-xs text-muted-foreground py-2 text-center">Aucun résultat</p>
+                        <p className="text-xs text-muted-foreground py-4 text-center">Aucun résultat pour "{searchQuery}"</p>
                       ) : (
-                        searchResults.map((p) => (
+                        <>
+                          {searchResults.map((p) => (
+                            <button
+                              key={p.id}
+                              onClick={() => navigate(`/produit/${p.id}`)}
+                              className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                            >
+                              <img src={p.image} alt={p.title} className="w-11 h-11 rounded-lg object-cover shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{p.title}</p>
+                                <p className="text-xs text-accent font-semibold">{p.price}</p>
+                              </div>
+                            </button>
+                          ))}
                           <button
-                            key={p.id}
-                            onClick={() => navigate(`/produit/${p.id}`)}
-                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                            onClick={handleSearchSubmit}
+                            className="w-full mt-2 py-2 text-xs text-primary font-medium hover:bg-primary/5 rounded-lg transition-colors"
                           >
-                            <img src={p.image} alt={p.title} className="w-10 h-10 rounded object-cover shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">{p.title}</p>
-                              <p className="text-xs text-accent">{p.price}</p>
-                            </div>
+                            Voir tous les résultats →
                           </button>
-                        ))
+                        </>
                       )}
                     </div>
+                  )}
+                  {searchQuery.trim().length < 2 && (
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 text-center">
+                      Tapez au moins 2 caractères pour rechercher
+                    </p>
                   )}
                 </div>
               )}
