@@ -5,6 +5,7 @@ import FooterSection from "@/components/FooterSection";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
+import fbPixel from "@/hooks/useFacebookPixel";
 
 const contactInfo = [
   { icon: Mail, label: "Email", value: "contact@mindhub.com", href: "mailto:contact@mindhub.com" },
@@ -40,6 +41,8 @@ const Contact = () => {
     setTimeout(() => {
       setSending(false);
       setForm({ name: "", email: "", subject: "", message: "" });
+      fbPixel.contact();
+      fbPixel.lead({ content_name: "Contact Form" });
       toast({ title: "Message envoyé ✅", description: "Merci ! Nous vous répondrons rapidement." });
     }, 1500);
   };
