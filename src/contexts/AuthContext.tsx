@@ -44,6 +44,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: window.location.origin,
       },
     });
+    if (!error && typeof window !== "undefined" && window.fbq) {
+      window.fbq("track", "CompleteRegistration", { content_name: "Signup" });
+    }
     return { error: error as Error | null };
   };
 
