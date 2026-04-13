@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -8,12 +8,25 @@ import SEO from "@/components/SEO";
 import { useProducts } from "@/hooks/useProducts";
 import { useSmartRanking } from "@/hooks/useSmartRanking";
 import { categories, type Category } from "@/data/products";
+import fbPixel from "@/hooks/useFacebookPixel";
 
 const Boutique = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const { data: products = [], isLoading } = useProducts();
   const rankedProducts = useSmartRanking(products);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
+
+  // Fire Search event with debounce
+  useEffect(() => {
+    if (searchQuery.trim().length >= 2) {
+      clearTimeout(searchTimeout.current);
+      searchTimeout.current = setTimeout(() => {
+        fbPixel.search({ search_string: searchQuery.trim() });
+      }, 800);
+    }
+    return () => clearTimeout(searchTimeout.current);
+  }, [searchQuery]);
 
   const filtered = rankedProducts
     .filter((p) => activeCategory === "Tous" || p.category === activeCategory)
