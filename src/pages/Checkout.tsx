@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import fbPixel from "@/hooks/useFacebookPixel";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -102,6 +103,12 @@ const Checkout = () => {
       if (error) throw error;
       clearCart();
       setConfirmed(true);
+      fbPixel.purchase({
+        content_ids: items.map((i) => i.product.id),
+        value: totalPrice,
+        currency: "XOF",
+        num_items: items.reduce((s, i) => s + i.quantity, 0),
+      });
       toast({ title: "Commande confirmée ✅", description: "Merci pour votre achat !" });
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message || "Une erreur est survenue", variant: "destructive" });
