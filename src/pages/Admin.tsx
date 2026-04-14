@@ -223,6 +223,7 @@ const Admin = () => {
       category: p.category, rating: p.rating?.toString() ?? "", tag: p.tag ?? "",
       description: p.description ?? "", featured: false, sort_order: "0",
       payment_link: p.paymentLink ?? "",
+      image_urls: p.imageUrls ?? [], key_features: p.keyFeatures ?? [],
     });
     setIsNew(false);
   };
@@ -233,6 +234,7 @@ const Admin = () => {
       category: p.category, rating: p.rating?.toString() ?? "", tag: p.tag ?? "",
       description: p.description ?? "", featured: false, sort_order: String(products.length),
       payment_link: p.paymentLink ?? "",
+      image_urls: p.imageUrls ?? [], key_features: p.keyFeatures ?? [],
     });
     setIsNew(true);
     toast({ title: "Produit dupliqué — modifiez et enregistrez" });
