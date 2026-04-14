@@ -64,6 +64,8 @@ export type Database = {
           featured: boolean
           id: string
           image_url: string
+          image_urls: Json | null
+          key_features: string[] | null
           old_price: string
           payment_link: string | null
           price: string
@@ -79,6 +81,8 @@ export type Database = {
           featured?: boolean
           id: string
           image_url?: string
+          image_urls?: Json | null
+          key_features?: string[] | null
           old_price: string
           payment_link?: string | null
           price: string
@@ -94,6 +98,8 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string
+          image_urls?: Json | null
+          key_features?: string[] | null
           old_price?: string
           payment_link?: string | null
           price?: string

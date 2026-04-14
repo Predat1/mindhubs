@@ -1,6 +1,6 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye, Upload, ImageIcon, Search, Download, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LogOut, ArrowLeft, Loader2, ShieldAlert, Package, MessageSquare, Link2, ExternalLink, ShoppingBag, Clock, CheckCircle2, XCircle, Truck, Eye, Upload, ImageIcon, Search, Download, Copy, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdminRole";
 import { useProducts } from "@/hooks/useProducts";
@@ -20,6 +20,7 @@ interface ProductForm {
   id: string; title: string; image_url: string; old_price: string; price: string;
   category: string; rating: string; tag: string; description: string;
   featured: boolean; sort_order: string; payment_link: string;
+  image_urls: string[]; key_features: string[];
 }
 
 interface TestimonialForm {
@@ -31,6 +32,7 @@ const emptyProduct: ProductForm = {
   id: "", title: "", image_url: "", old_price: "", price: "",
   category: "Formations", rating: "", tag: "", description: "",
   featured: false, sort_order: "0", payment_link: "",
+  image_urls: [], key_features: [],
 };
 
 const emptyTestimonial: TestimonialForm = {
@@ -77,6 +79,19 @@ const Admin = () => {
     },
   });
   const queryClient = useQueryClient();
+
+  // Realtime order notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+        const newOrder = payload.new as any;
+        toast({ title: "🔔 Nouvelle commande !", description: `${newOrder.customer_name} — ${newOrder.total_price?.toLocaleString()} CFA` });
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const [tab, setTab] = useState<Tab>("products");
   const [productEditing, setProductEditing] = useState<ProductForm | null>(null);
@@ -221,6 +236,7 @@ const Admin = () => {
       category: p.category, rating: p.rating?.toString() ?? "", tag: p.tag ?? "",
       description: p.description ?? "", featured: false, sort_order: "0",
       payment_link: p.paymentLink ?? "",
+      image_urls: p.imageUrls ?? [], key_features: p.keyFeatures ?? [],
     });
     setIsNew(false);
   };
@@ -231,6 +247,7 @@ const Admin = () => {
       category: p.category, rating: p.rating?.toString() ?? "", tag: p.tag ?? "",
       description: p.description ?? "", featured: false, sort_order: String(products.length),
       payment_link: p.paymentLink ?? "",
+      image_urls: p.imageUrls ?? [], key_features: p.keyFeatures ?? [],
     });
     setIsNew(true);
     toast({ title: "Produit dupliqué — modifiez et enregistrez" });
@@ -249,6 +266,7 @@ const Admin = () => {
       rating: e.rating ? parseFloat(e.rating) : null, tag: e.tag.trim() || null,
       description: e.description.trim() || null, featured: e.featured,
       sort_order: parseInt(e.sort_order) || 0, payment_link: e.payment_link.trim() || null,
+      image_urls: e.image_urls.filter(Boolean), key_features: e.key_features.filter(Boolean),
     };
     const { error } = isNew
       ? await supabase.from("products").insert(payload)
@@ -429,7 +447,29 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Conversion stats */}
+        {orders.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            {(() => {
+              const validOrders = orders.filter(o => o.status !== "cancelled");
+              const avgRevenue = validOrders.length > 0 ? Math.round(validOrders.reduce((s, o) => s + o.total_price, 0) / validOrders.length) : 0;
+              const productSales: Record<string, number> = {};
+              validOrders.forEach(o => o.items.forEach(i => { productSales[i.title] = (productSales[i.title] || 0) + i.quantity; }));
+              const topProduct = Object.entries(productSales).sort((a, b) => b[1] - a[1])[0];
+              return [
+                { label: "Panier moyen", value: `${avgRevenue.toLocaleString()} CFA` },
+                { label: "Produit #1", value: topProduct ? topProduct[0].slice(0, 25) : "—" },
+                { label: "Ventes (top)", value: topProduct ? `${topProduct[1]} vendus` : "—" },
+              ].map((s, i) => (
+                <div key={i} className="stat-card rounded-2xl p-4 border-glow">
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-sm font-bold text-foreground mt-1 truncate">{s.value}</p>
+                </div>
+              ));
+            })()}
+          </div>
+        )}
+
         <div className="flex items-center gap-2 mb-8 flex-wrap">
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
@@ -556,12 +596,76 @@ const Admin = () => {
                   <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
+
+                {/* Key features */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Points clés / Livrables</label>
+                  <p className="text-[10px] text-muted-foreground">Un par ligne. Affichés dans "Ce que tu vas recevoir".</p>
+                  <textarea
+                    value={productEditing.key_features.join("\n")}
+                    onChange={(e) => setProductEditing({ ...productEditing, key_features: e.target.value.split("\n") })}
+                    rows={4}
+                    placeholder="Guide PDF complet&#10;Plan d'action sur 30 jours&#10;Scripts de vente prêts à l'emploi&#10;Bonus exclusif"
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                  />
+                </div>
+
+                {/* Gallery images */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Images supplémentaires (galerie)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {productEditing.image_urls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} alt="" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                        <button
+                          onClick={() => {
+                            const next = [...productEditing.image_urls];
+                            next.splice(i, 1);
+                            setProductEditing({ ...productEditing, image_urls: next });
+                          }}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/*";
+                        input.onchange = async (ev) => {
+                          const file = (ev.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          setUploading(true);
+                          const ext = file.name.split(".").pop() || "jpg";
+                          const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                          const { error } = await supabase.storage.from("product-images").upload(fileName, file, { upsert: true });
+                          setUploading(false);
+                          if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+                          const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+                          setProductEditing({ ...productEditing, image_urls: [...productEditing.image_urls, urlData.publicUrl] });
+                        };
+                        input.click();
+                      }}
+                      className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                    >
+                      {uploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={20} />}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="featured" checked={productEditing.featured} onChange={(e) => setProductEditing({ ...productEditing, featured: e.target.checked })} className="accent-primary" />
                   <label htmlFor="featured" className="text-sm text-foreground">Produit phare (affiché sur l'accueil)</label>
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
                   <button onClick={() => setProductEditing(null)} className="px-5 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">Annuler</button>
+                  <a href={`/produit/${productEditing.id}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
+                    <Eye size={16} /> Prévisualiser
+                  </a>
                   <button onClick={saveProduct} disabled={saving} className="btn-primary-brand flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm">
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {isNew ? "Ajouter" : "Enregistrer"}
                   </button>

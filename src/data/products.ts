@@ -19,6 +19,8 @@ export interface Product {
   tag?: string;
   description?: string;
   paymentLink?: string;
+  imageUrls?: string[];
+  keyFeatures?: string[];
 }
 
 export const allProducts: Product[] = [
