@@ -447,7 +447,29 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Conversion stats */}
+        {orders.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            {(() => {
+              const validOrders = orders.filter(o => o.status !== "cancelled");
+              const avgRevenue = validOrders.length > 0 ? Math.round(validOrders.reduce((s, o) => s + o.total_price, 0) / validOrders.length) : 0;
+              const productSales: Record<string, number> = {};
+              validOrders.forEach(o => o.items.forEach(i => { productSales[i.title] = (productSales[i.title] || 0) + i.quantity; }));
+              const topProduct = Object.entries(productSales).sort((a, b) => b[1] - a[1])[0];
+              return [
+                { label: "Panier moyen", value: `${avgRevenue.toLocaleString()} CFA` },
+                { label: "Produit #1", value: topProduct ? topProduct[0].slice(0, 25) : "—" },
+                { label: "Ventes (top)", value: topProduct ? `${topProduct[1]} vendus` : "—" },
+              ].map((s, i) => (
+                <div key={i} className="stat-card rounded-2xl p-4 border-glow">
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-sm font-bold text-foreground mt-1 truncate">{s.value}</p>
+                </div>
+              ));
+            })()}
+          </div>
+        )}
+
         <div className="flex items-center gap-2 mb-8 flex-wrap">
           {([
             { key: "products" as Tab, label: "Produits", icon: Package },
