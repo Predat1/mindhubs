@@ -4,6 +4,7 @@ import StatsBar from "@/components/StatsBar";
 import LogoMarquee from "@/components/LogoMarquee";
 import DiscoverySection from "@/components/DiscoverySection";
 import TrustLogosSection from "@/components/TrustLogosSection";
+import NewProductsSection from "@/components/NewProductsSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
 import RecentlyViewedSection from "@/components/RecentlyViewedSection";
 import GoogleReviewsSection from "@/components/GoogleReviewsSection";
@@ -28,9 +29,10 @@ const Index = () => {
       <DiscoverySection />
       <StatsBar />
       <TrustLogosSection />
-      <RecentlyViewedSection />
+      <NewProductsSection />
       <ExpertiseSection />
       <GoogleReviewsSection />
+      <RecentlyViewedSection />
       <FAQSection />
       <NewsletterSection />
       <HelpSection />
