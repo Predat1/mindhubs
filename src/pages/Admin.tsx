@@ -80,6 +80,19 @@ const Admin = () => {
   });
   const queryClient = useQueryClient();
 
+  // Realtime order notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+        const newOrder = payload.new as any;
+        toast({ title: "🔔 Nouvelle commande !", description: `${newOrder.customer_name} — ${newOrder.total_price?.toLocaleString()} CFA` });
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
   const [tab, setTab] = useState<Tab>("products");
   const [productEditing, setProductEditing] = useState<ProductForm | null>(null);
   const [testimonialEditing, setTestimonialEditing] = useState<TestimonialForm | null>(null);
