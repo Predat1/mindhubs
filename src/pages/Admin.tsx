@@ -253,6 +253,7 @@ const Admin = () => {
       rating: e.rating ? parseFloat(e.rating) : null, tag: e.tag.trim() || null,
       description: e.description.trim() || null, featured: e.featured,
       sort_order: parseInt(e.sort_order) || 0, payment_link: e.payment_link.trim() || null,
+      image_urls: e.image_urls.filter(Boolean), key_features: e.key_features.filter(Boolean),
     };
     const { error } = isNew
       ? await supabase.from("products").insert(payload)
