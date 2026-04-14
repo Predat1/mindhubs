@@ -561,12 +561,76 @@ const Admin = () => {
                   <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
+
+                {/* Key features */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Points clés / Livrables</label>
+                  <p className="text-[10px] text-muted-foreground">Un par ligne. Affichés dans "Ce que tu vas recevoir".</p>
+                  <textarea
+                    value={productEditing.key_features.join("\n")}
+                    onChange={(e) => setProductEditing({ ...productEditing, key_features: e.target.value.split("\n") })}
+                    rows={4}
+                    placeholder="Guide PDF complet&#10;Plan d'action sur 30 jours&#10;Scripts de vente prêts à l'emploi&#10;Bonus exclusif"
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                  />
+                </div>
+
+                {/* Gallery images */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Images supplémentaires (galerie)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {productEditing.image_urls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} alt="" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                        <button
+                          onClick={() => {
+                            const next = [...productEditing.image_urls];
+                            next.splice(i, 1);
+                            setProductEditing({ ...productEditing, image_urls: next });
+                          }}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/*";
+                        input.onchange = async (ev) => {
+                          const file = (ev.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          setUploading(true);
+                          const ext = file.name.split(".").pop() || "jpg";
+                          const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                          const { error } = await supabase.storage.from("product-images").upload(fileName, file, { upsert: true });
+                          setUploading(false);
+                          if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+                          const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+                          setProductEditing({ ...productEditing, image_urls: [...productEditing.image_urls, urlData.publicUrl] });
+                        };
+                        input.click();
+                      }}
+                      className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                    >
+                      {uploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={20} />}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="featured" checked={productEditing.featured} onChange={(e) => setProductEditing({ ...productEditing, featured: e.target.checked })} className="accent-primary" />
                   <label htmlFor="featured" className="text-sm text-foreground">Produit phare (affiché sur l'accueil)</label>
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
                   <button onClick={() => setProductEditing(null)} className="px-5 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">Annuler</button>
+                  <a href={`/produit/${productEditing.id}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
+                    <Eye size={16} /> Prévisualiser
+                  </a>
                   <button onClick={saveProduct} disabled={saving} className="btn-primary-brand flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm">
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {isNew ? "Ajouter" : "Enregistrer"}
                   </button>
