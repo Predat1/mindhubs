@@ -20,6 +20,7 @@ interface ProductForm {
   id: string; title: string; image_url: string; old_price: string; price: string;
   category: string; rating: string; tag: string; description: string;
   featured: boolean; sort_order: string; payment_link: string;
+  image_urls: string[]; key_features: string[];
 }
 
 interface TestimonialForm {
@@ -31,6 +32,7 @@ const emptyProduct: ProductForm = {
   id: "", title: "", image_url: "", old_price: "", price: "",
   category: "Formations", rating: "", tag: "", description: "",
   featured: false, sort_order: "0", payment_link: "",
+  image_urls: [], key_features: [],
 };
 
 const emptyTestimonial: TestimonialForm = {
