@@ -1,55 +1,86 @@
+# Plan : Optimisation conversion — Page Produit & Admin Panel
 
+## A. Page Produit (Frontend) — 7 améliorations
 
-# Plan : Amélioration complète du panel Admin
+### 1. Barre de pourcentage de réduction
 
-## Améliorations prioritaires
+Afficher un badge bien visible avec le % de réduction calculé (ex: "-60%")  pour créer l'urgence.
 
-### 1. Recherche dans les onglets
-Ajouter une barre de recherche en haut de chaque onglet (Produits, Témoignages, Commandes) qui filtre en temps réel par titre/nom/email.
+### 2. Compte à rebours promotionnel
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Mini timer animé "Offre expire dans X:XX:XX" au-dessus du bouton d'achat. Se remet à zéro toutes les 24h pour maintenir la pression.
 
-### 2. Export CSV des commandes
-Bouton "Exporter CSV" dans l'onglet Commandes qui génère un fichier CSV téléchargeable avec toutes les colonnes (client, email, téléphone, total, statut, date, produits).
+### 3. Section garantie & confiance
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Ajouter un bloc avec icônes : "Livraison instantanée", "Paiement sécurisé (Mobile Money)", "Satisfaction Garantie", "Support WhatsApp 24/7". Rassure avant l'achat.
 
-### 3. Graphique de revenus sur le dashboard
-Ajouter un mini-graphique en barres montrant les revenus des 7 derniers jours directement sur le dashboard stats, en utilisant Recharts (déjà disponible via shadcn/ui chart).
+### 4. Galerie d'images avec carousel
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Remplacer l'image unique par un carousel (embla, déjà installé) permettant de montrer plusieurs visuels du produit. L'admin pourra uploader plusieurs images.
 
-### 4. Bouton dupliquer un produit
-Ajouter un bouton "Dupliquer" à côté de Modifier/Supprimer dans la table produits. Pré-remplit le formulaire avec les données du produit existant + un nouvel ID.
+### 5. Onglet Avis clients
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Ajouter un onglet "Avis" à côté de "Description" affichant des avis (depuis la table testimonials ou des avis générés par produit). Renforce la preuve sociale directement sur la page.
 
-### 5. Modal de confirmation stylé
-Remplacer les `confirm()` natifs par un dialog stylé (AlertDialog de shadcn) pour les suppressions de produits, témoignages et commandes.
+### 6. Section "Ce que tu vas recevoir"
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Bloc visuel résumant les livrables clés (guide PDF, bonus, plan d'action, scripts) avec des icônes, extrait automatiquement de la description ou saisi manuellement.
 
-### 6. Lien "Voir sur le site"
-Ajouter un bouton œil/lien dans chaque ligne produit qui ouvre `/produit/:id` dans un nouvel onglet.
+### 7. CTA flottant amélioré
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+Le sticky CTA mobile affiche aussi le % de réduction et un mini compteur. Sur desktop, ajouter un sticky sidebar CTA qui reste visible au scroll.
 
-### 7. Compteur "nouvelles commandes" sur l'onglet
-Afficher un badge rouge sur l'onglet Commandes quand il y a des commandes en statut "pending".
+---
 
-**Fichier modifié :** `src/pages/Admin.tsx`
+## B. Admin Panel — 5 améliorations conversion
+
+### 1. Champ "images multiples" sur le formulaire produit
+
+Permettre d'uploader plusieurs images par produit (stockées en JSON dans un nouveau champ `gallery` ou une colonne `image_urls jsonb`). Alimentera le carousel frontend.
+
+### 2. Aperçu live du produit
+
+Bouton "Prévisualiser" dans le formulaire d'édition qui ouvre un mini-rendu de la page produit telle qu'elle apparaîtra côté client, directement dans l'admin.
+
+### 3. Champ "Points clés" / "Livrables"
+
+Nouveau champ texte structuré (ou liste) dans le formulaire produit pour saisir les livrables/bonus. Affiché dans la section "Ce que tu vas recevoir" sur la page produit.
+
+### 4. Dashboard taux de conversion
+
+Ajouter dans le dashboard : taux de conversion (commandes / vues produit), produit le plus vendu, et revenu moyen par commande. Aide à piloter les ventes.
+
+### 5. Notifications commandes en temps réel
+
+Activer Supabase Realtime sur la table `orders` pour recevoir un toast/notification dans l'admin dès qu'une nouvelle commande arrive, sans rafraîchir.
+
+---
 
 ## Détails techniques
 
-| Élément | Action |
-|---|---|
-| Recherche | State `searchQuery` + `.filter()` sur les données |
-| Export CSV | Fonction JS `downloadCSV()` avec `Blob` + `URL.createObjectURL` |
-| Graphique | `recharts` BarChart avec données groupées par jour depuis `orders` |
-| Dupliquer | `openEditProduct(p)` avec `isNew=true` et ID modifié |
-| AlertDialog | Import `AlertDialog` de shadcn, remplacer 3 `confirm()` |
-| Voir sur site | `<a href="/produit/${id}" target="_blank">` |
-| Badge commandes | `orders.filter(o => o.status === "pending").length` affiché en badge |
 
-Tout se passe dans `src/pages/Admin.tsx`. Aucune migration SQL nécessaire.
+| Element                         | Fichiers modifiés                       | Migration SQL                                                      |
+| ------------------------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| Badge réduction + barre urgence | `ProductDetail.tsx`                     | Non                                                                |
+| Countdown timer                 | `ProductDetail.tsx` (nouveau composant) | Non                                                                |
+| Bloc garantie/confiance         | `ProductDetail.tsx`                     | Non                                                                |
+| Carousel images                 | `ProductDetail.tsx`, `ProductCard.tsx`  | Oui — ajout colonne `image_urls jsonb default '[]'` sur `products` |
+| Onglet Avis                     | `ProductDetail.tsx`                     | Non (utilise testimonials existants)                               |
+| Section livrables               | `ProductDetail.tsx`                     | Oui — ajout colonne `key_features text[]` sur `products`           |
+| CTA desktop sticky              | `StickyProductCTA.tsx`                  | Non                                                                |
+| Multi-upload admin              | `Admin.tsx`                             | Même migration que carousel                                        |
+| Preview live admin              | `Admin.tsx`                             | Non                                                                |
+| Champ livrables admin           | `Admin.tsx`                             | Même migration que livrables                                       |
+| Dashboard conversion            | `Admin.tsx`                             | Non                                                                |
+| Realtime commandes              | `Admin.tsx`                             | Migration `ALTER PUBLICATION supabase_realtime ADD TABLE orders`   |
 
+
+**1 migration SQL** avec :
+
+```sql
+ALTER TABLE products ADD COLUMN image_urls jsonb DEFAULT '[]';
+ALTER TABLE products ADD COLUMN key_features text[] DEFAULT '{}';
+ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+```
+
+Total : ~3 fichiers modifiés, 1 composant créé, 1 migration.
