@@ -93,6 +93,26 @@ export const useProduct = (id: string) => {
   });
 };
 
+export const useNewProducts = () => {
+  return useQuery({
+    queryKey: ["products", "new"],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (error || !data || data.length === 0) {
+        return allProducts.slice(0, 4);
+      }
+
+      return (data as unknown as DbProduct[]).map(mapDbToProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useSearchProducts = (query: string) => {
   return useQuery({
     queryKey: ["products", "search", query],
