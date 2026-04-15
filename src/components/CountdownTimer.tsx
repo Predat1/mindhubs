@@ -23,9 +23,9 @@ const CountdownTimer = () => {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20">
-      <Clock size={14} className="text-destructive shrink-0" />
-      <span className="text-xs font-semibold text-destructive">
+    <div className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20">
+      <Clock size={16} className="text-destructive shrink-0" />
+      <span className="text-sm font-semibold text-destructive">
         Offre expire dans {pad(time.h)}:{pad(time.m)}:{pad(time.s)}
       </span>
     </div>
