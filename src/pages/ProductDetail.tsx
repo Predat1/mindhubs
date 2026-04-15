@@ -8,8 +8,9 @@ import StickyProductCTA from "@/components/StickyProductCTA";
 import SEO from "@/components/SEO";
 import CountdownTimer from "@/components/CountdownTimer";
 import TrustBlock from "@/components/TrustBlock";
+import ProductReviewsSection from "@/components/ProductReviewsSection";
 import { useProduct, useProducts } from "@/hooks/useProducts";
-import { useTestimonials } from "@/hooks/useTestimonials";
+import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
 import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -21,7 +22,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useProduct(id || "");
   const { data: allProducts = [] } = useProducts();
-  const { data: testimonials = [] } = useTestimonials();
+  const { data: reviews = [] } = useProductReviews(id || "");
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { addViewed } = useRecentlyViewed();
@@ -266,12 +267,12 @@ const ProductDetail = () => {
                   activeTab === "avis" ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Avis ({testimonials.length})
+                Avis ({reviews.length})
               </button>
             </div>
             <div className="stat-card rounded-b-xl sm:rounded-b-2xl rounded-tr-xl sm:rounded-tr-2xl p-4 sm:p-6 md:p-8">
               {activeTab === "description" ? (
-                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground space-y-3">
+                <div className="prose prose-sm max-w-none text-muted-foreground space-y-3">
                   <h3 className="text-foreground font-bold text-sm sm:text-base">Description</h3>
                   {product.description?.split("\n\n").map((block, idx) => (
                     <div key={idx}>
@@ -285,32 +286,7 @@ const ProductDetail = () => {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <h3 className="text-foreground font-bold text-sm sm:text-base">Avis clients</h3>
-                  {testimonials.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Aucun avis pour le moment.</p>
-                  ) : (
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                      {testimonials.slice(0, 8).map((t) => (
-                        <div key={t.id} className="p-3 rounded-xl bg-muted/30 border border-border space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{t.avatar_initials}</div>
-                            <div>
-                              <p className="text-xs font-semibold text-foreground">{t.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{t.handle}</p>
-                            </div>
-                            {t.verified && <span className="text-[10px] text-primary ml-auto">✓ Vérifié</span>}
-                          </div>
-                          <p className="text-xs text-foreground/80 leading-relaxed">{t.content}</p>
-                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                            <span>❤️ {t.likes}</span>
-                            <span>🔁 {t.retweets}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ProductReviewsSection productId={product.id} />
               )}
             </div>
           </div>
