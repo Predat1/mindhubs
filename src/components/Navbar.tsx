@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, Sun, Moon } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
@@ -20,6 +21,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { totalItems, cartBounce } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,6 +113,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1.5"
+              aria-label="Changer le thème"
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* Search */}
             <div ref={searchRef} className="relative">
               <button
