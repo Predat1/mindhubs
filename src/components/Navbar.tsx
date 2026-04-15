@@ -113,6 +113,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1.5"
+              aria-label="Changer le thème"
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* Search */}
             <div ref={searchRef} className="relative">
               <button
