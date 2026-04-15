@@ -163,9 +163,6 @@ const ProductDetail = () => {
                   <span className="text-[10px] sm:text-xs font-medium text-accent">🔥 {viewerCount} personnes consultent ce produit</span>
                 </div>
 
-                {/* Countdown */}
-                <CountdownTimer />
-
                 <div className="stat-card rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
                   <h1 className="text-base sm:text-lg md:text-xl font-bold text-foreground">{product.title}</h1>
                   <div className="flex items-center gap-3">
@@ -201,6 +198,9 @@ const ProductDetail = () => {
 
                 {/* Trust block */}
                 <TrustBlock />
+
+                {/* Countdown - moved to bottom */}
+                <CountdownTimer />
 
                 <div className="stat-card rounded-xl p-4 sm:p-5 space-y-2 sm:space-y-3">
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Processus de commande</h3>
