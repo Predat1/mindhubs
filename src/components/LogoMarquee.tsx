@@ -38,7 +38,7 @@ const LogoMarquee = () => {
           {doubled.map((logo, i) => (
             <div
               key={`${logo.name}-${i}`}
-              className="flex-shrink-0 flex items-center justify-center h-10 sm:h-12 opacity-50 hover:opacity-100 transition-opacity duration-300 brightness-0 invert hover:brightness-100 hover:invert-0"
+              className="flex-shrink-0 flex items-center justify-center h-10 sm:h-12 opacity-60 hover:opacity-100 transition-opacity duration-300 dark:brightness-0 dark:invert dark:hover:brightness-100 dark:hover:invert-0"
             >
               <img
                 src={logo.src}
