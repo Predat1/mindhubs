@@ -19,7 +19,7 @@ const LogoMarquee = () => {
   const doubled = [...logos, ...logos];
 
   return (
-    <section className="relative py-4 sm:py-6 bg-background overflow-hidden">
+    <section className="relative py-4 sm:py-6 overflow-hidden logo-marquee-bg">
       <div className="relative">
         <ProgressiveBlur
           direction="left"
