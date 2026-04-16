@@ -1,10 +1,28 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { Flame, Users } from "lucide-react";
+import { Flame, Users, Sparkles, Star, TrendingUp } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 
-const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
+/** Determine the best badge for a product based on its data */
+function getSmartBadge(product: Product): { label: string; icon: typeof Flame; className: string } | null {
+  // Tag-based badges first
+  if (product.tag === "Nouveau" || product.tag === "Nouveauté") {
+    return { label: "NOUVEAU", icon: Sparkles, className: "bg-emerald-500/90 text-white" };
+  }
+  if (product.tag === "Promo") {
+    return { label: "PROMO", icon: TrendingUp, className: "badge-purple" };
+  }
+  // Rating-based
+  if (product.rating && product.rating >= 4.8) {
+    return { label: "TOP VENTE", icon: Star, className: "bg-accent/90 text-accent-foreground" };
+  }
+  if (product.rating && product.rating >= 4.5) {
+    return { label: "POPULAIRE", icon: Flame, className: "bg-orange-500/90 text-white" };
+  }
+  // Default
+  return { label: "VENTE !", icon: TrendingUp, className: "badge-purple" };
+}
 
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex justify-center gap-0.5">
@@ -23,7 +41,17 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 const ProductCard = ({ product }: { product: Product }) => {
   const [popupOpen, setPopupOpen] = useState(false);
-  const isBestSeller = BEST_SELLERS.includes(product.id);
+  const badge = useMemo(() => getSmartBadge(product), [product]);
+
+  // Compute discount percentage
+  const discountPct = useMemo(() => {
+    const oldNum = parseInt(product.oldPrice.replace(/[^\d]/g, ""), 10);
+    const newNum = parseInt(product.price.replace(/[^\d]/g, ""), 10);
+    if (oldNum > 0 && newNum > 0 && oldNum > newNum) {
+      return Math.round(((oldNum - newNum) / oldNum) * 100);
+    }
+    return 0;
+  }, [product.oldPrice, product.price]);
 
   const handleBuy = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,13 +64,16 @@ const ProductCard = ({ product }: { product: Product }) => {
       <Link to={`/produit/${product.id}`} className="block group">
         <div className="course-card rounded-xl overflow-hidden h-full flex flex-col">
           <div className="relative overflow-hidden">
-            {isBestSeller ? (
-              <span className="absolute top-2 left-2 bg-accent/90 text-accent-foreground text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full z-10 flex items-center gap-1">
-                <Flame size={10} /> BEST-SELLER
+            {/* Smart Badge */}
+            {badge && (
+              <span className={`absolute top-2 left-2 ${badge.className} text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full z-10 flex items-center gap-1`}>
+                <badge.icon size={10} /> {badge.label}
               </span>
-            ) : (
-              <span className="absolute top-2 left-2 badge-purple text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
-                VENTE !
+            )}
+            {/* Discount Badge */}
+            {discountPct > 0 && (
+              <span className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
+                -{discountPct}%
               </span>
             )}
             <img
