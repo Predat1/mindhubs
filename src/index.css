@@ -99,6 +99,14 @@
 }
 
 @layer utilities {
+  .logo-marquee-bg {
+    background: hsl(var(--background));
+  }
+
+  .light .logo-marquee-bg {
+    background: hsl(0 0% 12%);
+  }
+
   .text-gradient-brand {
     background: linear-gradient(135deg, hsl(43 80% 55%), hsl(35 90% 45%));
     -webkit-background-clip: text;
