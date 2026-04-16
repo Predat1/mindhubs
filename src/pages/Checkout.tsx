@@ -11,15 +11,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2, Loader2 } from "lucide-react";
+import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2, Loader2, UserPlus } from "lucide-react";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
-  const { user } = useAuth();
+  const { user, signUp } = useAuth();
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", paymentMethod: "mobile_money" });
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState("");
+  const [creatingAccount, setCreatingAccount] = useState(false);
 
   // If all items have payment links, redirect to the first one
   useEffect(() => {
@@ -30,6 +33,24 @@ const Checkout = () => {
   }, [items, navigate]);
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
+
+  const handleCreateAccount = async () => {
+    if (accountPassword.length < 6) {
+      toast({ title: "Le mot de passe doit contenir au moins 6 caractères", variant: "destructive" });
+      return;
+    }
+    setCreatingAccount(true);
+    try {
+      const { error } = await signUp(form.email, accountPassword, form.name);
+      if (error) throw error;
+      toast({ title: "Compte créé ! 🎉", description: "Vérifiez votre email pour confirmer votre compte." });
+      setShowCreateAccount(false);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setCreatingAccount(false);
+    }
+  };
 
   if (items.length === 0 && !confirmed) {
     return (
@@ -64,6 +85,39 @@ const Checkout = () => {
               <p className="text-muted-foreground text-xs sm:text-sm max-w-md mx-auto">
                 Merci {form.name} ! Vous recevrez un email de confirmation à <span className="text-accent">{form.email}</span>.
               </p>
+
+              {/* Post-purchase account creation */}
+              {!user && !showCreateAccount && (
+                <button
+                  onClick={() => setShowCreateAccount(true)}
+                  className="inline-flex items-center gap-2 text-primary text-xs sm:text-sm font-medium hover:underline"
+                >
+                  <UserPlus size={16} />
+                  Créer un compte pour suivre vos commandes
+                </button>
+              )}
+
+              {showCreateAccount && (
+                <div className="space-y-3 text-left max-w-xs mx-auto">
+                  <p className="text-xs text-muted-foreground text-center">Créez votre compte en 1 clic avec <span className="text-accent">{form.email}</span></p>
+                  <Input
+                    type="password"
+                    placeholder="Choisir un mot de passe"
+                    value={accountPassword}
+                    onChange={(e) => setAccountPassword(e.target.value)}
+                    className="text-sm"
+                  />
+                  <button
+                    onClick={handleCreateAccount}
+                    disabled={creatingAccount}
+                    className="w-full btn-primary-brand py-2.5 rounded-xl font-semibold text-xs hover-scale flex items-center justify-center gap-2 disabled:opacity-70"
+                  >
+                    {creatingAccount && <Loader2 size={14} className="animate-spin" />}
+                    {creatingAccount ? "Création..." : "Créer mon compte"}
+                  </button>
+                </div>
+              )}
+
               <Link to="/boutique" className="btn-primary-brand inline-block px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm hover-scale">
                 CONTINUER MES ACHATS
               </Link>
