@@ -23,7 +23,7 @@ const PopularProductsSection = () => {
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
           <div className="text-center mb-6 sm:mb-10">
-            <div className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold mb-3">
+            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold mb-3">
               <Flame size={14} /> Les plus populaires
             </div>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground">
