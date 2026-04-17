@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import fbPixel from "@/hooks/useFacebookPixel";
+import { trackProductView, trackProductPurchase } from "@/hooks/useProductTracking";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ const ProductDetail = () => {
   useEffect(() => {
     if (product) {
       addViewed(product.id);
+      trackProductView(product.id);
       const price = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
       fbPixel.viewContent({
         content_name: product.title,
@@ -51,6 +53,7 @@ const ProductDetail = () => {
   const handleBuyNow = () => {
     if (product) {
       addToCart(product);
+      trackProductPurchase(product.id);
       const price = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
       fbPixel.initiateCheckout({
         content_ids: [product.id],
