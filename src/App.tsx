@@ -23,6 +23,10 @@ import FAQ from "./pages/FAQ.tsx";
 import Admin from "./pages/Admin.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import BecomeSeller from "./pages/BecomeSeller.tsx";
+import VendorStore from "./pages/VendorStore.tsx";
+import VendorDashboard from "./pages/VendorDashboard.tsx";
+import VendorProductForm from "./pages/VendorProductForm.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 
 const queryClient = new QueryClient();
@@ -54,6 +58,11 @@ const App = () => (
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/become-a-seller" element={<BecomeSeller />} />
+                <Route path="/store/:username" element={<VendorStore />} />
+                <Route path="/dashboard" element={<VendorDashboard />} />
+                <Route path="/dashboard/new-product" element={<VendorProductForm />} />
+                <Route path="/dashboard/edit-product/:id" element={<VendorProductForm />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

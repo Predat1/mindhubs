@@ -131,7 +131,7 @@ const VendorProductForm = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={isEdit ? "Modifier produit" : "Nouveau produit"} description="Gérez vos produits." path="/dashboard/new-product" noindex />
+      <SEO title={isEdit ? "Modifier produit" : "Nouveau produit"} description="Gérez vos produits." path="/dashboard/new-product" />
       <Navbar />
 
       <section className="container mx-auto px-4 pt-28 sm:pt-32 pb-12 max-w-3xl">

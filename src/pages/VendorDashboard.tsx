@@ -65,7 +65,7 @@ const VendorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Dashboard vendeur — MindHub" description="Gérez vos produits et suivez vos ventes." path="/dashboard" noindex />
+      <SEO title="Dashboard vendeur — MindHub" description="Gérez vos produits et suivez vos ventes." path="/dashboard" />
       <Navbar />
 
       <section className="container mx-auto px-4 pt-28 sm:pt-32 pb-12 max-w-5xl">
