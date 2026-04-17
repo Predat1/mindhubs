@@ -4,7 +4,6 @@ import StatsBar from "@/components/StatsBar";
 import LogoMarquee from "@/components/LogoMarquee";
 import DiscoverySection from "@/components/DiscoverySection";
 import TrustLogosSection from "@/components/TrustLogosSection";
-import PopularProductsSection from "@/components/PopularProductsSection";
 import NewProductsSection from "@/components/NewProductsSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
 import RecentlyViewedSection from "@/components/RecentlyViewedSection";
@@ -28,7 +27,6 @@ const Index = () => {
       <HeroSection />
       <LogoMarquee />
       <DiscoverySection />
-      <PopularProductsSection />
       <StatsBar />
       <TrustLogosSection />
       <NewProductsSection />

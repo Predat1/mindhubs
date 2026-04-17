@@ -1,37 +1,26 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen, Briefcase, Package } from "lucide-react";
+import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ProductCard from "@/components/ProductCard";
-import { useSearchProducts, useProducts } from "@/hooks/useProducts";
+import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
 import { useSmartRanking } from "@/hooks/useSmartRanking";
 
 const categories = [
-  { label: "Populaire", icon: TrendingUp, filter: (p: any) => p.rating && p.rating >= 4.5 },
-  { label: "Nouveautés", icon: Sparkles, filter: (p: any) => p.tag === "Nouveau" || p.tag === "Nouveauté" },
-  { label: "E-books", icon: BookOpen, filter: (p: any) => p.category === "Livres" },
-  { label: "Business", icon: Briefcase, filter: (p: any) => p.category === "Business" },
-  { label: "Kits", icon: Package, filter: (p: any) => p.category === "Kits" },
+  { label: "Populaire", icon: TrendingUp },
+  { label: "Nouveautés", icon: Sparkles },
+  { label: "E-books", icon: BookOpen },
 ];
 
 const DiscoverySection = () => {
   const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const { data: searchResults = [] } = useSearchProducts(query);
-  const { data: allProducts = [] } = useProducts();
-  const rankedProducts = useSmartRanking(allProducts);
+  const { data: featured = [] } = useFeaturedProducts();
+  const rankedFeatured = useSmartRanking(featured);
   const navigate = useNavigate();
 
   const showResults = query.trim().length >= 2 && searchResults.length > 0;
-
-  const displayProducts = useMemo(() => {
-    if (showResults) return searchResults.slice(0, 4);
-    if (activeFilter) {
-      const cat = categories.find((c) => c.label === activeFilter);
-      if (cat) return rankedProducts.filter(cat.filter).slice(0, 4);
-    }
-    return rankedProducts.slice(0, 4);
-  }, [showResults, searchResults, activeFilter, rankedProducts]);
+  const displayProducts = showResults ? searchResults : rankedFeatured.slice(0, 4);
 
   return (
     <section className="py-8 sm:py-12 bg-background">
@@ -51,7 +40,7 @@ const DiscoverySection = () => {
                 type="text"
                 placeholder="Rechercher une formation..."
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setActiveFilter(null); }}
+                onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && query.trim()) navigate(`/boutique`);
                 }}
@@ -61,23 +50,16 @@ const DiscoverySection = () => {
           </div>
         </AnimateOnScroll>
 
-        {/* Quick Category Tags — now functional */}
+        {/* Quick Category Tags */}
         <AnimateOnScroll delay={150}>
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 flex-wrap">
             {categories.map((cat) => (
               <button
                 key={cat.label}
-                onClick={() => {
-                  setActiveFilter(activeFilter === cat.label ? null : cat.label);
-                  setQuery("");
-                }}
-                className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium border cursor-pointer transition-all hover-scale ${
-                  activeFilter === cat.label
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "stat-card border-glow text-muted-foreground hover:text-foreground"
-                }`}
+                onClick={() => navigate("/boutique")}
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium stat-card border-glow hover-scale cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
               >
-                <cat.icon size={12} className={activeFilter === cat.label ? "" : "text-primary"} />
+                <cat.icon size={12} className="text-primary" />
                 {cat.label}
               </button>
             ))}
@@ -86,17 +68,11 @@ const DiscoverySection = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
-          {displayProducts.length > 0 ? (
-            displayProducts.map((product, i) => (
-              <AnimateOnScroll key={product.id} delay={i * 80}>
-                <ProductCard product={product} />
-              </AnimateOnScroll>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-sm text-muted-foreground">Aucun produit trouvé dans cette catégorie.</p>
-            </div>
-          )}
+          {displayProducts.map((product, i) => (
+            <AnimateOnScroll key={product.id} delay={i * 80}>
+              <ProductCard product={product} />
+            </AnimateOnScroll>
+          ))}
         </div>
 
         <AnimateOnScroll delay={400}>
