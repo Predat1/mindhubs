@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      product_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          product_id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          product_id: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          product_id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       product_reviews: {
         Row: {
           author_name: string
@@ -210,7 +237,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      product_stats: {
+        Row: {
+          product_id: string | null
+          purchases_30d: number | null
+          purchases_7d: number | null
+          total_purchases: number | null
+          total_views: number | null
+          views_30d: number | null
+          views_7d: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

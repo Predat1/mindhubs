@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/data/products";
+import { trackProductPurchase } from "@/hooks/useProductTracking";
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
@@ -86,6 +87,7 @@ const BuyPopup = ({ product, open, onClose }: Props) => {
   const handleBuyNow = useCallback(() => {
     launchConfetti();
     addToCart(product);
+    trackProductPurchase(product.id);
     setTimeout(() => {
       onClose();
       if (product.paymentLink) {

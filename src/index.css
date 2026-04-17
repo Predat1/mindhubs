@@ -16,7 +16,7 @@
     --popover: 0 0% 10%;
     --popover-foreground: 45 10% 92%;
 
-    --primary: 43 80% 55%;
+    --primary: 51 94% 52%;
     --primary-foreground: 0 0% 5%;
 
     --secondary: 0 0% 14%;
@@ -25,7 +25,7 @@
     --muted: 0 0% 16%;
     --muted-foreground: 45 5% 55%;
 
-    --accent: 43 70% 50%;
+    --accent: 51 94% 52%;
     --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84% 60%;
@@ -33,18 +33,18 @@
 
     --border: 0 0% 18%;
     --input: 0 0% 16%;
-    --ring: 43 80% 55%;
+    --ring: 51 94% 52%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 9%;
     --sidebar-foreground: 45 5% 55%;
-    --sidebar-primary: 43 80% 55%;
+    --sidebar-primary: 51 94% 52%;
     --sidebar-primary-foreground: 0 0% 5%;
     --sidebar-accent: 0 0% 14%;
     --sidebar-accent-foreground: 45 10% 90%;
     --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 43 80% 55%;
+    --sidebar-ring: 51 94% 52%;
   }
 
   .light {
@@ -57,8 +57,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 12%;
 
-    --primary: 43 80% 48%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 51 94% 48%;
+    --primary-foreground: 0 0% 5%;
 
     --secondary: 40 10% 92%;
     --secondary-foreground: 0 0% 25%;
@@ -66,24 +66,24 @@
     --muted: 40 10% 93%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 43 70% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 51 94% 48%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 40 10% 88%;
     --input: 40 10% 90%;
-    --ring: 43 80% 48%;
+    --ring: 51 94% 48%;
 
     --sidebar-background: 40 15% 95%;
     --sidebar-foreground: 0 0% 45%;
-    --sidebar-primary: 43 80% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 51 94% 48%;
+    --sidebar-primary-foreground: 0 0% 5%;
     --sidebar-accent: 40 10% 92%;
     --sidebar-accent-foreground: 0 0% 20%;
     --sidebar-border: 40 10% 88%;
-    --sidebar-ring: 43 80% 48%;
+    --sidebar-ring: 51 94% 48%;
   }
 }
 
@@ -104,7 +104,7 @@
   }
 
   .text-gradient-brand {
-    background: linear-gradient(135deg, hsl(43 80% 55%), hsl(35 90% 45%));
+    background: linear-gradient(135deg, hsl(51 94% 52%), hsl(45 100% 45%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -185,7 +185,7 @@
   }
 
   .drop-shadow-hero {
-    filter: drop-shadow(0 20px 40px hsl(43 80% 55% / 0.1)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.3));
+    filter: drop-shadow(0 20px 40px hsl(51 94% 52% / 0.15)) drop-shadow(0 4px 12px hsl(0 0% 0% / 0.3));
   }
 
   @keyframes cursor-blink {
