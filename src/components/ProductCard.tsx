@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { Flame, Users } from "lucide-react";
+import { Flame, Users, Store, BadgeCheck } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
+import { useVendorById } from "@/hooks/useVendors";
 
 const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
 
@@ -24,11 +25,17 @@ const StarRating = ({ rating }: { rating: number }) => (
 const ProductCard = ({ product }: { product: Product }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const isBestSeller = BEST_SELLERS.includes(product.id);
+  const { data: vendor } = useVendorById(product.vendorId);
 
   const handleBuy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setPopupOpen(true);
+  };
+
+  const handleVendorClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   return (
@@ -63,6 +70,17 @@ const ProductCard = ({ product }: { product: Product }) => {
               <Users size={10} />
               <span>{120 + Math.floor(product.title.length * 3)}+ acheteurs</span>
             </div>
+            {vendor && (
+              <Link
+                to={`/store/${vendor.username}`}
+                onClick={handleVendorClick}
+                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Store size={9} />
+                <span className="truncate max-w-[120px]">{vendor.shop_name}</span>
+                {vendor.verified && <BadgeCheck size={10} className="text-accent" />}
+              </Link>
+            )}
             <div className="flex items-center justify-center gap-2">
               <span className="text-muted-foreground line-through text-[10px] sm:text-xs">{product.oldPrice}</span>
               <span className="text-accent font-bold text-sm sm:text-base underline">{product.price}</span>

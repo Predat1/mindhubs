@@ -21,6 +21,7 @@ export interface Product {
   paymentLink?: string;
   imageUrls?: string[];
   keyFeatures?: string[];
+  vendorId?: string;
 }
 
 export const allProducts: Product[] = [

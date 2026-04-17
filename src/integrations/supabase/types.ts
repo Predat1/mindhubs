@@ -141,6 +141,7 @@ export type Database = {
           sort_order: number
           tag: string | null
           title: string
+          vendor_id: string | null
         }
         Insert: {
           category?: string
@@ -158,6 +159,7 @@ export type Database = {
           sort_order?: number
           tag?: string | null
           title: string
+          vendor_id?: string | null
         }
         Update: {
           category?: string
@@ -175,8 +177,17 @@ export type Database = {
           sort_order?: number
           tag?: string | null
           title?: string
+          vendor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       testimonials: {
         Row: {
@@ -235,6 +246,42 @@ export type Database = {
         }
         Relationships: []
       }
+      vendors: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          shop_name: string
+          updated_at: string
+          user_id: string
+          username: string
+          verified: boolean
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          shop_name: string
+          updated_at?: string
+          user_id: string
+          username: string
+          verified?: boolean
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          shop_name?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       product_stats: {
@@ -260,7 +307,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "vendor"
       order_status: "pending" | "confirmed" | "delivered" | "cancelled"
     }
     CompositeTypes: {
@@ -389,7 +436,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "vendor"],
       order_status: ["pending", "confirmed", "delivered", "cancelled"],
     },
   },

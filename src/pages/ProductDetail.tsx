@@ -12,12 +12,13 @@ import ProductReviewsSection from "@/components/ProductReviewsSection";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
-import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen } from "lucide-react";
+import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import fbPixel from "@/hooks/useFacebookPixel";
 import { trackProductView, trackProductPurchase } from "@/hooks/useProductTracking";
+import { useVendorById, useVendorProducts } from "@/hooks/useVendors";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,8 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { addViewed } = useRecentlyViewed();
+  const { data: vendor } = useVendorById(product?.vendorId);
+  const { data: vendorProducts = [] } = useVendorProducts(product?.vendorId);
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -194,6 +197,15 @@ const ProductDetail = () => {
                   <div className="text-[10px] sm:text-xs text-muted-foreground space-y-1 pt-2">
                     <p><span className="text-foreground font-medium">Catégorie</span> {product.category}</p>
                     {product.tag && <p><span className="text-foreground font-medium">Étiquette</span> {product.tag}</p>}
+                    {vendor && (
+                      <p className="flex items-center gap-1 flex-wrap">
+                        <span className="text-foreground font-medium">Vendu par</span>
+                        <Link to={`/store/${vendor.username}`} className="inline-flex items-center gap-1 text-primary hover:underline">
+                          <Store size={11} /> {vendor.shop_name}
+                          {vendor.verified && <BadgeCheck size={11} className="text-accent" />}
+                        </Link>
+                      </p>
+                    )}
                   </div>
                   <div className="pt-2">
                     <ShareButtons url={`/produit/${product.id}`} title={product.title} />
@@ -295,6 +307,29 @@ const ProductDetail = () => {
           </div>
         </AnimateOnScroll>
       </section>
+
+      {/* Same vendor products */}
+      {vendor && vendorProducts.filter((p) => p.id !== product.id).length > 0 && (
+        <section className="container mx-auto px-4 pb-10 sm:pb-12">
+          <div className="max-w-5xl mx-auto">
+            <AnimateOnScroll>
+              <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
+                <h2 className="text-base sm:text-xl font-bold text-foreground inline-flex items-center gap-2">
+                  <Store size={18} className="text-accent" /> Plus de {vendor.shop_name}
+                </h2>
+                <Link to={`/store/${vendor.username}`} className="text-xs text-primary hover:underline shrink-0">Voir la boutique →</Link>
+              </div>
+            </AnimateOnScroll>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {vendorProducts.filter((p) => p.id !== product.id).slice(0, 4).map((p, i) => (
+                <AnimateOnScroll key={p.id} delay={i * 80}>
+                  <ProductCard product={p} />
+                </AnimateOnScroll>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Similar Products */}
       <section className="container mx-auto px-4 pb-16 sm:pb-20">

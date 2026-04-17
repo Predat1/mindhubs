@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, Sun, Moon } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useCurrentVendor } from "@/hooks/useVendors";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
@@ -22,6 +23,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { totalItems, cartBounce } = useCart();
   const { theme, toggleTheme } = useTheme();
+  const { data: currentVendor } = useCurrentVendor();
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -113,6 +115,23 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Vendor entry */}
+            {currentVendor ? (
+              <Link
+                to="/dashboard"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/30 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
+              >
+                <LayoutDashboard size={14} /> Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/become-a-seller"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-primary/40 text-primary text-xs font-semibold hover:bg-primary/10 transition-colors"
+              >
+                <Store size={14} /> Devenir vendeur
+              </Link>
+            )}
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -228,6 +247,14 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to={currentVendor ? "/dashboard" : "/become-a-seller"}
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 py-3 text-sm font-semibold text-primary"
+            >
+              {currentVendor ? <LayoutDashboard size={16} /> : <Store size={16} />}
+              {currentVendor ? "Mon dashboard vendeur" : "Devenir vendeur"}
+            </Link>
           </div>
         )}
       </nav>
