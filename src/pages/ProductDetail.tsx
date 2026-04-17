@@ -308,6 +308,29 @@ const ProductDetail = () => {
         </AnimateOnScroll>
       </section>
 
+      {/* Same vendor products */}
+      {vendor && vendorProducts.filter((p) => p.id !== product.id).length > 0 && (
+        <section className="container mx-auto px-4 pb-10 sm:pb-12">
+          <div className="max-w-5xl mx-auto">
+            <AnimateOnScroll>
+              <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
+                <h2 className="text-base sm:text-xl font-bold text-foreground inline-flex items-center gap-2">
+                  <Store size={18} className="text-accent" /> Plus de {vendor.shop_name}
+                </h2>
+                <Link to={`/store/${vendor.username}`} className="text-xs text-primary hover:underline shrink-0">Voir la boutique →</Link>
+              </div>
+            </AnimateOnScroll>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {vendorProducts.filter((p) => p.id !== product.id).slice(0, 4).map((p, i) => (
+                <AnimateOnScroll key={p.id} delay={i * 80}>
+                  <ProductCard product={p} />
+                </AnimateOnScroll>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Similar Products */}
       <section className="container mx-auto px-4 pb-16 sm:pb-20">
         <div className="max-w-5xl mx-auto">
