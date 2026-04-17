@@ -20,3 +20,22 @@ export const useIsAdmin = () => {
     staleTime: 5 * 60 * 1000,
   });
 };
+
+export const useIsVendor = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["vendor-role", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "vendor",
+      });
+      if (error) return false;
+      return data as boolean;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+};

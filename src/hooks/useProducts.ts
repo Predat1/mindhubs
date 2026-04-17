@@ -17,6 +17,7 @@ export interface DbProduct {
   payment_link: string | null;
   image_urls: any | null;
   key_features: string[] | null;
+  vendor_id: string | null;
 }
 
 const mapDbToProduct = (db: DbProduct): Product => ({
@@ -32,6 +33,7 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   paymentLink: db.payment_link ?? undefined,
   imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
   keyFeatures: db.key_features ?? [],
+  vendorId: db.vendor_id ?? undefined,
 });
 
 export const useProducts = () => {
