@@ -32,8 +32,8 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Clients", href: "/dashboard/customers", icon: Users },
   { label: "Revenus", href: "/dashboard/revenue", icon: DollarSign },
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, badge: "Nouveau" },
-  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, badge: "Nouveau" },
+  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
+  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ];
 
@@ -98,9 +98,8 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         {items.map((item) => {
           const Icon = item.icon;
-          const active =
-            location.pathname + location.search === item.href ||
-            (item.href === location.pathname && !location.search);
+          const fullPath = location.pathname + location.search;
+          const active = fullPath === item.href;
           return (
             <Link
               key={item.label}
