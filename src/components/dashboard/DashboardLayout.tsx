@@ -32,8 +32,8 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Clients", href: "/dashboard/customers", icon: Users },
   { label: "Revenus", href: "/dashboard/revenue", icon: DollarSign },
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, badge: "Nouveau" },
-  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, badge: "Nouveau" },
+  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
+  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ];
 
