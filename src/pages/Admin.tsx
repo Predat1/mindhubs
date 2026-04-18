@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { categories } from "@/data/products";
-import Navbar from "@/components/Navbar";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SEO from "@/components/SEO";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -150,7 +150,7 @@ const Admin = () => {
   }
   if (!user) {
     return (
-      <div className="min-h-screen bg-background"><SEO title="Administration" description="Panneau d'administration" path="/admin" /><Navbar />
+      <div className="min-h-screen bg-muted/30"><SEO title="Administration" description="Panneau d'administration" path="/admin" />
         <div className="pt-24 text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">Accès réservé</h1>
           <p className="text-muted-foreground">Veuillez vous connecter.</p>
@@ -161,7 +161,7 @@ const Admin = () => {
   }
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background"><SEO title="Accès refusé" description="" path="/admin" /><Navbar />
+      <div className="min-h-screen bg-muted/30"><SEO title="Accès refusé" description="" path="/admin" />
         <div className="pt-24 text-center space-y-4">
           <ShieldAlert className="mx-auto text-destructive" size={48} />
           <h1 className="text-2xl font-bold text-foreground">Accès refusé</h1>
@@ -387,21 +387,17 @@ const Admin = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <DashboardLayout variant="admin" title="Administration">
       <SEO title="Administration" description="Gérez vos produits et témoignages" path="/admin" />
-      <Navbar />
 
-      <div className="pt-20 pb-12 container mx-auto px-4 max-w-6xl">
+      <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft size={20} /></button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Administration</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Gérez votre boutique en un coup d'œil</p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Bonjour Admin ! ☀️</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Pilotez la marketplace en un coup d'œil.</p>
           </div>
-          <button onClick={async () => { await signOut(); navigate("/"); }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
+          <button onClick={async () => { await signOut(); navigate("/"); }} className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:text-foreground transition-all">
             <LogOut size={16} /> Déconnexion
           </button>
         </div>
@@ -987,7 +983,8 @@ const Admin = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
