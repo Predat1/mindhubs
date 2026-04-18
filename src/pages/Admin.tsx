@@ -983,6 +983,7 @@ const Admin = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </DashboardLayout>
   );
 };
