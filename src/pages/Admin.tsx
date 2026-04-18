@@ -984,7 +984,6 @@ const Admin = () => {
         </AlertDialogContent>
       </AlertDialog>
       </div>
-      </div>
     </DashboardLayout>
   );
 };
