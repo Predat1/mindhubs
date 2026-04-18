@@ -98,9 +98,8 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         {items.map((item) => {
           const Icon = item.icon;
-          const active =
-            location.pathname + location.search === item.href ||
-            (item.href === location.pathname && !location.search);
+          const fullPath = location.pathname + location.search;
+          const active = fullPath === item.href;
           return (
             <Link
               key={item.label}
