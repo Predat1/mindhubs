@@ -27,6 +27,14 @@ import BecomeSeller from "./pages/BecomeSeller.tsx";
 import VendorStore from "./pages/VendorStore.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
 import VendorProductForm from "./pages/VendorProductForm.tsx";
+import VendorSales from "./pages/VendorSales.tsx";
+import VendorProducts from "./pages/VendorProducts.tsx";
+import VendorCustomers from "./pages/VendorCustomers.tsx";
+import VendorRevenue from "./pages/VendorRevenue.tsx";
+import VendorAnalytics from "./pages/VendorAnalytics.tsx";
+import VendorMarketing from "./pages/VendorMarketing.tsx";
+import VendorAffiliation from "./pages/VendorAffiliation.tsx";
+import VendorSettings from "./pages/VendorSettings.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 
 const queryClient = new QueryClient();
@@ -63,6 +71,14 @@ const App = () => (
                 <Route path="/dashboard" element={<VendorDashboard />} />
                 <Route path="/dashboard/new-product" element={<VendorProductForm />} />
                 <Route path="/dashboard/edit-product/:id" element={<VendorProductForm />} />
+                <Route path="/dashboard/sales" element={<VendorSales />} />
+                <Route path="/dashboard/products" element={<VendorProducts />} />
+                <Route path="/dashboard/customers" element={<VendorCustomers />} />
+                <Route path="/dashboard/revenue" element={<VendorRevenue />} />
+                <Route path="/dashboard/analytics" element={<VendorAnalytics />} />
+                <Route path="/dashboard/marketing" element={<VendorMarketing />} />
+                <Route path="/dashboard/affiliation" element={<VendorAffiliation />} />
+                <Route path="/dashboard/settings" element={<VendorSettings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
