@@ -5,6 +5,7 @@ import {
   Sparkles, Settings, HelpCircle, LogOut, Search, Bell, Plus, ExternalLink,
   Menu, X, ChevronDown, Store, MessageSquare, ShieldCheck,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 export type SidebarItem = {
   label: string;
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   badge?: string;
 };
 
