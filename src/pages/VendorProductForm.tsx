@@ -420,11 +420,28 @@ const Inner = ({
 
               {step === "media" && (
                 <div className="space-y-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">Image principale</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Une bonne image augmente vos ventes de +40%.
-                    </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">Image principale</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Une bonne image augmente vos ventes de +40%.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAIImage}
+                      disabled={aiImgLoading || form.title.trim().length < 3}
+                      className="h-9 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 text-xs hover:from-primary/20 hover:to-accent/20"
+                    >
+                      {aiImgLoading ? (
+                        <Loader2 className="animate-spin" size={13} />
+                      ) : (
+                        <Sparkles size={13} className="text-primary" />
+                      )}
+                      Générer une box 3D
+                    </Button>
                   </div>
 
                   <div
