@@ -70,6 +70,56 @@ const Inner = ({
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [featureDraft, setFeatureDraft] = useState("");
+  const [aiDescLoading, setAiDescLoading] = useState(false);
+  const [aiImgLoading, setAiImgLoading] = useState(false);
+
+  const generateAIDescription = async () => {
+    if (form.title.trim().length < 3) {
+      toast.error("Titre requis", { description: "Saisissez au moins 3 caractères." });
+      return;
+    }
+    setAiDescLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-description", {
+        body: { title: form.title, category: form.category, hint: form.description },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForm((f) => ({ ...f, description: (data as any).description }));
+      toast.success("Description générée ✨");
+    } catch (e: any) {
+      toast.error("Erreur IA", { description: e.message });
+    } finally {
+      setAiDescLoading(false);
+    }
+  };
+
+  const generateAIImage = async () => {
+    if (form.title.trim().length < 3) {
+      toast.error("Titre requis", { description: "Saisissez d'abord le titre du produit." });
+      return;
+    }
+    if (!user) return;
+    setAiImgLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: {
+          title: form.title,
+          category: form.category,
+          description: form.description,
+          userId: user.id,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForm((f) => ({ ...f, image_url: (data as any).url }));
+      toast.success("Image 3D générée 🎨");
+    } catch (e: any) {
+      toast.error("Erreur IA", { description: e.message });
+    } finally {
+      setAiImgLoading(false);
+    }
+  };
 
   // Load product if editing
   useEffect(() => {
