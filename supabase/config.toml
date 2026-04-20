@@ -1,1 +1,7 @@
 project_id = "knazotjkjvhidgfpsiyw"
+
+[functions.generate-product-description]
+verify_jwt = false
+
+[functions.generate-product-image]
+verify_jwt = false

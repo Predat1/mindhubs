@@ -70,6 +70,56 @@ const Inner = ({
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [featureDraft, setFeatureDraft] = useState("");
+  const [aiDescLoading, setAiDescLoading] = useState(false);
+  const [aiImgLoading, setAiImgLoading] = useState(false);
+
+  const generateAIDescription = async () => {
+    if (form.title.trim().length < 3) {
+      toast.error("Titre requis", { description: "Saisissez au moins 3 caractères." });
+      return;
+    }
+    setAiDescLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-description", {
+        body: { title: form.title, category: form.category, hint: form.description },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForm((f) => ({ ...f, description: (data as any).description }));
+      toast.success("Description générée ✨");
+    } catch (e: any) {
+      toast.error("Erreur IA", { description: e.message });
+    } finally {
+      setAiDescLoading(false);
+    }
+  };
+
+  const generateAIImage = async () => {
+    if (form.title.trim().length < 3) {
+      toast.error("Titre requis", { description: "Saisissez d'abord le titre du produit." });
+      return;
+    }
+    if (!user) return;
+    setAiImgLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: {
+          title: form.title,
+          category: form.category,
+          description: form.description,
+          userId: user.id,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForm((f) => ({ ...f, image_url: (data as any).url }));
+      toast.success("Image 3D générée 🎨");
+    } catch (e: any) {
+      toast.error("Erreur IA", { description: e.message });
+    } finally {
+      setAiImgLoading(false);
+    }
+  };
 
   // Load product if editing
   useEffect(() => {
@@ -336,16 +386,33 @@ const Inner = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="description">Description</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="description">Description</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateAIDescription}
+                        disabled={aiDescLoading || form.title.trim().length < 3}
+                        className="h-8 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 text-xs hover:from-primary/10 hover:to-accent/10"
+                      >
+                        {aiDescLoading ? (
+                          <Loader2 className="animate-spin" size={12} />
+                        ) : (
+                          <Sparkles size={12} className="text-primary" />
+                        )}
+                        Générer avec l'IA
+                      </Button>
+                    </div>
                     <Textarea
                       id="description"
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      rows={6}
+                      rows={8}
                       placeholder="Décrivez votre produit en détail. Quels problèmes résout-il ? À qui s'adresse-t-il ?"
                     />
                     <p className="text-[10px] text-muted-foreground">
-                      💡 Plus c'est détaillé, plus vous vendez.
+                      💡 Astuce : remplissez le titre puis cliquez sur "Générer avec l'IA" pour obtenir une description vendeuse en 1 clic.
                     </p>
                   </div>
                 </div>
@@ -353,11 +420,28 @@ const Inner = ({
 
               {step === "media" && (
                 <div className="space-y-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">Image principale</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Une bonne image augmente vos ventes de +40%.
-                    </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">Image principale</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Une bonne image augmente vos ventes de +40%.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAIImage}
+                      disabled={aiImgLoading || form.title.trim().length < 3}
+                      className="h-9 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 text-xs hover:from-primary/20 hover:to-accent/20"
+                    >
+                      {aiImgLoading ? (
+                        <Loader2 className="animate-spin" size={13} />
+                      ) : (
+                        <Sparkles size={13} className="text-primary" />
+                      )}
+                      Générer une box 3D
+                    </Button>
                   </div>
 
                   <div
