@@ -386,16 +386,33 @@ const Inner = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="description">Description</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="description">Description</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateAIDescription}
+                        disabled={aiDescLoading || form.title.trim().length < 3}
+                        className="h-8 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 text-xs hover:from-primary/10 hover:to-accent/10"
+                      >
+                        {aiDescLoading ? (
+                          <Loader2 className="animate-spin" size={12} />
+                        ) : (
+                          <Sparkles size={12} className="text-primary" />
+                        )}
+                        Générer avec l'IA
+                      </Button>
+                    </div>
                     <Textarea
                       id="description"
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      rows={6}
+                      rows={8}
                       placeholder="Décrivez votre produit en détail. Quels problèmes résout-il ? À qui s'adresse-t-il ?"
                     />
                     <p className="text-[10px] text-muted-foreground">
-                      💡 Plus c'est détaillé, plus vous vendez.
+                      💡 Astuce : remplissez le titre puis cliquez sur "Générer avec l'IA" pour obtenir une description vendeuse en 1 clic.
                     </p>
                   </div>
                 </div>
