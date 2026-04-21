@@ -139,6 +139,7 @@ export type Database = {
           price: string
           rating: number | null
           sort_order: number
+          status: string
           tag: string | null
           title: string
           vendor_id: string | null
@@ -157,6 +158,7 @@ export type Database = {
           price: string
           rating?: number | null
           sort_order?: number
+          status?: string
           tag?: string | null
           title: string
           vendor_id?: string | null
@@ -175,6 +177,7 @@ export type Database = {
           price?: string
           rating?: number | null
           sort_order?: number
+          status?: string
           tag?: string | null
           title?: string
           vendor_id?: string | null
