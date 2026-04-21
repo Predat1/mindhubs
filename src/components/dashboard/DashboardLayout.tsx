@@ -246,11 +246,43 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
 
       {/* Nav */}
       <nav className="relative flex-1 space-y-4 overflow-y-auto p-3 mt-3">
-        {Object.entries(groupedItems).map(([group, groupItems]) => (
+        {Object.entries(groupedItems).map(([group, groupItems], idx) => (
           <div key={group}>
-            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-              {GROUP_LABELS[group] ?? group}
-            </p>
+            <div className="px-3 mb-1.5 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                {GROUP_LABELS[group] ?? group}
+              </p>
+              {idx === 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="text-muted-foreground/60 hover:text-foreground transition"
+                      aria-label="Légende des badges"
+                    >
+                      <Info size={11} />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent side="right" align="start" className="w-64 p-3">
+                    <p className="text-xs font-semibold mb-2 text-foreground">Légende des badges</p>
+                    <ul className="space-y-2">
+                      {BADGE_LEGEND.map((b) => (
+                        <li key={b.variant} className="flex items-start gap-2">
+                          <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badgeStyles(b.variant)}`}>
+                            {b.label}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground leading-snug">
+                            {b.description}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 pt-2 border-t border-border text-[10px] text-muted-foreground/80">
+                      Les badges sont mis à jour automatiquement selon vos données en temps réel.
+                    </p>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
             <div className="space-y-0.5">
               {groupItems.map((item) => {
                 const Icon = item.icon;
@@ -276,7 +308,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                       }`}
                     />
                     <span className="flex-1 truncate">{item.label}</span>
-                    {item.badge && renderBadge(item.badge, item.badgeVariant)}
+                    {item.badge && renderBadge(item.badge, item.badgeVariant, item.badgeTooltip)}
                   </Link>
                 );
               })}
