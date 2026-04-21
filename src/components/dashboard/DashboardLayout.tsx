@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home, ShoppingBag, Package, Users, DollarSign, BarChart3, Megaphone,
   Sparkles, Settings, HelpCircle, LogOut, Search, Bell, Plus, ExternalLink,
-  Menu, ChevronDown, Store, MessageSquare, ShieldCheck, Sun, Moon, Zap,
+  Menu, ChevronDown, Store, MessageSquare, ShieldCheck, Sun, Moon, Zap, Info,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,13 +12,21 @@ import { Button } from "@/components/ui/button";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
+import { useVendorOrders } from "@/hooks/useVendorOrders";
+
+export type BadgeVariant = "new" | "hot" | "count";
 
 export type SidebarItem = {
   label: string;
   href: string;
   icon: LucideIcon;
   badge?: string;
-  badgeVariant?: "new" | "hot" | "count";
+  badgeVariant?: BadgeVariant;
+  badgeTooltip?: string;
   group?: "main" | "growth" | "system";
 };
 
@@ -37,8 +45,8 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Clients", href: "/dashboard/customers", icon: Users, group: "main" },
   { label: "Revenus", href: "/dashboard/revenue", icon: DollarSign, group: "main" },
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3, group: "growth" },
-  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth", badge: "Nouveau", badgeVariant: "new" },
-  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, group: "growth", badge: "Hot", badgeVariant: "hot" },
+  { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
+  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, group: "growth" },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];
 
@@ -59,18 +67,89 @@ const GROUP_LABELS: Record<string, string> = {
   system: "Système",
 };
 
-const renderBadge = (badge: string, variant?: SidebarItem["badgeVariant"]) => {
-  const styles =
-    variant === "hot"
-      ? "bg-gradient-to-r from-destructive to-accent text-destructive-foreground shadow-[0_0_10px_hsl(var(--destructive)/0.4)]"
-      : variant === "new"
-      ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
-      : "bg-muted text-muted-foreground";
-  return (
-    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${styles}`}>
+const BADGE_LEGEND: { variant: BadgeVariant; label: string; description: string }[] = [
+  { variant: "new", label: "Nouveau", description: "Section ou produit ajouté récemment (≤ 7 jours)." },
+  { variant: "hot", label: "Hot", description: "Forte activité en cours — opportunité à saisir." },
+  { variant: "count", label: "Compteur", description: "Nombre d'éléments à traiter (ex: commandes en attente)." },
+];
+
+const badgeStyles = (variant?: BadgeVariant) =>
+  variant === "hot"
+    ? "bg-gradient-to-r from-destructive to-accent text-destructive-foreground shadow-[0_0_10px_hsl(var(--destructive)/0.4)]"
+    : variant === "new"
+    ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
+    : "bg-foreground text-background";
+
+const renderBadge = (badge: string, variant: BadgeVariant | undefined, tooltip?: string) => {
+  const node = (
+    <span
+      className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide cursor-help ${badgeStyles(variant)}`}
+    >
       {badge}
     </span>
   );
+  if (!tooltip) return node;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{node}</TooltipTrigger>
+      <TooltipContent side="right" className="max-w-[220px] text-xs">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+/** Compute live, data-driven badges for the vendor nav. */
+const useVendorLiveBadges = (enabled: boolean) => {
+  const { data: vendor } = useCurrentVendor();
+  const { data: products = [] } = useVendorProducts(enabled ? vendor?.id : undefined);
+  const productIds = useMemo(() => products.map((p) => p.id), [products]);
+  const { data: orders = [] } = useVendorOrders(enabled ? productIds : []);
+
+  return useMemo(() => {
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const recentProductsCount = (products as any[]).filter(
+      (p) => p.created_at && new Date(p.created_at).getTime() > sevenDaysAgo,
+    ).length;
+    const pendingOrders = orders.filter((o) => o.status === "pending").length;
+    const recentOrders = orders.filter(
+      (o) => new Date(o.created_at).getTime() > sevenDaysAgo,
+    ).length;
+
+    const map: Record<string, { badge: string; variant: BadgeVariant; tooltip: string }> = {};
+    if (pendingOrders > 0) {
+      map["/dashboard/sales"] = {
+        badge: String(pendingOrders),
+        variant: "count",
+        tooltip: `${pendingOrders} commande${pendingOrders > 1 ? "s" : ""} en attente de confirmation.`,
+      };
+    }
+    if (recentProductsCount > 0) {
+      map["/dashboard/products"] = {
+        badge: "Nouveau",
+        variant: "new",
+        tooltip: `${recentProductsCount} produit${recentProductsCount > 1 ? "s" : ""} ajouté${recentProductsCount > 1 ? "s" : ""} ces 7 derniers jours.`,
+      };
+    }
+    if (recentOrders >= 5) {
+      map["/dashboard/revenue"] = {
+        badge: "Hot",
+        variant: "hot",
+        tooltip: `${recentOrders} ventes ces 7 derniers jours — votre boutique est en feu 🔥`,
+      };
+    }
+    map["/dashboard/marketing"] = map["/dashboard/marketing"] ?? {
+      badge: "Nouveau",
+      variant: "new",
+      tooltip: "Nouvelle section : campagnes, codes promo et automation.",
+    };
+    map["/dashboard/affiliation"] = map["/dashboard/affiliation"] ?? {
+      badge: "Hot",
+      variant: "hot",
+      tooltip: "Programme d'affiliation premium — recrutez des ambassadeurs.",
+    };
+    return map;
+  }, [products, orders]);
 };
 
 const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: DashboardLayoutProps) => {
@@ -80,7 +159,20 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
   const navigate = useNavigate();
   const location = useLocation();
 
-  const items = variant === "vendor" ? VENDOR_NAV : ADMIN_NAV;
+  const baseItems = variant === "vendor" ? VENDOR_NAV : ADMIN_NAV;
+  const liveBadges = useVendorLiveBadges(variant === "vendor");
+  const items: SidebarItem[] = useMemo(
+    () =>
+      baseItems.map((it) => {
+        const live = liveBadges[it.href];
+        if (live) {
+          return { ...it, badge: live.badge, badgeVariant: live.variant, badgeTooltip: live.tooltip };
+        }
+        return it;
+      }),
+    [baseItems, liveBadges],
+  );
+
   const initials = (user?.email ?? "U").slice(0, 2).toUpperCase();
   const fullPath = location.pathname + location.search;
   const currentItem = items.find((i) => fullPath === i.href);
@@ -154,11 +246,43 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
 
       {/* Nav */}
       <nav className="relative flex-1 space-y-4 overflow-y-auto p-3 mt-3">
-        {Object.entries(groupedItems).map(([group, groupItems]) => (
+        {Object.entries(groupedItems).map(([group, groupItems], idx) => (
           <div key={group}>
-            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-              {GROUP_LABELS[group] ?? group}
-            </p>
+            <div className="px-3 mb-1.5 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                {GROUP_LABELS[group] ?? group}
+              </p>
+              {idx === 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="text-muted-foreground/60 hover:text-foreground transition"
+                      aria-label="Légende des badges"
+                    >
+                      <Info size={11} />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent side="right" align="start" className="w-64 p-3">
+                    <p className="text-xs font-semibold mb-2 text-foreground">Légende des badges</p>
+                    <ul className="space-y-2">
+                      {BADGE_LEGEND.map((b) => (
+                        <li key={b.variant} className="flex items-start gap-2">
+                          <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badgeStyles(b.variant)}`}>
+                            {b.label}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground leading-snug">
+                            {b.description}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 pt-2 border-t border-border text-[10px] text-muted-foreground/80">
+                      Les badges sont mis à jour automatiquement selon vos données en temps réel.
+                    </p>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
             <div className="space-y-0.5">
               {groupItems.map((item) => {
                 const Icon = item.icon;
@@ -184,7 +308,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                       }`}
                     />
                     <span className="flex-1 truncate">{item.label}</span>
-                    {item.badge && renderBadge(item.badge, item.badgeVariant)}
+                    {item.badge && renderBadge(item.badge, item.badgeVariant, item.badgeTooltip)}
                   </Link>
                 );
               })}
