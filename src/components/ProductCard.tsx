@@ -41,10 +41,10 @@ const ProductCard = ({ product }: { product: Product }) => {
   return (
     <>
       <Link to={`/produit/${product.id}`} className="block group">
-        <div className="course-card rounded-xl overflow-hidden h-full flex flex-col">
-          <div className="relative overflow-hidden">
+        <div className="card-premium rounded-xl overflow-hidden h-full flex flex-col">
+          <div className="relative overflow-hidden img-zoom-container">
             {isBestSeller ? (
-              <span className="absolute top-2 left-2 bg-accent/90 text-accent-foreground text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full z-10 flex items-center gap-1">
+              <span className="shimmer-badge absolute top-2 left-2 bg-accent/90 text-accent-foreground text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full z-10 flex items-center gap-1">
                 <Flame size={10} /> BEST-SELLER
               </span>
             ) : (
@@ -58,7 +58,7 @@ const ProductCard = ({ product }: { product: Product }) => {
               loading="lazy"
               width={512}
               height={512}
-              className="w-full h-36 sm:h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-36 sm:h-48 md:h-56 object-cover"
             />
           </div>
           <div className="p-3 sm:p-4 flex flex-col flex-1 items-center text-center space-y-2 sm:space-y-3">
