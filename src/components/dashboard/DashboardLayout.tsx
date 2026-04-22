@@ -329,29 +329,6 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         ))}
       </nav>
 
-      {/* Upgrade card */}
-      {variant === "vendor" && (
-        <div className="relative mx-3 mb-3 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/20 via-accent/10 to-transparent p-3 overflow-hidden group hover:border-primary/50 transition-colors">
-          <div className="absolute -top-6 -right-6 h-20 w-20 rounded-full bg-accent/25 blur-2xl group-hover:bg-accent/40 transition-colors" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]" />
-          <div className="relative flex items-center gap-2 mb-1.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-[0_0_12px_hsl(var(--primary)/0.4)]">
-              <Zap size={14} className="text-primary-foreground" />
-            </div>
-            <p className="text-xs font-bold text-foreground">Boost Pro</p>
-            <span className="ml-auto rounded-full bg-accent/20 px-1.5 py-0.5 text-[8px] font-bold uppercase text-accent">
-              Soon
-            </span>
-          </div>
-          <p className="relative text-[10px] text-muted-foreground leading-relaxed mb-2">
-            Débloquez l'analytique IA et l'affiliation premium.
-          </p>
-          <Button asChild size="sm" variant="outline" className="relative w-full h-7 text-[11px] border-primary/40 hover:bg-primary/10 hover:border-primary">
-            <Link to="/dashboard/affiliation">Découvrir →</Link>
-          </Button>
-        </div>
-      )}
-
       {/* Footer */}
       <div className="relative space-y-0.5 border-t border-border/50 p-3 bg-background/30">
         <Link
