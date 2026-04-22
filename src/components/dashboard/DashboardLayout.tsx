@@ -376,11 +376,11 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
     <TooltipProvider delayDuration={200}>
       <div className="flex min-h-screen bg-gradient-to-br from-muted/30 via-background to-muted/20">
         {/* Desktop sidebar */}
-        <div className="hidden lg:block sticky top-0 h-screen">{Sidebar}</div>
+        <div className="hidden md:block sticky top-0 h-screen">{Sidebar}</div>
 
         {/* Mobile sidebar */}
         {mobileOpen && (
-          <div className="fixed inset-0 z-50 flex lg:hidden animate-fade-in">
+          <div className="fixed inset-0 z-50 flex md:hidden animate-fade-in">
             <div
               className="absolute inset-0 bg-background/70 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
@@ -394,7 +394,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
           {/* Topbar */}
           <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
             <button
-              className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground lg:hidden"
+              className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setMobileOpen(true)}
               aria-label="Ouvrir le menu"
             >
