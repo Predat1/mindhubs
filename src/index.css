@@ -294,4 +294,163 @@
   .animate-marquee-logos {
     animation: marquee 25s linear infinite;
   }
+
+  /* ===== Premium UI/UX Enhancements ===== */
+
+  /* Animated aurora glow background */
+  @keyframes aurora {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+    33% { transform: translate(30px, -20px) scale(1.1); opacity: 0.5; }
+    66% { transform: translate(-20px, 30px) scale(0.95); opacity: 0.3; }
+  }
+
+  .aurora-glow::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 70%);
+    filter: blur(80px);
+    animation: aurora 12s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .aurora-glow > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Premium card hover with lift + glow ring */
+  .card-premium {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s ease,
+                border-color 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-premium::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .card-premium:hover {
+    transform: translateY(-6px);
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow:
+      0 20px 40px -15px hsl(var(--primary) / 0.25),
+      0 0 0 1px hsl(var(--primary) / 0.1);
+  }
+
+  .card-premium:hover::before {
+    opacity: 1;
+  }
+
+  /* Shimmer overlay for badges/CTA */
+  .shimmer-badge {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      hsl(var(--primary-foreground) / 0.4) 50%,
+      transparent 60%
+    );
+    transform: translateX(-100%);
+    animation: shimmer-sweep 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer-sweep {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  /* Glow pulse for primary CTAs */
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4), 0 8px 24px -8px hsl(var(--primary) / 0.3); }
+    50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0), 0 8px 32px -4px hsl(var(--primary) / 0.5); }
+  }
+
+  .btn-glow {
+    animation: glow-pulse 2.5s ease-in-out infinite;
+  }
+
+  /* Section heading underline accent */
+  .heading-accent {
+    position: relative;
+    display: inline-block;
+  }
+
+  .heading-accent::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(45 100% 45%));
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 10px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  /* Selection color */
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Image zoom on hover container */
+  .img-zoom-container {
+    overflow: hidden;
+    position: relative;
+  }
+  .img-zoom-container img {
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .img-zoom-container:hover img {
+    transform: scale(1.08);
+  }
+
+  /* Floating dots decoration */
+  @keyframes float-dot {
+    0%, 100% { transform: translateY(0); opacity: 0.3; }
+    50% { transform: translateY(-15px); opacity: 0.7; }
+  }
+  .floating-dot {
+    animation: float-dot 4s ease-in-out infinite;
+  }
 }

@@ -14,12 +14,12 @@ const NewProductsSection = () => {
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
           <div className="text-center mb-8 sm:mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs font-semibold mb-3">
-              <Sparkles size={14} />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs font-semibold mb-4 border border-primary/20">
+              <Sparkles size={14} className="animate-pulse" />
               Nouveautés
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground mb-2">
-              Fraîchement ajoutés
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground mb-6">
+              <span className="heading-accent">Fraîchement ajoutés</span>
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
               Découvrez nos dernières formations et ressources pour rester à la pointe.
