@@ -367,9 +367,9 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         )}
 
         {/* Main */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
           {/* Topbar */}
-          <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
             <button
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setMobileOpen(true)}
@@ -446,7 +446,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             </div>
           </header>
 
-          <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
         </div>
       </div>
     </TooltipProvider>
