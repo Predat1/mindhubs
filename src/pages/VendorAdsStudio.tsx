@@ -254,7 +254,7 @@ const Inner = () => {
 
 const VendorAdsStudio = () => (
   <VendorGuard>
-    <Inner />
+    {() => <Inner />}
   </VendorGuard>
 );
 
