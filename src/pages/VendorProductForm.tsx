@@ -379,11 +379,23 @@ const Inner = ({
         : await supabase.from("products").insert(productData);
       if (error) throw error;
       const verb = isEdit ? "mis à jour" : finalStatus === "draft" ? "sauvegardé en brouillon" : "publié";
-      toast.success(`Produit ${verb} ✨`);
+      const justPublished = finalStatus === "published";
+      toast.success(`Produit ${verb} ✨`, justPublished ? {
+        description: "🚀 Créez votre première publicité Facebook optimisée IA",
+        action: {
+          label: "Studio Pub →",
+          onClick: () => navigate(`/dashboard/ads-studio?product=${productData.id}`),
+        },
+        duration: 8000,
+      } : undefined);
       clearLocalDraft();
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
-      navigate("/dashboard/products");
+      if (justPublished && !isEdit) {
+        navigate(`/dashboard/ads-studio?product=${productData.id}`);
+      } else {
+        navigate("/dashboard/products");
+      }
     } catch (e: any) {
       toast.error("Erreur", { description: e.message });
     } finally {
