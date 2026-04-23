@@ -32,33 +32,46 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Build messages depending on mode
+    // STRICT MOCKUP SPECIFICATION — identical dimensions across all generations
+    const MOCKUP_SPEC = `
+STRICT MOCKUP DIMENSIONS (MUST be identical every time):
+- 3D software box mockup (rectangular product box, NOT a book), proportions 3:4 (width:height ratio of the front face)
+- Box thickness/depth: approximately 25% of the front face width (visible left side panel)
+- Camera angle: exact 3/4 perspective view, ~25° rotation to the right, slight 5° tilt down
+- Box positioned dead center, occupying ~75% of the canvas height
+- Front face fully visible on the right, left side panel (spine) fully visible with vertical title text reading bottom-to-top
+- Pure white background (#FFFFFF), soft realistic contact shadow directly underneath the box
+- Photorealistic studio lighting from upper-left, subtle reflections
+- Square canvas 1:1 (1024x1024), centered composition
+- NO people outside the cover artwork, NO watermarks, NO text outside the box surface, NO floor/wall/props`;
+
     let messages: any[];
     if (editImageUrl && editPrompt) {
       messages = [{
         role: "user",
         content: [
-          { type: "text", text: `Edit this product mockup image. Instruction: ${editPrompt}. Keep it as a 3D product box/book mockup on a clean white background, photorealistic, square 1:1 format, no extra text.` },
+          { type: "text", text: `Edit this product box mockup. Instruction: ${editPrompt}.
+
+Preserve EXACTLY the same box dimensions, 3:4 front-face proportions, 25% depth, 3/4 perspective angle, centered composition, pure white background and shadow placement as the original.${MOCKUP_SPEC}` },
           { type: "image_url", image_url: { url: editImageUrl } },
         ],
       }];
     } else {
       if (!title) throw new Error("title required");
       const stylePrompt = STYLE_PRESETS[style] || STYLE_PRESETS.classic;
-      const prompt = `Professional 3D product mockup of a premium book/box cover titled "${title}".
+      const prompt = `Ultra-premium, highly creative 3D product BOX mockup for a digital product titled "${title}".
 Category: ${category || "digital product"}.
-${description ? `Theme hints: ${description.slice(0, 200)}` : ""}
+${description ? `Theme & visual hints: ${description.slice(0, 250)}` : ""}
 
-Style: ${stylePrompt}
+Cover design style: ${stylePrompt}
 
-Strict requirements:
-- 3D rendered hardcover book or product box, standing upright at slight 3/4 angle
-- Bold modern typography centered on cover with the title prominently displayed
-- A subtitle band and a bottom band for additional text
-- Visible spine on the left side with vertical title text
-- Clean pure white background, soft realistic shadow underneath
-- Photorealistic lighting and reflections
-- Square format 1:1, centered composition, high resolution
-- No watermarks, no extra text outside the box, no people unless thematically essential`;
+Cover artwork requirements (highly creative & stylish):
+- Bold impactful typography: large primary title at top, accent-colored secondary line, small subtitle band below
+- Rich thematic illustration or photographic scene relevant to the category, integrated cinematically into the lower 60% of the front face
+- Elegant decorative arc/curve element separating title block from imagery
+- Premium color palette with strong contrast, magazine-cover quality
+- Visible spine on left with vertical uppercase title in accent color
+${MOCKUP_SPEC}`;
       messages = [{ role: "user", content: prompt }];
     }
 
