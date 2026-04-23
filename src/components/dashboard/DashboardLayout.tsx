@@ -46,6 +46,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Revenus", href: "/dashboard/revenue", icon: DollarSign, group: "main" },
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3, group: "growth" },
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
+  { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
   { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, group: "growth" },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];

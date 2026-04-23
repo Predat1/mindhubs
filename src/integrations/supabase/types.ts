@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_creatives: {
+        Row: {
+          angle: string
+          copy_data: Json
+          created_at: string
+          format: string
+          id: string
+          image_url: string | null
+          product_id: string
+          targeting_data: Json
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          angle: string
+          copy_data?: Json
+          created_at?: string
+          format: string
+          id?: string
+          image_url?: string | null
+          product_id: string
+          targeting_data?: Json
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          angle?: string
+          copy_data?: Json
+          created_at?: string
+          format?: string
+          id?: string
+          image_url?: string | null
+          product_id?: string
+          targeting_data?: Json
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_creatives_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_creatives_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
