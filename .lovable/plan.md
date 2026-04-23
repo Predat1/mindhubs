@@ -1,133 +1,118 @@
 
 
-# Plan : Transformation en Marketplace Multi-Vendeurs
+# Générateur de Créatives Publicitaires IA pour Vendeurs
 
-Transformation de MIND✦HUB d'une boutique mono-vendeur en marketplace multi-vendeurs, par étapes incrémentales sans casser l'existant.
+## Objectif
 
----
+Ajouter un outil "Studio Pub Facebook" qui permet aux vendeurs de générer automatiquement des **créatives publicitaires images** optimisées conversion, accompagnées de **textes publicitaires** (primary text, headlines, descriptions) et de **recommandations de ciblage Facebook Ads**, à partir de n'importe quel produit publié de leur catalogue.
 
-## Phase 1 — Fondation Vendeur (URGENT)
+## Parcours utilisateur
 
-### 1.1 Base de données
+```text
+1. Vendeur publie un produit
+   └─> Toast/CTA "🚀 Créer une pub Facebook" apparaît après publication
 
-**Nouveau rôle `vendor`** ajouté à l'enum `app_role` existant (`admin`, `moderator`, `user`, **`vendor`**).
+2. Page "Studio Pub" (/dashboard/ads-studio)
+   ├─ Sélection produit (dropdown du catalogue vendeur)
+   ├─ Choix angles marketing (multi-select : Bénéfice, Urgence, 
+   │  Preuve sociale, Avant/Après, Storytelling, Problème/Solution)
+   ├─ Choix formats (multi-select : Carré 1:1 feed, Story 9:16, 
+   │  Paysage 16:9, Portrait 4:5)
+   └─ Bouton "Générer mon kit publicitaire complet"
 
-**Nouvelle table `vendors`** (boutiques) :
-- `id` (uuid)
-- `user_id` (uuid, FK vers auth.users)
-- `username` (text, unique, pour URL `/store/:username`)
-- `shop_name` (text)
-- `description` (text)
-- `avatar_url` (text)
-- `verified` (boolean) — pour badge "Vendeur vérifié"
+3. Résultats (kit complet par angle)
+   ├─ Créatives images (1 par format × angle sélectionné)
+   ├─ Textes pubs : Primary text, 5 Headlines, 3 Descriptions
+   ├─ Lien produit (deeplink /produit/:id, copiable)
+   ├─ Ciblage recommandé : âge, genre, intérêts FB, comportements, 
+   │  pays africains francophones cibles
+   └─ Actions : Télécharger image, Copier texte, Copier ciblage,
+      Régénérer une variante
+```
+
+## Fonctionnalités clés
+
+### A. Génération de créatives images
+- Pour chaque combinaison **angle × format**, génère une image publicitaire avec :
+  - Image produit en avant
+  - Texte d'accroche court intégré (overlay)
+  - Couleurs Black & Gold de la marque
+  - Composition optimisée par format (Story = vertical, etc.)
+- Modèle : `google/gemini-3-pro-image-preview` (qualité supérieure pour pubs)
+- Edit mode : utilise l'image produit existante comme base
+
+### B. Génération du copywriting
+- Modèle : `google/gemini-3-flash-preview`
+- Prompt analyse le produit (titre, description, prix, catégorie, key_features)
+- Sortie structurée (tool calling) :
+  - 1 Primary text (≤125 caractères, scroll-stopper)
+  - 5 Headlines courtes (≤40 caractères)
+  - 3 Descriptions (≤30 caractères)
+  - 1 CTA recommandé (Acheter, En savoir plus, Inscription...)
+
+### C. Recommandations de ciblage Facebook Ads
+- Sortie structurée :
+  - Tranche d'âge (ex: 25-45)
+  - Genre (Hommes / Femmes / Tous)
+  - Localisation (pays africains francophones suggérés selon catégorie)
+  - Centres d'intérêt FB (5-8 intérêts pertinents)
+  - Comportements (acheteurs en ligne, mobile, etc.)
+  - Budget journalier suggéré (low / mid / high)
+  - Type de campagne FB recommandé (Conversions, Trafic, Engagement)
+
+### D. Persistance et historique
+- Table `ad_creatives` : sauvegarde chaque kit généré (rejouable, partageable)
+- Le vendeur retrouve ses kits passés dans la page Studio Pub
+
+## Implémentation technique
+
+### 1. Base de données (migration)
+Nouvelle table `public.ad_creatives` :
+- `id`, `vendor_id`, `product_id`, `angle`, `format`
+- `image_url` (stockée dans bucket `product-images/ads/`)
+- `copy_data` jsonb (primary_text, headlines, descriptions, cta)
+- `targeting_data` jsonb (âge, genre, intérêts, etc.)
 - `created_at`
+- RLS : vendeur lit/écrit uniquement ses propres créatives
 
-**Modification table `products`** :
-- Ajout `vendor_id` (uuid, nullable au début pour ne pas casser les produits existants qui resteront sous le compte admin)
-
-**RLS** :
-- Vendors peuvent lire/modifier UNIQUEMENT leurs propres produits
-- Admin garde contrôle total
-- Lecture publique des vendors et produits
-
-### 1.2 Page `/become-a-seller`
-
-Formulaire d'inscription vendeur (signup + création boutique en une étape) :
-- Nom boutique
-- Username (slug pour URL)
-- Email + mot de passe
-- Description courte
-
-À la soumission : crée le compte auth → assigne rôle `vendor` → crée ligne `vendors`.
-
-### 1.3 Bouton "Devenir vendeur"
-
-Ajout dans `Navbar.tsx` (desktop + mobile) → lien vers `/become-a-seller`.
-
----
-
-## Phase 2 — Boutiques Vendeurs
-
-### 2.1 Page `/store/:username`
-
-Nouveau fichier `src/pages/VendorStore.tsx` :
-- Header boutique (nom, avatar, description, badge vérifié)
-- Stats simples (nb produits, note moyenne)
-- Grille de tous les produits du vendeur (réutilise `ProductCard`)
-
-### 2.2 Affichage vendeur sur produits
-
-Sur `ProductCard` et `ProductDetail.tsx` :
-- "Vendu par **[nom boutique]**" (lien cliquable vers `/store/:username`)
-- Badge vendeur vérifié si applicable
-
-### 2.3 Section "Produits du même vendeur"
-
-Sur `ProductDetail.tsx`, sous la fiche : carrousel des autres produits du même vendeur.
-
----
-
-## Phase 3 — Dashboard Vendeur
-
-### 3.1 Page `/dashboard`
-
-Nouveau fichier `src/pages/VendorDashboard.tsx`, accessible uniquement aux users avec rôle `vendor` :
-- Stats : nb produits, vues totales, achats totaux (via `product_stats` existant)
-- Liste de SES produits avec actions Modifier/Supprimer
-- Bouton "Ajouter un produit"
-- Lien "Voir ma boutique publique"
-
-### 3.2 Page `/dashboard/new-product` & `/dashboard/edit-product/:id`
-
-Formulaire produit (réutilise la logique de `Admin.tsx`) :
-- Titre, description, catégorie
-- Prix, ancien prix
-- Upload image (bucket `product-images` existant)
-- Lien de paiement externe (Paystack, etc.)
-- Caractéristiques clés
-
-À la création : `vendor_id` = vendor courant automatiquement.
-
----
-
-## Phase 4 — Améliorations UX
-
-- Lien "Mon Dashboard" dans le menu user (`MonCompte`) si rôle vendor
-- Badge "Vendeur" sur les profils
-- Mise à jour `Boutique.tsx` : filtre optionnel par vendeur
-
----
-
-## Architecture Technique
-
-| Élément | Fichier | Action |
+### 2. Edge functions (3 nouvelles)
+| Function | Modèle | Rôle |
 |---|---|---|
-| Migration SQL | `supabase/migrations/` | Nouvelle migration : enum `vendor`, table `vendors`, colonne `products.vendor_id`, RLS |
-| Hook vendeurs | `src/hooks/useVendors.ts` | NEW — `useVendor(username)`, `useVendorProducts(vendorId)`, `useCurrentVendor()` |
-| Hook rôle | `src/hooks/useAdminRole.ts` | EDIT — ajouter `useIsVendor()` |
-| Inscription vendeur | `src/pages/BecomeSeller.tsx` | NEW |
-| Boutique publique | `src/pages/VendorStore.tsx` | NEW |
-| Dashboard | `src/pages/VendorDashboard.tsx` | NEW |
-| Formulaire produit vendeur | `src/pages/VendorProductForm.tsx` | NEW (create + edit) |
-| Routes | `src/App.tsx` | EDIT — ajouter 4 routes |
-| Navbar | `src/components/Navbar.tsx` | EDIT — bouton "Devenir vendeur" + lien Dashboard si vendor |
-| ProductCard | `src/components/ProductCard.tsx` | EDIT — affichage nom vendeur |
-| ProductDetail | `src/pages/ProductDetail.tsx` | EDIT — bloc vendeur + "Produits du même vendeur" |
-| Types Supabase | `src/integrations/supabase/types.ts` | Auto-régénéré |
+| `generate-ad-creative` | gemini-3-pro-image-preview | Génère 1 image pub (angle + format) |
+| `generate-ad-copy` | gemini-3-flash-preview + tool calling | Génère textes pubs structurés |
+| `generate-ad-targeting` | gemini-3-flash-preview + tool calling | Génère ciblage FB structuré |
 
-**Note sur les produits existants** : ils resteront avec `vendor_id = NULL` et continueront à s'afficher comme avant (vendus par "MIND✦HUB" par défaut). Aucune rupture.
+Chaque function : CORS, validation Zod, gestion 429/402, stockage image dans bucket Supabase pour `generate-ad-creative`.
 
-**Paiements** : aucun changement — chaque vendeur fournit son propre lien externe (existant : champ `payment_link`).
+### 3. Pages et composants
+- `src/pages/VendorAdsStudio.tsx` — page principale, intégrée dans le sidebar
+- `src/components/ads/AdKitCard.tsx` — affichage d'un kit (image + textes + ciblage)
+- `src/components/ads/AdCreativeGenerator.tsx` — formulaire de génération
+- `src/components/ads/PostPublishAdPrompt.tsx` — modal "Créer une pub" après publication produit
+- `src/hooks/useAdCreatives.ts` — fetch/sauvegarde des kits
 
-**Livraison/téléchargement** (point 7 du brief) : reporté à une phase ultérieure pour ne pas surcharger ce lot. À traiter quand les premiers vendeurs seront actifs.
+### 4. Intégrations existantes
+- Hook into `VendorProductForm.tsx` après `handleSave({status:"published"})` → toast avec CTA "🚀 Créer une publicité"
+- Ajout de l'item "Studio Pub" dans `DashboardLayout.tsx` sidebar (icône `Megaphone` ou `Sparkles`, badge "Nouveau ✨")
+- Route `/dashboard/ads-studio` dans `App.tsx`
 
----
+## Design (cohérent Black & Gold)
 
-## Ce qui sera livré dans CE lot
+- Hero avec gradient gold + halo "aurora"
+- Cards `.card-premium` pour chaque kit généré
+- Badges colorés par angle (Bénéfice = vert, Urgence = rouge, etc.)
+- Aperçu image avec ratio exact selon format (mockup Facebook feed/story)
+- Boutons "Copier" avec feedback toast
+- Loading states avec skeleton + animation gold pulse pendant génération
 
-✅ Phases 1, 2, 3 (fondation complète + dashboard fonctionnel)
-✅ Bouton "Devenir vendeur" visible
-✅ Flow complet testable : inscription vendeur → ajout produit → boutique publique visible
+## Livraison
 
-⏳ Reporté : système de téléchargement automatique post-achat, badges avancés, page `/thank-you` dédiée — à faire après validation du flow vendeur de base.
+| Étape | Contenu |
+|---|---|
+| 1. Migration DB | Table `ad_creatives` + RLS + storage path |
+| 2. Edge functions | `generate-ad-creative`, `generate-ad-copy`, `generate-ad-targeting` |
+| 3. Hooks | `useAdCreatives` (CRUD + génération) |
+| 4. Page Studio Pub | Formulaire + résultats + historique |
+| 5. Sidebar + route | Entrée "Studio Pub" avec badge Nouveau |
+| 6. Hook post-publication | Modal/toast CTA après publication produit |
 
