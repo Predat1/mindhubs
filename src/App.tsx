@@ -37,6 +37,7 @@ import VendorAffiliation from "./pages/VendorAffiliation.tsx";
 import VendorSettings from "./pages/VendorSettings.tsx";
 import VendorAdsStudio from "./pages/VendorAdsStudio.tsx";
 import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
+import VendorMessages from "./pages/VendorMessages.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,7 @@ const App = () => (
                 <Route path="/dashboard/settings" element={<VendorSettings />} />
                 <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
                 <Route path="/dashboard/factory" element={<DigitalProductFactory />} />
+                <Route path="/dashboard/messages" element={<VendorMessages />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
