@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
@@ -122,6 +122,8 @@ interface FormState {
   payment_link: string;
   key_features: string[];
   status: "draft" | "published";
+  product_type: "file" | "course" | "service" | "coaching";
+  video_url: string;
 }
 
 const emptyForm: FormState = {
@@ -136,6 +138,8 @@ const emptyForm: FormState = {
   payment_link: "",
   key_features: [],
   status: "published",
+  product_type: "file",
+  video_url: "",
 };
 
 const DRAFT_KEY = "vendor:product:draft:v1";
@@ -150,13 +154,15 @@ const Inner = ({
   shopUrl: string;
 }) => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const urlType = searchParams.get("type") as FormState["product_type"] || "file";
   const isEdit = !!id;
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>({ ...emptyForm, product_type: urlType });
   const [step, setStep] = useState<StepKey>("info");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -562,6 +568,8 @@ const Inner = ({
         key_features: form.key_features,
         vendor_id: vendorId,
         status: finalStatus,
+        product_type: form.product_type,
+        video_url: form.video_url || null,
       };
       const { error } = isEdit
         ? await supabase.from("products").update(productData).eq("id", form.id)
@@ -1434,13 +1442,31 @@ const Inner = ({
                         />
                       </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground mt-2">
                       Uploadez votre fichier numérique (PDF, ZIP) pour qu'il
                       soit livré automatiquement, ou insérez un lien de paiement
                       externe contenant votre produit ailleurs (Lien de paiement
                       chariow, maketou, Stripe, Calendly etc..).
                     </p>
                   </div>
+
+                  {form.product_type === "course" && (
+                    <div className="space-y-1.5 pt-4 border-t border-border/50">
+                      <Label htmlFor="video_url" className="flex items-center gap-2">
+                        <LinkIcon size={14} /> Lien de la Vidéo (YouTube, Vimeo, etc.)
+                      </Label>
+                      <Input
+                        id="video_url"
+                        type="url"
+                        value={form.video_url}
+                        onChange={(e) => setForm({ ...form, video_url: e.target.value })}
+                        placeholder="https://youtube.com/watch?v=..."
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Ce lien sera affiché automatiquement à l'acheteur/étudiant une fois la commande validée.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

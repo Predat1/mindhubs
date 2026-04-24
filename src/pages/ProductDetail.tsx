@@ -189,7 +189,11 @@ const ProductDetail = () => {
                        onClick={handleBuyNow}
                        className="w-full h-16 rounded-[2rem] btn-glow font-black text-xl gap-4"
                      >
-                        Obtenir mon Accès <Zap size={22} fill="currentColor" />
+                        {product.product_type === 'course' ? 'Accéder à la Formation' : 
+                         product.product_type === 'coaching' ? 'Réserver ma Session' : 
+                         product.product_type === 'service' ? 'Commander le Service' : 
+                         'Obtenir mon Accès'}
+                        <Zap size={22} fill="currentColor" />
                      </Button>
                      <div className="flex flex-wrap items-center justify-center gap-6">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -246,6 +250,19 @@ const ProductDetail = () => {
             <div className="glass-card rounded-b-[3rem] rounded-tr-[3rem] p-8 md:p-12">
                {activeTab === "description" ? (
                  <div className="space-y-12">
+                    {/* Video Section for Courses */}
+                    {product.product_type === "course" && product.video_url && (
+                      <div className="space-y-6">
+                        <h3 className="text-2xl font-black flex items-center gap-3"><Play className="text-primary" /> Aperçu de la formation</h3>
+                        <div className="aspect-video rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black">
+                           <iframe 
+                             src={product.video_url.includes('youtube.com') ? product.video_url.replace('watch?v=', 'embed/') : product.video_url}
+                             className="w-full h-full"
+                             allowFullScreen
+                           />
+                        </div>
+                      </div>
+                    )}
                     <div className="grid md:grid-cols-2 gap-8">
                        <div className="space-y-6">
                           <h3 className="text-2xl font-black flex items-center gap-3"><Sparkles className="text-primary" /> Ce que vous allez maîtriser</h3>
@@ -305,7 +322,7 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
-      <StickyProductCTA productTitle={product.title} price={product.price} oldPrice={product.oldPrice} onBuy={handleBuyNow} />
+      <StickyProductCTA productTitle={product.title} price={product.price} oldPrice={product.oldPrice} onBuy={handleBuyNow} productType={product.product_type} />
     </div>
   );
 };

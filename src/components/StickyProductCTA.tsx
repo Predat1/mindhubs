@@ -6,9 +6,10 @@ interface Props {
   onBuy: () => void;
   price: string;
   oldPrice?: string;
+  productType?: "file" | "course" | "service" | "coaching";
 }
 
-const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
+const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice, productType }: Props) => {
   const [visible, setVisible] = useState(false);
 
   const priceNum = parseFloat(price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
@@ -59,7 +60,10 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
             className="btn-primary-brand flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs shadow-glow whitespace-nowrap"
           >
             <ShoppingCart size={16} />
-            ACHETER
+            {productType === 'course' ? 'ACCÉDER' : 
+             productType === 'coaching' ? 'RÉSERVER' : 
+             productType === 'service' ? 'COMMANDER' : 
+             'ACHETER'}
           </button>
         </div>
       </div>
@@ -86,7 +90,10 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
             className="btn-primary-brand flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-xs shadow-glow"
           >
             <ShoppingCart size={14} />
-            ACHETER
+            {productType === 'course' ? 'ACCÉDER' : 
+             productType === 'coaching' ? 'RÉSERVER' : 
+             productType === 'service' ? 'COMMANDER' : 
+             'ACHETER'}
           </button>
         </div>
       </div>

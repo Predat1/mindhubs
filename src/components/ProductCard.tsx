@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag } from "lucide-react";
+import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag, Play, Calendar, Briefcase, FileArchive } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 import { useVendorById } from "@/hooks/useVendors";
 import { motion } from "framer-motion";
@@ -60,6 +60,16 @@ const ProductCard = ({ product }: { product: Product }) => {
                    <Sparkles size={12} /> NOUVEAU
                 </Badge>
               )}
+
+              {/* Type Badge */}
+              {product.product_type && (
+                <Badge variant="secondary" className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-md text-white border-white/10 px-2 py-0.5 font-bold text-[9px] uppercase tracking-wider">
+                  {product.product_type === 'course' && 'Formation'}
+                  {product.product_type === 'file' && 'Fichier'}
+                  {product.product_type === 'service' && 'Service'}
+                  {product.product_type === 'coaching' && 'Coaching'}
+                </Badge>
+              )}
               
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[1]" />
               
@@ -104,7 +114,10 @@ const ProductCard = ({ product }: { product: Product }) => {
                    onClick={handleBuy}
                    className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
                  >
-                    <ShoppingBag size={18} />
+                    {product.product_type === 'course' && <Play size={18} fill="currentColor" />}
+                    {product.product_type === 'coaching' && <Calendar size={18} />}
+                    {product.product_type === 'service' && <Briefcase size={18} />}
+                    {(!product.product_type || product.product_type === 'file') && <ShoppingBag size={18} />}
                  </button>
               </div>
 
