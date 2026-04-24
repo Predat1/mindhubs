@@ -52,7 +52,7 @@ const VendorAffiliationInner = ({ shopName, shopUrl, username }: { shopName: str
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             { icon: Users, label: "Filleuls actifs", value: "0" },
-            { icon: DollarSign, label: "Commissions gagnées", value: "0 CFA" },
+            { icon: DollarSign, label: "Commissions gagnées", value: "0 FCFA" },
             { icon: LinkIcon, label: "Clics sur votre lien", value: "0" },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="rounded-2xl border border-border bg-card p-5">

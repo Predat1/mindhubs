@@ -132,19 +132,13 @@ const VendorDashboard = () => {
               <Plus size={16} /> Ajouter un produit
             </Link>
           </Button>
-          <Button variant="outline" className="rounded-full" onClick={() => toast({ title: "Bientôt disponible" })}>
-            <Workflow size={16} /> Créer un workflow
-          </Button>
-          <Button variant="outline" className="rounded-full" onClick={() => toast({ title: "Bientôt disponible" })}>
-            <Percent size={16} /> Créer une réduction
-          </Button>
         </div>
 
         {/* Stats cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { icon: DollarSign, label: "Revenu total", value: `${revenue.toLocaleString()} CFA`, info: true },
-            { icon: ShoppingBag, label: "7 derniers jours", value: `${last7.toLocaleString()} CFA`, info: true },
+            { icon: DollarSign, label: "Revenu total", value: `${revenue.toLocaleString()} FCFA`, info: true },
+            { icon: ShoppingBag, label: "7 derniers jours", value: `${last7.toLocaleString()} FCFA`, info: true },
             { icon: Users, label: "Nombre total de clients", value: customers.toLocaleString() },
           ].map(({ icon: Icon, label, value, info }) => (
             <div key={label} className="rounded-2xl border border-border bg-card p-5 sm:p-6">
@@ -205,7 +199,7 @@ const VendorDashboard = () => {
                   </div>
                   <div className="hidden text-right sm:block">
                     <p className="text-sm font-bold text-foreground">{p.price}</p>
-                    <p className="text-xs text-muted-foreground">0 Vente</p>
+                    <p className="text-xs text-muted-foreground">{p._purchases} Vente{p._purchases !== 1 ? "s" : ""}</p>
                   </div>
                   <div className="flex gap-1">
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">

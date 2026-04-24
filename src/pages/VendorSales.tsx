@@ -167,7 +167,7 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
           <KpiCard
             icon={TrendingUp}
             label="Revenus (hors annulées)"
-            value={`${kpis.revenue.toLocaleString()} CFA`}
+            value={`${kpis.revenue.toLocaleString()} FCFA`}
             accent="bg-primary/15 text-primary"
           />
           <KpiCard
@@ -322,7 +322,7 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
                           </Select>
                         </td>
                         <td className="px-4 py-3 text-right font-bold text-foreground">
-                          {o.vendor_revenue.toLocaleString()} CFA
+                          {o.vendor_revenue.toLocaleString()} FCFA
                         </td>
                         <td className="px-4 py-3 text-right">
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelected(o)}>
@@ -463,7 +463,7 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
               <div className="flex items-center justify-between border-t border-border pt-3">
                 <span className="text-xs text-muted-foreground">Vos revenus sur cette commande</span>
                 <span className="text-lg font-bold text-foreground">
-                  {selected.vendor_revenue.toLocaleString()} CFA
+                  {selected.vendor_revenue.toLocaleString()} FCFA
                 </span>
               </div>
             </div>

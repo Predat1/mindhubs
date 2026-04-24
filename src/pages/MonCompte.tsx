@@ -189,7 +189,7 @@ const MonCompte = () => {
                 {[
                   { icon: ShoppingBag, label: "Achats", value: String(orders.length) },
                   { icon: BookOpen, label: "Formations", value: String(orders.filter(o => o.status !== "cancelled").length) },
-                  { icon: Package, label: "Dépensé", value: `${totalSpent.toLocaleString()} CFA` },
+                  { icon: Package, label: "Dépensé", value: `${totalSpent.toLocaleString()} FCFA` },
                 ].map((stat) => (
                   <div key={stat.label} className="stat-card rounded-xl p-4 text-center border-glow">
                     <stat.icon className="mx-auto text-primary mb-2" size={20} />
@@ -276,7 +276,7 @@ const MonCompte = () => {
                                 {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                               </span>
                             </div>
-                            <span className="text-sm font-bold text-foreground">{order.total_price.toLocaleString()} CFA</span>
+                            <span className="text-sm font-bold text-foreground">{order.total_price.toLocaleString()} FCFA</span>
                           </div>
                           <div className="space-y-2">
                             {order.items.map((item, idx) => (

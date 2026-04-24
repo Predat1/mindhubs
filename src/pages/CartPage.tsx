@@ -105,7 +105,7 @@ const CartPage = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-foreground font-bold text-base">Total</span>
-                <span className="text-accent font-bold text-xl">{totalPrice.toLocaleString()} CFA</span>
+                <span className="text-accent font-bold text-xl">{totalPrice.toLocaleString()} FCFA</span>
               </div>
               <Link to="/checkout" className="block w-full btn-primary-brand py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm tracking-wide hover-scale text-center shadow-glow">
                 COMMANDER

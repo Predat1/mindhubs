@@ -204,7 +204,7 @@ const Checkout = () => {
                   </div>
                   <div className="border-t border-border pt-3 sm:pt-4 flex justify-between items-center">
                     <span className="text-foreground font-bold text-sm">Total</span>
-                    <span className="text-accent font-bold text-base sm:text-xl">{totalPrice.toLocaleString()} CFA</span>
+                    <span className="text-accent font-bold text-base sm:text-xl">{totalPrice.toLocaleString()} FCFA</span>
                   </div>
                   <button type="submit" disabled={submitting} className="w-full btn-primary-brand py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-base hover-scale shadow-glow flex items-center justify-center gap-2 disabled:opacity-70">
                     {submitting && <Loader2 size={16} className="animate-spin" />}

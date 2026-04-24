@@ -33,7 +33,7 @@ const ConditionsGenerales = () => {
             <AnimateOnScroll>
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">Article 3 – Prix</h2>
-                <p>Les prix sont indiqués en Francs CFA (XOF) toutes taxes comprises. Mind Hub se réserve le droit de modifier ses tarifs à tout moment, étant entendu que le prix applicable est celui affiché au moment de la validation de la commande. Les promotions et offres spéciales sont valables dans la limite des stocks disponibles et pendant la durée indiquée.</p>
+                <p>Les prix sont indiqués en Francs FCFA (XOF) toutes taxes comprises. Mind Hub se réserve le droit de modifier ses tarifs à tout moment, étant entendu que le prix applicable est celui affiché au moment de la validation de la commande. Les promotions et offres spéciales sont valables dans la limite des stocks disponibles et pendant la durée indiquée.</p>
               </section>
             </AnimateOnScroll>
 

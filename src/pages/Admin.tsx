@@ -86,7 +86,7 @@ const Admin = () => {
       .channel('admin-orders-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
         const newOrder = payload.new as any;
-        toast({ title: "🔔 Nouvelle commande !", description: `${newOrder.customer_name} — ${newOrder.total_price?.toLocaleString()} CFA` });
+        toast({ title: "🔔 Nouvelle commande !", description: `${newOrder.customer_name} — ${newOrder.total_price?.toLocaleString()} FCFA` });
         queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       })
       .subscribe();
@@ -409,7 +409,7 @@ const Admin = () => {
             { label: "Témoignages", value: testimonials.length, icon: MessageSquare, accent: "bg-accent/10 text-accent" },
             { label: "Commandes", value: orders.length, icon: ShoppingBag, accent: "bg-primary/10 text-primary" },
             { label: "En attente", value: pendingCount, icon: Clock, accent: "bg-yellow-500/10 text-yellow-500" },
-            { label: "Revenu total", value: `${orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total_price, 0).toLocaleString()} CFA`, icon: ExternalLink, accent: "bg-accent/10 text-accent" },
+            { label: "Revenu total", value: `${orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total_price, 0).toLocaleString()} FCFA`, icon: ExternalLink, accent: "bg-accent/10 text-accent" },
           ].map((s, i) => (
             <div key={i} className="stat-card rounded-2xl p-5 border-glow">
               <div className="flex items-center gap-3">
@@ -434,7 +434,7 @@ const Admin = () => {
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={50} className="fill-muted-foreground" tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
                   <Tooltip
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px" }}
-                    formatter={(value: number) => [`${value.toLocaleString()} CFA`, "Revenus"]}
+                    formatter={(value: number) => [`${value.toLocaleString()} FCFA`, "Revenus"]}
                   />
                   <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -453,7 +453,7 @@ const Admin = () => {
               validOrders.forEach(o => o.items.forEach(i => { productSales[i.title] = (productSales[i.title] || 0) + i.quantity; }));
               const topProduct = Object.entries(productSales).sort((a, b) => b[1] - a[1])[0];
               return [
-                { label: "Panier moyen", value: `${avgRevenue.toLocaleString()} CFA` },
+                { label: "Panier moyen", value: `${avgRevenue.toLocaleString()} FCFA` },
                 { label: "Produit #1", value: topProduct ? topProduct[0].slice(0, 25) : "—" },
                 { label: "Ventes (top)", value: topProduct ? `${topProduct[1]} vendus` : "—" },
               ].map((s, i) => (
@@ -573,8 +573,8 @@ const Admin = () => {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <InputField label="ID (slug unique)" value={productEditing.id} onChange={(v) => setProductEditing({ ...productEditing, id: v })} disabled={!isNew} />
                   <InputField label="Titre" value={productEditing.title} onChange={(v) => setProductEditing({ ...productEditing, title: v })} />
-                  <InputField label="Ancien prix" value={productEditing.old_price} onChange={(v) => setProductEditing({ ...productEditing, old_price: v })} placeholder="15.000 CFA" />
-                  <InputField label="Prix" value={productEditing.price} onChange={(v) => setProductEditing({ ...productEditing, price: v })} placeholder="5.000 CFA" />
+                  <InputField label="Ancien prix" value={productEditing.old_price} onChange={(v) => setProductEditing({ ...productEditing, old_price: v })} placeholder="15.000 FCFA" />
+                  <InputField label="Prix" value={productEditing.price} onChange={(v) => setProductEditing({ ...productEditing, price: v })} placeholder="5.000 FCFA" />
                   <InputField label="Note (ex: 4.5)" value={productEditing.rating} onChange={(v) => setProductEditing({ ...productEditing, rating: v })} />
                   <InputField label="Ordre d'affichage" value={productEditing.sort_order} onChange={(v) => setProductEditing({ ...productEditing, sort_order: v })} type="number" />
                   <div className="space-y-2">
@@ -866,7 +866,7 @@ const Admin = () => {
                     <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Téléphone</p><p className="font-medium text-foreground mt-1">{viewingOrder.customer_phone}</p></div>
                     <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Paiement</p><p className="font-medium text-foreground mt-1 capitalize">{viewingOrder.payment_method.replace("_", " ")}</p></div>
                     <div className="bg-muted/30 rounded-xl p-3"><p className="text-xs text-muted-foreground">Date</p><p className="font-medium text-foreground mt-1">{new Date(viewingOrder.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
-                    <div className="bg-accent/10 rounded-xl p-3 border border-accent/20"><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg mt-1">{viewingOrder.total_price.toLocaleString()} CFA</p></div>
+                    <div className="bg-accent/10 rounded-xl p-3 border border-accent/20"><p className="text-xs text-muted-foreground">Total</p><p className="font-bold text-accent text-lg mt-1">{viewingOrder.total_price.toLocaleString()} FCFA</p></div>
                   </div>
 
                   <div className="space-y-2">
@@ -938,7 +938,7 @@ const Admin = () => {
                               <p className="text-xs text-muted-foreground">{o.items.length} produit(s)</p>
                             </td>
                             <td className="p-4 hidden md:table-cell text-muted-foreground truncate max-w-[180px]">{o.customer_email}</td>
-                            <td className="p-4"><span className="text-foreground font-semibold">{o.total_price.toLocaleString()} CFA</span></td>
+                            <td className="p-4"><span className="text-foreground font-semibold">{o.total_price.toLocaleString()} FCFA</span></td>
                             <td className="p-4 text-center">
                               <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.color}`}>
                                 <cfg.icon size={12} /> {cfg.label}

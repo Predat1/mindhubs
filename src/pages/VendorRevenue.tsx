@@ -50,10 +50,10 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: DollarSign, label: "Revenu total", value: `${stats.total.toLocaleString()} CFA` },
-            { icon: Calendar, label: "30 derniers jours", value: `${stats.last30.toLocaleString()} CFA` },
-            { icon: TrendingUp, label: "7 derniers jours", value: `${stats.last7.toLocaleString()} CFA` },
-            { icon: ShoppingBag, label: "Panier moyen", value: `${stats.avg.toLocaleString()} CFA` },
+            { icon: DollarSign, label: "Revenu total", value: `${stats.total.toLocaleString()} FCFA` },
+            { icon: Calendar, label: "30 derniers jours", value: `${stats.last30.toLocaleString()} FCFA` },
+            { icon: TrendingUp, label: "7 derniers jours", value: `${stats.last7.toLocaleString()} FCFA` },
+            { icon: ShoppingBag, label: "Panier moyen", value: `${stats.avg.toLocaleString()} FCFA` },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="rounded-2xl border border-border bg-card p-5">
               <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -68,7 +68,7 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
         {/* Chart */}
         <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
           <h3 className="text-base font-bold text-foreground">Revenus des 14 derniers jours</h3>
-          <p className="text-xs text-muted-foreground">Évolution quotidienne en CFA.</p>
+          <p className="text-xs text-muted-foreground">Évolution quotidienne en FCFA.</p>
 
           {isLoading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Chargement…</div>
@@ -79,7 +79,7 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-primary to-accent transition-all hover:opacity-80"
                     style={{ height: `${(d.value / stats.maxDay) * 100}%`, minHeight: d.value > 0 ? "4px" : "0" }}
-                    title={`${d.value.toLocaleString()} CFA`}
+                    title={`${d.value.toLocaleString()} FCFA`}
                   />
                   <span className="text-[9px] text-muted-foreground">{d.date}</span>
                 </div>
