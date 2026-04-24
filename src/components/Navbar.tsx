@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut, Zap } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { label: "Explorer", href: "/boutique" },

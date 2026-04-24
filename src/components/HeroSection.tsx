@@ -1,4 +1,4 @@
-import { ArrowRight, Star, TrendingUp, Users, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, Users, Sparkles, ShieldCheck, Zap, BookOpen, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePlatformStats } from "@/hooks/usePlatformStats";
