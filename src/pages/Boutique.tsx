@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal, Package, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
@@ -9,6 +9,9 @@ import { useProducts } from "@/hooks/useProducts";
 import { useSmartRanking } from "@/hooks/useSmartRanking";
 import { categories, type Category } from "@/data/products";
 import fbPixel from "@/hooks/useFacebookPixel";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const Boutique = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
@@ -17,7 +20,6 @@ const Boutique = () => {
   const rankedProducts = useSmartRanking(products);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  // Fire Search event with debounce
   useEffect(() => {
     if (searchQuery.trim().length >= 2) {
       clearTimeout(searchTimeout.current);
@@ -35,112 +37,132 @@ const Boutique = () => {
   const resultCount = filtered.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background aurora-bg">
       <SEO
-        title="Boutique – Formations & E-books"
-        description="Catalogue complet de formations digitales premium, e-books et kits business. Paiement sécurisé par Mobile Money, Wave, Visa. Accès illimité à vie."
+        title="Boutique Elite – Formations & E-books Premium"
+        description="Le catalogue N°1 de formations digitales premium en Afrique. E-books, kits business et expertises IA. Accès illimité à vie."
         path="/boutique"
-        keywords="acheter formation en ligne, e-books business, formation marketing digital Afrique, cours en ligne, kit business"
       />
       <Navbar />
 
-      {/* Hero Header */}
-      <section className="pt-28 sm:pt-24 pb-4 sm:pb-6">
+      {/* Header Section */}
+      <section className="pt-32 pb-12">
         <div className="container mx-auto px-4">
-          <AnimateOnScroll>
-            <div className="text-center max-w-2xl mx-auto">
-              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-primary mb-2 sm:mb-3">
-                Catalogue
-              </p>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground mb-2 sm:mb-3">
-                Nos formations & ressources
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Trouvez la formation parfaite pour développer vos compétences digitales.
-              </p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-3xl mx-auto space-y-4"
+          >
+            <div className="flex justify-center gap-2 mb-4">
+               <Badge className="bg-primary/20 text-primary border-none px-3 py-1 font-black text-[10px] tracking-widest">BOUTIQUE EXPERT</Badge>
+               <Badge variant="outline" className="border-white/10 text-muted-foreground px-3 py-1 font-black text-[10px] tracking-widest uppercase">Paiement Sécurisé</Badge>
             </div>
-          </AnimateOnScroll>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
+              Développez vos <br /> <span className="text-gradient-primary italic">Compétences Digitales</span>
+            </h1>
+            <p className="text-muted-foreground font-medium max-w-xl mx-auto">
+              Des ressources premium conçues par des experts pour vous aider à lancer et scaler votre business en Afrique.
+            </p>
+          </motion.div>
         </div>
       </section>
 
-      {/* Search + Filters Bar */}
-      <section className="container mx-auto px-4 mb-6 sm:mb-8">
-        <AnimateOnScroll delay={100}>
-          <div className="max-w-2xl mx-auto mb-4 sm:mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-              <input
-                type="text"
-                placeholder="Rechercher une formation, un e-book..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-11 pr-4 py-3 sm:py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
-              />
-            </div>
+      {/* Control Bar: Search + Filters */}
+      <section className="container mx-auto px-4 mb-12 sticky top-24 z-40">
+        <div className="glass-card rounded-[2.5rem] p-3 max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-4 border-white/10 shadow-2xl">
+          
+          {/* Search Input */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+            <input
+              type="text"
+              placeholder="Rechercher une formation, un e-book..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-14 pr-6 h-14 rounded-2xl bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
+            />
           </div>
-        </AnimateOnScroll>
 
-        <AnimateOnScroll delay={150}>
-          <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium border transition-all hover-scale ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "stat-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Categories Scroll (Desktop) */}
+          <div className="hidden md:flex items-center gap-2 pr-2 border-l border-white/5 pl-4 overflow-x-auto [scrollbar-width:none]">
+             {categories.map((cat) => (
+               <button
+                 key={cat}
+                 onClick={() => setActiveCategory(cat)}
+                 className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                   activeCategory === cat
+                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                     : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                 }`}
+               >
+                 {cat}
+               </button>
+             ))}
           </div>
-        </AnimateOnScroll>
-      </section>
 
-      {/* Results Count */}
-      <section className="container mx-auto px-4 mb-3 sm:mb-4">
-        <div className="flex items-center justify-between max-w-5xl mx-auto">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
-            {isLoading ? "Chargement..." : `${resultCount} résultat${resultCount !== 1 ? "s" : ""}`}
-            {activeCategory !== "Tous" && ` dans "${activeCategory}"`}
-            {searchQuery.trim() && ` pour "${searchQuery}"`}
-          </p>
+          {/* Mobile Categories Toggle */}
+          <div className="md:hidden flex w-full gap-2 overflow-x-auto [scrollbar-width:none] pb-2">
+             {categories.map((cat) => (
+               <button
+                 key={cat}
+                 onClick={() => setActiveCategory(cat)}
+                 className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                   activeCategory === cat
+                     ? "bg-primary text-primary-foreground"
+                     : "bg-white/5 text-muted-foreground"
+                 }`}
+               >
+                 {cat}
+               </button>
+             ))}
+          </div>
         </div>
       </section>
 
-      {/* Products Grid */}
-      <section className="container mx-auto px-4 pb-16 sm:pb-20">
+      {/* Grid Status */}
+      <div className="container mx-auto px-4 mb-6">
+         <div className="max-w-5xl mx-auto flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            <div className="flex items-center gap-2">
+               <Package size={14} className="text-primary" />
+               {isLoading ? "Chargement..." : `${resultCount} ressources disponibles`}
+            </div>
+            <div className="flex items-center gap-2">
+               <Sparkles size={14} className="text-primary" />
+               Recommandé par Mindhubs
+            </div>
+         </div>
+      </div>
+
+      {/* Main Grid */}
+      <section className="container mx-auto px-4 pb-24">
         {isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="stat-card rounded-xl h-56 sm:h-72 animate-pulse" />
+              <div key={i} className="glass-card rounded-[2rem] aspect-square animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <AnimateOnScroll>
-            <div className="text-center py-16 sm:py-20 max-w-md mx-auto">
-              <Search className="mx-auto text-muted-foreground mb-4" size={36} />
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Aucun résultat</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                Essayez avec d'autres mots-clés ou explorez une autre catégorie.
-              </p>
-              <button
-                onClick={() => { setSearchQuery(""); setActiveCategory("Tous"); }}
-                className="text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
+          <div className="text-center py-24 bg-card/20 rounded-[3rem] border-2 border-dashed border-white/5 max-w-4xl mx-auto space-y-6">
+             <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
+                <Search size={32} />
+             </div>
+             <div className="space-y-2">
+                <h3 className="text-2xl font-black">Aucun résultat trouvé</h3>
+                <p className="text-muted-foreground font-medium">Essayez d'ajuster vos filtres ou votre recherche.</p>
+             </div>
+             <Button onClick={() => { setSearchQuery(""); setActiveCategory("Tous"); }} variant="outline" className="rounded-full">
                 Réinitialiser les filtres
-              </button>
-            </div>
-          </AnimateOnScroll>
+             </Button>
+          </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-5xl mx-auto">
-            {filtered.map((product, i) => (
-              <AnimateOnScroll key={product.id} delay={i * 40}>
-                <ProductCard product={product} />
-              </AnimateOnScroll>
-            ))}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            <AnimatePresence>
+              {filtered.map((product, i) => (
+                <AnimateOnScroll key={product.id} delay={i * 40}>
+                  <ProductCard product={product} />
+                </AnimateOnScroll>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </section>

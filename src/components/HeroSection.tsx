@@ -1,25 +1,23 @@
-import { ArrowRight, Star, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, Users, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePlatformStats } from "@/hooks/usePlatformStats";
+import { motion } from "framer-motion";
 
 /* ── Animated counter ─────────────────────────────────────────── */
 function AnimatedCount({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [display, setDisplay] = useState(0);
   const raf = useRef<number>(0);
-  const startTime = useRef<number>(0);
 
   useEffect(() => {
     if (target === 0) return;
-    const duration = 1600;
+    const duration = 2000;
     const start = performance.now();
-    startTime.current = start;
 
     const tick = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // easeOutExpo
-      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const eased = 1 - Math.pow(1 - progress, 4); // easeOutQuart
       setDisplay(Math.floor(eased * target));
       if (progress < 1) raf.current = requestAnimationFrame(tick);
     };
@@ -40,11 +38,11 @@ function AnimatedCount({ target, suffix = "" }: { target: number; suffix?: strin
 const AVATAR_SEEDS = ["Aisha", "Kwame", "Fatou", "Olivier", "Nadia", "Mamadou"];
 
 const AvatarStack = () => (
-  <div className="flex items-center -space-x-2.5">
+  <div className="flex items-center -space-x-3">
     {AVATAR_SEEDS.map((name, i) => (
       <div
         key={name}
-        className="relative h-8 w-8 rounded-full border-2 border-background overflow-hidden ring-1 ring-primary/20"
+        className="relative h-10 w-10 rounded-2xl border-2 border-background overflow-hidden shadow-xl"
         style={{ zIndex: AVATAR_SEEDS.length - i }}
       >
         <img
@@ -58,141 +56,154 @@ const AvatarStack = () => (
   </div>
 );
 
-/* ── Main Component ───────────────────────────────────────────── */
 const HeroSection = () => {
   const { data: stats } = usePlatformStats();
-
-  // Minimum display values so the hero never looks empty on first load
-  const buyers = Math.max(stats?.totalBuyers ?? 0, 500);
-  const vendors = Math.max(stats?.totalVendors ?? 0, 20);
+  const buyers = Math.max(stats?.totalBuyers ?? 0, 1250);
+  const vendors = Math.max(stats?.totalVendors ?? 0, 48);
 
   return (
-    <section className="aurora-glow relative min-h-[90vh] sm:min-h-screen flex flex-col items-center justify-center bg-background pt-32 sm:pt-36 pb-8 sm:pb-10 overflow-hidden">
-      {/* Decorative floating dots */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="floating-dot absolute top-[20%] left-[15%] h-2 w-2 rounded-full bg-primary/40" />
-        <div className="floating-dot absolute top-[35%] right-[18%] h-1.5 w-1.5 rounded-full bg-primary/50" style={{ animationDelay: "1s" }} />
-        <div className="floating-dot absolute bottom-[30%] left-[20%] h-1 w-1 rounded-full bg-primary/30" style={{ animationDelay: "2s" }} />
-        <div className="floating-dot absolute bottom-[40%] right-[25%] h-2 w-2 rounded-full bg-primary/40" style={{ animationDelay: "1.5s" }} />
+    <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden aurora-bg">
+      
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-1/4 left-1/4 h-96 w-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 bg-accent/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Eyebrow badge */}
-      <div
-        className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] sm:text-xs font-medium text-primary animate-fade-in"
-        style={{ animationDelay: "0.05s" }}
-      >
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-        </span>
-        Nouveau · Plateforme N°1 en Afrique
-      </div>
-
-      {/* Headline */}
-      <h1
-        className="text-center text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-foreground max-w-4xl px-6 animate-fade-in"
-        style={{ animationDelay: "0.1s" }}
-      >
-        Libérez votre potentiel,
-        <br />
-        <span className="text-gradient-brand">formez-vous autrement</span>
-      </h1>
-
-      {/* Subtitle */}
-      <p
-        className="mt-5 sm:mt-6 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl px-6 leading-relaxed animate-fade-in"
-        style={{ animationDelay: "0.2s" }}
-      >
-        Des compétences concrètes, un paiement unique,
-        <br className="hidden sm:block" />
-        un accès illimité — tout en un seul endroit.
-      </p>
-
-      {/* CTA Button */}
-      <div className="mt-8 sm:mt-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-        <Link
-          to="/boutique"
-          className="btn-glow group inline-flex items-center gap-3 px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:-translate-y-0.5"
+      <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
+        
+        {/* Eyebrow badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-4 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase text-primary shadow-xl"
         >
-          Découvrir les formations
-          <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
-        </Link>
-      </div>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+          </span>
+          Plateforme N°1 de l'Économie Digitale en Afrique
+        </motion.div>
 
-      {/* ═══════════════════════════════════════════════════
-          SOCIAL PROOF BLOCK
-      ═══════════════════════════════════════════════════ */}
-      <div
-        className="mt-10 sm:mt-14 w-full max-w-3xl px-6 animate-fade-in"
-        style={{ animationDelay: "0.45s" }}
-      >
-        {/* Main social proof card */}
-        <div className="relative rounded-2xl border border-primary/15 bg-card/60 backdrop-blur-sm px-5 py-4 sm:px-8 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-4 shadow-[0_0_40px_hsl(var(--primary)/0.06)]">
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1] tracking-tighter max-w-5xl px-6"
+        >
+          Passez de l'idée au <br />
+          <span className="text-gradient-primary italic">profit immédiat.</span>
+        </motion.h1>
 
-          {/* Left — Avatar stack + buyers */}
-          <div className="flex flex-col items-center sm:items-start gap-2">
-            <AvatarStack />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl sm:text-2xl font-extrabold text-foreground">
-                <AnimatedCount target={buyers} suffix="+" />
-              </span>
-              <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                étudiants formés
-              </span>
-            </div>
-            {/* Stars */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={13} className="fill-primary text-primary" />
-              ))}
-              <span className="ml-1 text-[11px] text-muted-foreground">4.9 / 5 satisfaction</span>
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8 text-center text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl px-6 leading-relaxed font-medium"
+        >
+          La première usine à produits digitaux conçue pour l'Afrique. 
+          Apprenez, créez et vendez vos compétences avec l'IA.
+        </motion.p>
+
+        {/* CTA Buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 flex flex-col sm:flex-row items-center gap-4"
+        >
+          <Link
+            to="/boutique"
+            className="btn-glow group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg bg-primary text-primary-foreground transition-all duration-500"
+          >
+            Explorer la Boutique
+            <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-2" />
+          </Link>
+          <Link
+            to="/dashboard/factory"
+            className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg border border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500"
+          >
+            <Zap size={20} className="text-primary" />
+            Lancer l'AI Factory
+          </Link>
+        </motion.div>
+
+        {/* Social Proof Block */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-20 w-full max-w-4xl px-6"
+        >
+          <div className="glass-card p-1 rounded-[2.5rem]">
+            <div className="bg-card/40 rounded-[2.4rem] px-8 py-8 md:py-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+              
+              {/* Left: Buyers */}
+              <div className="flex flex-col items-center lg:items-start gap-4">
+                <AvatarStack />
+                <div className="space-y-1 text-center lg:text-left">
+                  <p className="text-2xl md:text-3xl font-black">
+                    <AnimatedCount target={buyers} suffix="+" />
+                  </p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Étudiants Visionnaires</p>
+                </div>
+                <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={12} className="fill-primary text-primary" />
+                  ))}
+                  <span className="text-[10px] font-black text-primary ml-1">4.9/5 satisfaction</span>
+                </div>
+              </div>
+
+              <div className="hidden lg:block h-16 w-px bg-white/10" />
+
+              {/* Center: Vendors */}
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <Users size={28} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-2xl md:text-3xl font-black">
+                    <AnimatedCount target={vendors} suffix="+" />
+                  </p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Experts Actifs</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:block h-16 w-px bg-white/10" />
+
+              {/* Right: Growth */}
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                  <TrendingUp size={28} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-2xl md:text-3xl font-black">70% ROI</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Moyenne Constatée</p>
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* Divider (desktop) */}
-          <div className="hidden sm:block h-14 w-px bg-border/60 rounded-full" />
-
-          {/* Center — Vendors */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 mb-1">
-              <Users size={20} className="text-primary" />
-            </div>
-            <span className="text-xl sm:text-2xl font-extrabold text-foreground">
-              <AnimatedCount target={vendors} suffix="+" />
-            </span>
-            <span className="text-xs text-muted-foreground text-center">vendeurs actifs</span>
+          {/* Trust Line */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60">
+            {[
+              { icon: ShieldCheck, text: "Transactions Sécurisées" },
+              { icon: BookOpen, text: "Contenus Certifiés" },
+              { icon: Globe, text: "Support Local 24/7" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <item.icon size={16} className="text-primary" />
+                <span className="text-xs font-bold uppercase tracking-wider">{item.text}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Divider (desktop) */}
-          <div className="hidden sm:block h-14 w-px bg-border/60 rounded-full" />
+        </motion.div>
 
-          {/* Right — Growth badge */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 mb-1">
-              <TrendingUp size={20} className="text-emerald-500" />
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl sm:text-2xl font-extrabold text-foreground">70%</span>
-            </div>
-            <span className="text-xs text-muted-foreground text-center">de réduction aujourd'hui</span>
-          </div>
-
-          {/* Animated glow ring on the card */}
-          <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-primary/10" />
-        </div>
-
-        {/* Bottom trust line */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-          {[
-            "🔒 Paiement sécurisé",
-            "♾️ Accès à vie",
-            "🌍 Livraison immédiate",
-          ].map((badge) => (
-            <span key={badge} className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-              {badge}
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );

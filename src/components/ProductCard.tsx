@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { Flame, Users, Store, BadgeCheck } from "lucide-react";
+import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 import { useVendorById } from "@/hooks/useVendors";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
 
@@ -12,7 +14,7 @@ const StarRating = ({ rating }: { rating: number }) => (
     {Array.from({ length: 5 }).map((_, i) => (
       <svg
         key={i}
-        className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(rating) ? "text-accent fill-accent" : i < rating ? "text-accent fill-accent opacity-50" : "text-muted-foreground"}`}
+        className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < Math.floor(rating) ? "text-primary fill-primary" : i < rating ? "text-primary fill-primary opacity-50" : "text-muted-foreground/30"}`}
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -40,60 +42,76 @@ const ProductCard = ({ product }: { product: Product }) => {
 
   return (
     <>
-      <Link to={`/produit/${product.id}`} className="block group">
-        <div className="card-premium rounded-xl overflow-hidden h-full flex flex-col">
-          <div className="relative overflow-hidden img-zoom-container">
-            {isBestSeller ? (
-              <span className="shimmer-badge absolute top-2 left-2 bg-accent/90 text-accent-foreground text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full z-10 flex items-center gap-1">
-                <Flame size={10} /> BEST-SELLER
-              </span>
-            ) : (
-              <span className="absolute top-2 left-2 badge-purple text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
-                VENTE !
-              </span>
-            )}
-            <img
-              src={product.image}
-              alt={product.title}
-              loading="lazy"
-              width={512}
-              height={512}
-              className="w-full h-36 sm:h-48 md:h-56 object-cover"
-            />
-          </div>
-          <div className="p-3 sm:p-4 flex flex-col flex-1 items-center text-center space-y-2 sm:space-y-3">
-            <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
-              {product.title}
-            </h3>
-            {product.rating && <StarRating rating={product.rating} />}
-            <div className="flex items-center justify-center gap-1 text-[10px] sm:text-[11px] text-muted-foreground">
-              <Users size={10} />
-              <span>{120 + Math.floor(product.title.length * 3)}+ acheteurs</span>
+      <motion.div
+        whileHover={{ y: -8 }}
+        className="h-full"
+      >
+        <Link to={`/produit/${product.id}`} className="block group h-full">
+          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-white/5 bg-card/40">
+            
+            {/* Image Container */}
+            <div className="relative aspect-square overflow-hidden">
+              {isBestSeller ? (
+                <Badge className="absolute top-4 left-4 z-10 bg-primary/90 text-white border-none px-3 py-1 font-black text-[10px] tracking-widest gap-1.5 shadow-xl">
+                   <Flame size={12} className="animate-pulse" /> TOP VENTE
+                </Badge>
+              ) : (
+                <Badge className="absolute top-4 left-4 z-10 bg-emerald-500/90 text-white border-none px-3 py-1 font-black text-[10px] tracking-widest gap-1.5 shadow-xl">
+                   <Sparkles size={12} /> NOUVEAU
+                </Badge>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[1]" />
+              
+              <img
+                src={product.image}
+                alt={product.title}
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
             </div>
-            {vendor && (
-              <Link
-                to={`/store/${vendor.username}`}
-                onClick={handleVendorClick}
-                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Store size={9} />
-                <span className="truncate max-w-[120px]">{vendor.shop_name}</span>
-                {vendor.verified && <BadgeCheck size={10} className="text-accent" />}
-              </Link>
-            )}
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-muted-foreground line-through text-[10px] sm:text-xs">{product.oldPrice}</span>
-              <span className="text-accent font-bold text-sm sm:text-base underline">{product.price}</span>
+
+            {/* Content Container */}
+            <div className="p-5 flex flex-col flex-1 space-y-4">
+              
+              <div className="space-y-2">
+                <h3 className="font-black text-foreground text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                  {product.title}
+                </h3>
+                {product.rating && <StarRating rating={product.rating} />}
+              </div>
+
+              {vendor && (
+                <div onClick={handleVendorClick} className="flex items-center gap-2">
+                   <div className="h-6 w-6 rounded-lg bg-muted flex items-center justify-center border border-border overflow-hidden">
+                      {vendor.avatar_url ? <img src={vendor.avatar_url} className="h-full w-full object-cover" /> : <Store size={12} />}
+                   </div>
+                   <span className="text-[10px] font-bold text-muted-foreground truncate hover:text-primary transition-colors">
+                      {vendor.shop_name}
+                   </span>
+                   {vendor.verified && <BadgeCheck size={12} className="text-primary" />}
+                </div>
+              )}
+
+              <div className="flex-1" />
+
+              <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                 <div className="flex flex-col">
+                    <span className="text-[10px] text-muted-foreground line-through font-bold">{product.oldPrice}</span>
+                    <span className="text-lg font-black text-foreground">{product.price}</span>
+                 </div>
+                 <button
+                   onClick={handleBuy}
+                   className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
+                 >
+                    <ShoppingBag size={18} />
+                 </button>
+              </div>
+
             </div>
-            <button
-              onClick={handleBuy}
-              className="btn-primary-brand py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-semibold text-[10px] sm:text-xs tracking-wide hover-scale"
-            >
-              ACHETER MAINTENANT
-            </button>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </motion.div>
 
       <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
     </>
