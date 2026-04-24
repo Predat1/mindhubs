@@ -49,6 +49,7 @@ const Inner = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [view, setView] = useState<"list" | "grid">("list");
+  const [generationStep, setGenerationStep] = useState(0);
 
   useEffect(() => {
     if (presetProductId && !productId) setProductId(presetProductId);
@@ -91,6 +92,18 @@ const Inner = () => {
   }, [creatives, historyScope, productId]);
 
   const generate = useGenerateAdKit();
+
+  useEffect(() => {
+    if (generate.isPending) {
+      setGenerationStep(0);
+      const interval = setInterval(() => {
+        setGenerationStep((prev) => Math.min(prev + 1, 3));
+      }, 4000); // 4s per step approx
+      return () => clearInterval(interval);
+    } else {
+      setGenerationStep(0);
+    }
+  }, [generate.isPending]);
 
   const toggleAngle = (a: AdAngle) =>
     setAngles((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
@@ -256,18 +269,32 @@ const Inner = () => {
               <strong className="text-foreground">{totalToGenerate}</strong> créative{totalToGenerate > 1 ? "s" : ""} ser{totalToGenerate > 1 ? "ont" : "a"} générée{totalToGenerate > 1 ? "s" : ""}
               {totalToGenerate > 0 && ` • ${angles.length} kit${angles.length > 1 ? "s" : ""} de copywriting + ciblage`}
             </div>
-            <Button
-              size="lg"
-              className="btn-glow gap-2"
-              onClick={handleGenerate}
-              disabled={generate.isPending || !productId || totalToGenerate === 0 || totalToGenerate > 8}
-            >
-              {generate.isPending ? (
-                <><Loader2 size={16} className="animate-spin" /> Génération en cours…</>
-              ) : (
-                <><Wand2 size={16} /> Générer mon kit publicitaire <ChevronRight size={16} /></>
-              )}
-            </Button>
+            
+            {generate.isPending ? (
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-primary">
+                  <Loader2 size={16} className="animate-spin" />
+                  {generationStep === 0 && "🔍 Analyse du produit..."}
+                  {generationStep === 1 && "✍️ Rédaction du copywriting..."}
+                  {generationStep === 2 && "🎨 Création de l'image..."}
+                  {generationStep === 3 && "✨ Finalisation..."}
+                </div>
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3].map((step) => (
+                    <div key={step} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${step <= generationStep ? "bg-primary" : "bg-muted"}`} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Button
+                size="lg"
+                className="btn-glow gap-2"
+                onClick={handleGenerate}
+                disabled={!productId || totalToGenerate === 0 || totalToGenerate > 8}
+              >
+                <Wand2 size={16} /> Générer mon kit publicitaire <ChevronRight size={16} />
+              </Button>
+            )}
           </div>
         </Card>
 
@@ -473,7 +500,11 @@ const Inner = () => {
 
 const VendorAdsStudio = () => (
   <VendorGuard>
-    {() => <Inner />}
+    {() => (
+      <div className="dark min-h-screen bg-background text-foreground">
+        <Inner />
+      </div>
+    )}
   </VendorGuard>
 );
 
