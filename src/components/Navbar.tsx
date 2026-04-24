@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
   { label: "Boutique", href: "/boutique" },
   { label: "À propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
-  { label: "Mon compte", href: "/mon-compte" },
 ];
 
 const Navbar = () => {
@@ -24,6 +32,11 @@ const Navbar = () => {
   const { totalItems, cartBounce } = useCart();
   const { theme, toggleTheme } = useTheme();
   const { data: currentVendor } = useCurrentVendor();
+  const { user, signOut } = useAuth();
+  const userInitials = user
+    ? (user.user_metadata?.full_name || user.email || "U")
+        .split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "";
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -225,6 +238,56 @@ const Navbar = () => {
               </span>
             </Link>
 
+            {/* User menu */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-8 h-8 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center hover:bg-primary/25 transition-colors border border-primary/30"
+                    aria-label="Mon compte"
+                  >
+                    {userInitials}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user.user_metadata?.full_name || "Mon compte"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/mon-compte")} className="cursor-pointer">
+                    <User size={14} className="mr-2" /> Mon compte
+                  </DropdownMenuItem>
+                  {currentVendor && (
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")} className="cursor-pointer">
+                      <LayoutDashboard size={14} className="mr-2" /> Dashboard vendeur
+                    </DropdownMenuItem>
+                  )}
+                  {!currentVendor && (
+                    <DropdownMenuItem onClick={() => navigate("/become-a-seller")} className="cursor-pointer">
+                      <Store size={14} className="mr-2" /> Devenir vendeur
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={async () => { await signOut(); navigate("/"); }}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <LogOut size={14} className="mr-2" /> Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                to="/mon-compte"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+              >
+                <User size={14} /> Connexion
+              </Link>
+            )}
+
             <button className="md:hidden text-foreground p-1" onClick={() => setOpen(!open)}>
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -248,6 +311,13 @@ const Navbar = () => {
               </Link>
             ))}
             <Link
+              to="/mon-compte"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <User size={16} /> {user ? "Mon compte" : "Connexion"}
+            </Link>
+            <Link
               to={currentVendor ? "/dashboard" : "/become-a-seller"}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 py-3 text-sm font-semibold text-primary"
@@ -255,6 +325,14 @@ const Navbar = () => {
               {currentVendor ? <LayoutDashboard size={16} /> : <Store size={16} />}
               {currentVendor ? "Mon dashboard vendeur" : "Devenir vendeur"}
             </Link>
+            {user && (
+              <button
+                onClick={async () => { await signOut(); setOpen(false); navigate("/"); }}
+                className="flex items-center gap-2 py-3 text-sm text-destructive w-full"
+              >
+                <LogOut size={16} /> Déconnexion
+              </button>
+            )}
           </div>
         )}
       </nav>

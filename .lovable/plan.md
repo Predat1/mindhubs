@@ -1,118 +1,85 @@
 
 
-# Générateur de Créatives Publicitaires IA pour Vendeurs
+# Refonte UI/UX Authentification + Résolution des conflits
 
-## Objectif
+## Conflits identifiés
 
-Ajouter un outil "Studio Pub Facebook" qui permet aux vendeurs de générer automatiquement des **créatives publicitaires images** optimisées conversion, accompagnées de **textes publicitaires** (primary text, headlines, descriptions) et de **recommandations de ciblage Facebook Ads**, à partir de n'importe quel produit publié de leur catalogue.
+1. **Pas de Google Sign-In** alors que la mémoire projet le recommande par défaut. Les utilisateurs n'ont qu'une seule option (email/password).
+2. **`signUp` ne gère pas le cas "email déjà utilisé"** clairement (message brut Supabase peu lisible en français).
+3. **Pas de validation visuelle du mot de passe** (force, critères) → confusion à l'inscription.
+4. **Toast d'inscription affirme "Vérifiez votre email"** mais aucun écran d'attente n'existe → l'utilisateur reste bloqué sur le formulaire sans feedback clair.
+5. **`/reset-password` ne vérifie pas que la session de récupération est valide** : si on accède à la page sans token, on peut quand même soumettre (et ça change le mot de passe d'un utilisateur connecté par hasard).
+6. **Aucun indicateur de session active dans la Navbar** : impossible de savoir d'un coup d'œil si l'on est connecté.
+7. **Pas de protection des routes vendor** côté `MonCompte` (uniquement gardé via `VendorGuard` sur les pages dashboard, pas d'orientation depuis le compte).
 
-## Parcours utilisateur
+## Améliorations UI/UX
 
-```text
-1. Vendeur publie un produit
-   └─> Toast/CTA "🚀 Créer une pub Facebook" apparaît après publication
+### A. Page `MonCompte` (auth)
+- **Ajout du bouton "Continuer avec Google"** (haut du formulaire, avant les champs email/password) avec séparateur "ou".
+- **Onglets segmentés** (Connexion / Inscription) au lieu du toggle texte en bas.
+- **Indicateur de force du mot de passe** lors de l'inscription (faible / moyen / fort, barre colorée).
+- **Critères live** sous le champ password (✓ 6+ caractères, ✓ 1 chiffre, ✓ 1 majuscule).
+- **Messages d'erreur traduits** en français (mapping des erreurs Supabase courantes).
+- **Écran "Vérifiez votre email"** après inscription (au lieu de juste un toast) avec bouton "Renvoyer l'email".
+- **Animation aurora-glow** sur la card auth pour cohérence Black & Gold.
+- **Logo/icône Mind✦Hub** centré au-dessus de la card pour identité visuelle.
 
-2. Page "Studio Pub" (/dashboard/ads-studio)
-   ├─ Sélection produit (dropdown du catalogue vendeur)
-   ├─ Choix angles marketing (multi-select : Bénéfice, Urgence, 
-   │  Preuve sociale, Avant/Après, Storytelling, Problème/Solution)
-   ├─ Choix formats (multi-select : Carré 1:1 feed, Story 9:16, 
-   │  Paysage 16:9, Portrait 4:5)
-   └─ Bouton "Générer mon kit publicitaire complet"
+### B. Page `ResetPassword`
+- **Vérifier le token recovery** : si pas de session de récupération valide, afficher un message d'erreur + lien vers "Demander un nouveau lien".
+- **Indicateur de force** identique à l'inscription.
+- **Confirmation du mot de passe** (2 champs avec validation).
+- **Auto-déconnexion** après reset pour forcer une nouvelle connexion sécurisée.
 
-3. Résultats (kit complet par angle)
-   ├─ Créatives images (1 par format × angle sélectionné)
-   ├─ Textes pubs : Primary text, 5 Headlines, 3 Descriptions
-   ├─ Lien produit (deeplink /produit/:id, copiable)
-   ├─ Ciblage recommandé : âge, genre, intérêts FB, comportements, 
-   │  pays africains francophones cibles
-   └─ Actions : Télécharger image, Copier texte, Copier ciblage,
-      Régénérer une variante
-```
+### C. Vue connectée (`MonCompte` logged-in)
+- **Section "Sécurité"** avec : changer mot de passe, dernière connexion, statut email vérifié.
+- **Bouton "Devenir vendeur"** visible si l'utilisateur n'est pas vendor (CTA vers `/become-a-seller`).
+- **Bouton "Mon dashboard vendeur"** si l'utilisateur EST vendor (CTA vers `/dashboard`).
 
-## Fonctionnalités clés
-
-### A. Génération de créatives images
-- Pour chaque combinaison **angle × format**, génère une image publicitaire avec :
-  - Image produit en avant
-  - Texte d'accroche court intégré (overlay)
-  - Couleurs Black & Gold de la marque
-  - Composition optimisée par format (Story = vertical, etc.)
-- Modèle : `google/gemini-3-pro-image-preview` (qualité supérieure pour pubs)
-- Edit mode : utilise l'image produit existante comme base
-
-### B. Génération du copywriting
-- Modèle : `google/gemini-3-flash-preview`
-- Prompt analyse le produit (titre, description, prix, catégorie, key_features)
-- Sortie structurée (tool calling) :
-  - 1 Primary text (≤125 caractères, scroll-stopper)
-  - 5 Headlines courtes (≤40 caractères)
-  - 3 Descriptions (≤30 caractères)
-  - 1 CTA recommandé (Acheter, En savoir plus, Inscription...)
-
-### C. Recommandations de ciblage Facebook Ads
-- Sortie structurée :
-  - Tranche d'âge (ex: 25-45)
-  - Genre (Hommes / Femmes / Tous)
-  - Localisation (pays africains francophones suggérés selon catégorie)
-  - Centres d'intérêt FB (5-8 intérêts pertinents)
-  - Comportements (acheteurs en ligne, mobile, etc.)
-  - Budget journalier suggéré (low / mid / high)
-  - Type de campagne FB recommandé (Conversions, Trafic, Engagement)
-
-### D. Persistance et historique
-- Table `ad_creatives` : sauvegarde chaque kit généré (rejouable, partageable)
-- Le vendeur retrouve ses kits passés dans la page Studio Pub
+### D. Navbar
+- **Avatar utilisateur** (initiales sur fond gold) à la place du lien "Mon compte" quand connecté, avec dropdown : Mon compte / Mon dashboard / Déconnexion.
 
 ## Implémentation technique
 
-### 1. Base de données (migration)
-Nouvelle table `public.ad_creatives` :
-- `id`, `vendor_id`, `product_id`, `angle`, `format`
-- `image_url` (stockée dans bucket `product-images/ads/`)
-- `copy_data` jsonb (primary_text, headlines, descriptions, cta)
-- `targeting_data` jsonb (âge, genre, intérêts, etc.)
-- `created_at`
-- RLS : vendeur lit/écrit uniquement ses propres créatives
+### 1. `AuthContext.tsx`
+- Ajout de `signInWithGoogle()` utilisant `supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } })`.
+- Helper `translateAuthError(error)` qui mappe les codes d'erreur Supabase courants vers du français lisible.
+- Ajout de `resendConfirmation(email)` pour le bouton "Renvoyer l'email".
 
-### 2. Edge functions (3 nouvelles)
-| Function | Modèle | Rôle |
-|---|---|---|
-| `generate-ad-creative` | gemini-3-pro-image-preview | Génère 1 image pub (angle + format) |
-| `generate-ad-copy` | gemini-3-flash-preview + tool calling | Génère textes pubs structurés |
-| `generate-ad-targeting` | gemini-3-flash-preview + tool calling | Génère ciblage FB structuré |
+### 2. `MonCompte.tsx`
+- Refonte des onglets via composant `Tabs` de shadcn.
+- Bouton Google avec icône SVG (déjà présent dans `src/assets/logos/google.svg`).
+- Composant interne `PasswordStrength` (barre + critères).
+- Nouveau state `mode: "login" | "register" | "forgot" | "check-email"` avec écran dédié.
+- Section Sécurité dans la vue logged-in + lien conditionnel vendor.
 
-Chaque function : CORS, validation Zod, gestion 429/402, stockage image dans bucket Supabase pour `generate-ad-creative`.
+### 3. `ResetPassword.tsx`
+- Hook `useEffect` qui vérifie via `supabase.auth.getSession()` la présence du token recovery, sinon `setError("invalid_session")`.
+- Champ "Confirmer le mot de passe" + validation match.
+- Composant `PasswordStrength` partagé.
+- `signOut()` après update + redirection `/mon-compte`.
 
-### 3. Pages et composants
-- `src/pages/VendorAdsStudio.tsx` — page principale, intégrée dans le sidebar
-- `src/components/ads/AdKitCard.tsx` — affichage d'un kit (image + textes + ciblage)
-- `src/components/ads/AdCreativeGenerator.tsx` — formulaire de génération
-- `src/components/ads/PostPublishAdPrompt.tsx` — modal "Créer une pub" après publication produit
-- `src/hooks/useAdCreatives.ts` — fetch/sauvegarde des kits
+### 4. `Navbar.tsx`
+- Détection de `user` via `useAuth()`.
+- Composant `UserMenu` (DropdownMenu shadcn) avec avatar initiales + items.
 
-### 4. Intégrations existantes
-- Hook into `VendorProductForm.tsx` après `handleSave({status:"published"})` → toast avec CTA "🚀 Créer une publicité"
-- Ajout de l'item "Studio Pub" dans `DashboardLayout.tsx` sidebar (icône `Megaphone` ou `Sparkles`, badge "Nouveau ✨")
-- Route `/dashboard/ads-studio` dans `App.tsx`
+### 5. Nouveau composant partagé
+- `src/components/auth/PasswordStrength.tsx` (barre + 4 critères live).
+- `src/components/auth/GoogleButton.tsx` (bouton stylisé réutilisable).
 
-## Design (cohérent Black & Gold)
+## Fichiers modifiés
 
-- Hero avec gradient gold + halo "aurora"
-- Cards `.card-premium` pour chaque kit généré
-- Badges colorés par angle (Bénéfice = vert, Urgence = rouge, etc.)
-- Aperçu image avec ratio exact selon format (mockup Facebook feed/story)
-- Boutons "Copier" avec feedback toast
-- Loading states avec skeleton + animation gold pulse pendant génération
-
-## Livraison
-
-| Étape | Contenu |
+| Fichier | Action |
 |---|---|
-| 1. Migration DB | Table `ad_creatives` + RLS + storage path |
-| 2. Edge functions | `generate-ad-creative`, `generate-ad-copy`, `generate-ad-targeting` |
-| 3. Hooks | `useAdCreatives` (CRUD + génération) |
-| 4. Page Studio Pub | Formulaire + résultats + historique |
-| 5. Sidebar + route | Entrée "Studio Pub" avec badge Nouveau |
-| 6. Hook post-publication | Modal/toast CTA après publication produit |
+| `src/contexts/AuthContext.tsx` | Ajout Google + translateAuthError + resendConfirmation |
+| `src/pages/MonCompte.tsx` | Refonte complète UI auth + section sécurité |
+| `src/pages/ResetPassword.tsx` | Validation token + confirmation password |
+| `src/components/Navbar.tsx` | Avatar dropdown utilisateur |
+| `src/components/auth/PasswordStrength.tsx` | Nouveau composant |
+| `src/components/auth/GoogleButton.tsx` | Nouveau composant |
+
+## Notes
+
+- Google OAuth est géré nativement par Lovable Cloud (pas besoin de configurer des credentials).
+- Aucune migration DB nécessaire.
+- Toutes les nouvelles fonctionnalités respectent le thème Black & Gold existant.
 
