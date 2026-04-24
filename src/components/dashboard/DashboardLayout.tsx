@@ -384,9 +384,17 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             </button>
 
             <div className="min-w-0 flex flex-col">
-              <h1 className="truncate text-base font-bold text-foreground sm:text-lg leading-tight">
-                {pageTitle}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="truncate text-base font-bold text-foreground sm:text-lg leading-tight">
+                  {pageTitle}
+                </h1>
+                {variant === "admin" && (
+                  <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-bold uppercase tracking-tighter">
+                    <span className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />
+                    Live
+                  </div>
+                )}
+              </div>
               <p className="hidden sm:block text-[10px] text-muted-foreground">
                 {variant === "admin" ? "Espace administration" : "Tableau de bord vendeur"}
               </p>
