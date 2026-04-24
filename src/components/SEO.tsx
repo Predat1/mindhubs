@@ -11,7 +11,7 @@ interface SEOProps {
 }
 
 const SITE_NAME = "MindHub";
-const BASE_URL = "https://snap-clone-wonder.lovable.app";
+const BASE_URL = "https://mindhubs.app";
 const DEFAULT_IMAGE = "/og-image.png";
 
 const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website" }: SEOProps) => {
@@ -90,7 +90,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       "@type": "Organization",
       name: "MindHub",
       url: BASE_URL,
-      logo: `${BASE_URL}/favicon.png`,
+      logo: `${BASE_URL}/favicon.svg`,
       description: "Plateforme de formations digitales premium en Afrique. Paiement unique, accès illimité à vie.",
       contactPoint: {
         "@type": "ContactPoint",
