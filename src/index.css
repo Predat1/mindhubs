@@ -453,4 +453,14 @@
   .floating-dot {
     animation: float-dot 4s ease-in-out infinite;
   }
+
+  /* Fade-in for hero elements */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.55s ease both;
+    opacity: 0;
+  }
 }
