@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   ArrowRight,
@@ -18,7 +18,17 @@ import {
   Sparkle,
   Megaphone,
   Palette,
-  Info
+  Info,
+  UserCheck,
+  Target,
+  ListChecks,
+  FileEdit,
+  Globe,
+  Settings2,
+  Plus,
+  Trash2,
+  Eye,
+  FileDown,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
@@ -27,30 +37,46 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 // Types
-type ProductType = "ebook" | "templates" | "course" | "checklist" | "prompts" | "planner" | "report" | "marketing_kit" | "legal_doc";
+type ProductType = "ebook" | "templates" | "course" | "checklist" | "prompts" | "planner" | "report" | "marketing_kit";
+
+interface AvatarProfile {
+  name: string;
+  age: number;
+  situation: string;
+  painPoints: string[];
+  dreams: string[];
+  buyingReason: string;
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  content: string;
+  isGenerated: boolean;
+}
 
 interface NicheIdea {
   id: string;
   title: string;
-  painPoint: string;
+  description: string;
   potential: number;
-  marketGap: string;
   targetAudience: string;
-  suggestedStructure: string[];
+  problems: { issue: string; impact: string }[];
 }
 
 const PRODUCT_TYPES: { id: ProductType; label: string; icon: any; color: string; description: string }[] = [
   { id: "ebook", label: "E-book / Guide", icon: FileText, color: "from-blue-500 to-cyan-500", description: "Contenu rédactionnel approfondi et structuré." },
-  { id: "planner", label: "Carnet / Planner", icon: Layout, color: "from-pink-500 to-rose-500", description: "Journaux de bord, planners digitaux et carnets de notes thématiques." },
-  { id: "templates", label: "Templates Pro", icon: Layers, color: "from-purple-500 to-indigo-500", description: "Notion, Google Sheets ou Canva prêts à l'usage." },
-  { id: "course", label: "Mini-Cours / Training", icon: Zap, color: "from-orange-500 to-red-500", description: "Plan pédagogique, scripts de leçons et quiz." },
-  { id: "report", label: "Rapport Stratégique", icon: TrendingUp, color: "from-emerald-500 to-teal-500", description: "Analyses de marché, audits et rapports d'expertise." },
-  { id: "checklist", label: "Checklists & Swipe", icon: CheckCircle2, color: "from-green-500 to-emerald-500", description: "Listes d'actions concrètes et modèles de succès." },
-  { id: "prompts", label: "Pack de Prompts IA", icon: Sparkles, color: "from-amber-500 to-yellow-500", description: "Collections de prompts IA spécialisés et testés." },
-  { id: "marketing_kit", label: "Kit Marketing", icon: Megaphone, color: "from-red-500 to-orange-500", description: "Séquences emails, scripts de vente et ad copy." },
+  { id: "planner", label: "Digital Planner", icon: Layout, color: "from-pink-500 to-rose-500", description: "Journaux de bord et planners thématiques." },
+  { id: "course", label: "Mini-Cours / Training", icon: Zap, color: "from-orange-500 to-red-500", description: "Plan pédagogique et scripts de leçons." },
+  { id: "report", label: "Rapport Stratégique", icon: TrendingUp, color: "from-emerald-500 to-teal-500", description: "Analyses de marché et audits d'expertise." },
+  { id: "checklist", label: "Checklists & Swipe", icon: CheckCircle2, color: "from-green-500 to-emerald-500", description: "Listes d'actions et modèles de succès." },
+  { id: "marketing_kit", label: "Kit Marketing", icon: Megaphone, color: "from-red-500 to-orange-500", description: "Séquences emails et scripts de vente." },
 ];
 
 const COUNTRIES = [
@@ -62,64 +88,145 @@ const COUNTRIES = [
 ];
 
 const DigitalProductFactory = () => {
-  const [step, setStep] = useState<"research" | "design" | "generate" | "publish">("research");
+  const [step, setStep] = useState<"niche" | "avatar" | "ideation" | "design" | "generate" | "publish">("niche");
   const [niche, setNiche] = useState("");
   const [country, setCountry] = useState("SN");
-  const [isSearching, setIsSearching] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Data States
+  const [avatar, setAvatar] = useState<AvatarProfile | null>(null);
   const [ideas, setIdeas] = useState<NicheIdea[] | null>(null);
   const [selectedIdea, setSelectedIdea] = useState<NicheIdea | null>(null);
   const [selectedType, setSelectedType] = useState<ProductType>("ebook");
+  const [tone, setTone] = useState("Pro & Motivant");
+  const [chapters, setChapters] = useState<Chapter[]>([
+    { id: "1", title: "Introduction Stratégique", content: "", isGenerated: false },
+    { id: "2", title: "Les Fondations de la Réussite", content: "", isGenerated: false },
+    { id: "3", title: "Méthodologie Étape par Étape", content: "", isGenerated: false },
+    { id: "4", title: "Conclusion & Passage à l'action", content: "", isGenerated: false },
+  ]);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [currentGeneratingChapter, setCurrentGeneratingChapter] = useState<number | null>(null);
 
-  const startResearch = () => {
-    if (!niche) return toast.error("Veuillez entrer une niche (ex: Fitness, Crypto, Elevage)");
-    setIsSearching(true);
+  // PDF Export Function
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Cover Page
+    doc.setFillColor(79, 70, 229); // Primary color
+    doc.rect(0, 0, pageWidth, 50, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text(selectedIdea?.title || "Mon Produit Digital", pageWidth / 2, 30, { align: 'center' });
+    
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(14);
+    doc.text(`Par Mindhubs Factory x ${avatar?.name || "Expert"}`, pageWidth / 2, 60, { align: 'center' });
+    
+    let y = 80;
+    chapters.forEach((ch, i) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`${i + 1}. ${ch.title}`, 20, y);
+      y += 10;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      const text = ch.content || "Contenu généré par l'IA Mindhubs. Le marché africain regorge d'opportunités pour ceux qui osent passer à l'action. Ce guide est conçu pour vous donner les clés de la réussite immédiate.";
+      const splitText = doc.splitTextToSize(text, pageWidth - 40);
+      doc.text(splitText, 20, y);
+      y += (splitText.length * 6) + 15;
+    });
+    
+    doc.save(`${selectedIdea?.title || "Produit-Mindhubs"}.pdf`);
+    toast.success("PDF généré avec succès !");
+  };
+
+  const addChapter = () => {
+    const newId = String(chapters.length + 1);
+    setChapters([...chapters, { id: newId, title: `Nouveau Chapitre ${newId}`, content: "", isGenerated: false }]);
+    toast.success("Chapitre ajouté !");
+  };
+
+  const removeChapter = (id: string) => {
+    if (chapters.length <= 1) return toast.error("Il faut au moins un chapitre.");
+    setChapters(chapters.filter(c => c.id !== id));
+  };
+
+  const updateChapterTitle = (id: string, newTitle: string) => {
+    setChapters(chapters.map(c => c.id === id ? { ...c, title: newTitle } : c));
+  };
+
+  const generateAvatar = () => {
+    if (!niche) return toast.error("Veuillez entrer une niche (ex: Elevage de poulets)");
+    setIsProcessing(true);
     setTimeout(() => {
-      const dummyIdeas: NicheIdea[] = [
+      setAvatar({
+        name: "Moussa",
+        age: 28,
+        situation: `Jeune ambitieux au ${country}, cherche à lancer son activité avec peu de capital.`,
+        painPoints: ["Manque de guide pratique local", "Peur de perdre ses économies", "Complexité technique"],
+        dreams: ["Indépendance financière", "Aider sa famille", "Devenir une référence"],
+        buyingReason: "Il veut une méthode étape par étape qui a déjà fonctionné en Afrique."
+      });
+      setIsProcessing(false);
+      setStep("avatar");
+    }, 1200);
+  };
+
+  const generateIdeas = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIdeas([
         {
           id: "1",
-          title: `Kit de Conformité pour ${niche} en ${country}`,
-          painPoint: "Les régulations locales changeantes et complexes.",
-          potential: 85,
-          marketGap: "Peu de solutions clés en main abordables.",
-          targetAudience: "Startups et PME locales",
-          suggestedStructure: ["Introduction légale", "Checklist de conformité", "Modèles de contrats", "Guide d'implémentation"]
+          title: `Le Guide Complet : ${niche} au ${country}`,
+          description: "La méthode exacte pour démarrer de zéro en 30 jours.",
+          potential: 94,
+          targetAudience: "Débutants motivés",
+          problems: [{ issue: "Accès au foncier", impact: "Bloque 60% des projets" }]
         },
         {
           id: "2",
-          title: `Optimisation de Profit : ${niche} Performance`,
-          painPoint: "Coûts opérationnels trop élevés.",
-          potential: 92,
-          marketGap: "Besoin de méthodes prouvées et actionnables.",
-          targetAudience: "Indépendants et dirigeants",
-          suggestedStructure: ["Audit de l'existant", "Les 5 piliers de rentabilité", "Plan d'action 30 jours", "Outils de mesure"]
-        },
-        {
-          id: "3",
-          title: `Carnet de Bord : Excellence ${niche}`,
-          painPoint: "Manque d'organisation et de vision long terme.",
+          title: `Business Automatisé : ${niche} Cashflow`,
+          description: "Comment déléguer et encaisser sans être présent sur le terrain.",
           potential: 88,
-          marketGap: "Besoin d'un support quotidien structuré.",
-          targetAudience: "Passionnés et professionnels",
-          suggestedStructure: ["Vision & Objectifs", "Planning hebdomadaire spécifique", "Suivi de KPIs métier", "Réflexion mensuelle"]
+          targetAudience: "Investisseurs et cadres",
+          problems: [{ issue: "Gestion du personnel", impact: "Cause de faillite N°1" }]
         }
-      ];
-      setIdeas(dummyIdeas);
-      setIsSearching(false);
-    }, 2000);
+      ]);
+      setIsProcessing(false);
+      setStep("ideation");
+    }, 1200);
   };
 
-  const startGeneration = () => {
+  const startMassiveGeneration = async () => {
     setStep("generate");
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-      }
-      setGenerationProgress(progress);
-    }, 800);
+    setGenerationProgress(0);
+    
+    for (let i = 0; i < chapters.length; i++) {
+      setCurrentGeneratingChapter(i);
+      const chunkProgress = (100 / chapters.length);
+      
+      // Simulate Deep Write for each chapter
+      await new Promise(r => setTimeout(r, 1500));
+      
+      setChapters(prev => prev.map((c, idx) => 
+        idx === i ? { ...c, isGenerated: true, content: `Contenu exhaustif pour le chapitre ${c.title}...` } : c
+      ));
+      
+      setGenerationProgress(prev => Math.min(Math.round(prev + chunkProgress), 100));
+    }
+    
+    setCurrentGeneratingChapter(null);
+    setGenerationProgress(100);
+    toast.success("L'intégralité de votre produit a été rédigée !");
   };
 
   return (
@@ -127,344 +234,223 @@ const DigitalProductFactory = () => {
       {(vendor) => (
         <DashboardLayout variant="vendor" shopName={vendor.shop_name} shopUrl={`/store/${vendor.username}`}>
           <div className="max-w-6xl mx-auto space-y-8 pb-20">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  AI Digital Product Factory
+            {/* Header Pro */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
+                    <Zap size={24} />
+                  </div>
+                  Mindhubs <span className="text-primary italic">Factory</span>
                 </h1>
-                <p className="text-muted-foreground mt-1">Créez, emballez et vendez des produits digitaux en quelques clics.</p>
+                <p className="text-muted-foreground font-medium">Moteur de Production de Contenu Illimité.</p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground">Claude 3.5 Sonnet Connecté</span>
-              </div>
+              <Badge variant="outline" className="h-10 px-4 gap-2 border-primary/30 bg-primary/5">
+                 <Globe size={16} className="text-primary" /> Multi-Pays Actif
+              </Badge>
             </div>
 
-            {/* Stepper */}
-            <div className="grid grid-cols-4 gap-2 mb-8">
-              {["research", "design", "generate", "publish"].map((s, idx) => (
-                <div key={s} className="space-y-2">
-                  <div className={`h-1.5 rounded-full transition-all duration-500 ${
-                    idx <= ["research", "design", "generate", "publish"].indexOf(step) ? "bg-primary" : "bg-muted"
-                  }`} />
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                    step === s ? "text-primary" : "text-muted-foreground"
-                  }`}>{s}</span>
-                </div>
-              ))}
+            {/* Stepper Premium */}
+            <div className="relative flex justify-between items-center max-w-4xl mx-auto px-4 py-8">
+              <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-muted -translate-y-1/2 z-0" />
+              <div className="absolute top-1/2 left-4 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-700" 
+                   style={{ width: `${(['niche', 'avatar', 'ideation', 'design', 'generate', 'publish'].indexOf(step) / 5) * 100}%` }} />
+              
+              {['niche', 'avatar', 'ideation', 'design', 'generate', 'publish'].map((s, idx) => {
+                const isActive = step === s;
+                const isPast = ['niche', 'avatar', 'ideation', 'design', 'generate', 'publish'].indexOf(step) > idx;
+                return (
+                  <div key={s} className="relative z-10 flex flex-col items-center gap-2">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                      isActive ? "bg-primary border-primary text-primary-foreground scale-125 shadow-lg shadow-primary/30" : 
+                      isPast ? "bg-primary/20 border-primary text-primary" : "bg-card border-muted text-muted-foreground"
+                    }`}>
+                      {isPast ? <CheckCircle2 size={16} /> : <span className="text-[10px] font-bold">{idx + 1}</span>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Content Switcher */}
-            {step === "research" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Left: Input */}
-                <Card className="lg:col-span-1 p-6 space-y-6 border-primary/20 bg-card/50 backdrop-blur-sm">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Marché Cible</label>
-                      <div className="flex flex-wrap gap-2">
-                        {COUNTRIES.map((c) => (
-                          <button
-                            key={c.code}
-                            onClick={() => setCountry(c.code)}
-                            className={`px-3 py-1.5 rounded-lg border text-sm transition-all ${
-                              country === c.code ? "bg-primary/20 border-primary text-primary" : "bg-muted/50 border-border hover:border-primary/40"
-                            }`}
-                          >
-                            {c.flag} {c.name}
-                          </button>
-                        ))}
-                      </div>
+            {/* STEP 1 & 2 & 3 (Simplified for brevity as already implemented) */}
+            {step === "niche" && (
+              <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <Card className="p-8 border-primary/20 bg-card/60 backdrop-blur-xl shadow-2xl">
+                  <div className="space-y-8 text-center">
+                    <h2 className="text-2xl font-black italic">Quelle est votre niche gagnante ?</h2>
+                    <div className="grid grid-cols-5 gap-3">
+                      {COUNTRIES.map((c) => (
+                        <button key={c.code} onClick={() => setCountry(c.code)} className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${country === c.code ? "bg-primary/10 border-primary" : "border-transparent"}`}>
+                          <span className="text-2xl">{c.flag}</span>
+                          <span className="text-[10px] font-bold uppercase">{c.name}</span>
+                        </button>
+                      ))}
                     </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Secteur / Niche</label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                        <Input
-                          placeholder="Ex: Fitness, Elevage, Immobilier..."
-                          className="pl-10"
-                          value={niche}
-                          onChange={(e) => setNiche(e.target.value)}
-                        />
-                      </div>
+                    <div className="relative">
+                        <Input placeholder="Ex: Elevage, Crypto, Coaching..." className="h-14 pl-12 rounded-2xl" value={niche} onChange={(e) => setNiche(e.target.value)} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                     </div>
-
-                    <Button className="w-full btn-glow gap-2" onClick={startResearch} disabled={isSearching}>
-                      {isSearching ? <RefreshCw className="animate-spin" size={18} /> : <Zap size={18} />}
-                      {isSearching ? "Analyse du marché..." : "Lancer la recherche IA"}
+                    <Button className="w-full h-14 rounded-2xl btn-glow text-lg font-bold gap-3" onClick={generateAvatar} disabled={isProcessing}>
+                       {isProcessing ? <RefreshCw className="animate-spin" /> : "Définir mon client idéal"}
                     </Button>
                   </div>
-
-                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-[10px] leading-relaxed text-muted-foreground italic">
-                      "Claude va analyser les douleurs réelles, les recherches Google locales et les manques du marché pour vous proposer 3 idées de produits gagnants."
-                    </p>
-                  </div>
                 </Card>
+              </div>
+            )}
 
-                {/* Right: Results */}
-                <div className="lg:col-span-2 space-y-4">
-                  {ideas ? (
-                    ideas.map((idea, i) => (
-                      <Card
-                        key={idea.id}
-                        className={`p-6 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden group ${
-                          selectedIdea?.id === idea.id ? "border-primary bg-primary/5 shadow-lg" : "hover:border-primary/40"
-                        }`}
-                        onClick={() => setSelectedIdea(idea)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-primary/20 text-primary border-none">Potentiel: {idea.potential}%</Badge>
-                              <Badge variant="outline">#ID-{idea.id}</Badge>
-                            </div>
-                            <h3 className="text-xl font-bold">{idea.title}</h3>
-                            <p className="text-sm text-muted-foreground">{idea.painPoint}</p>
+            {step === "avatar" && avatar && (
+              <Card className="max-w-2xl mx-auto p-8 border-primary/20 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center gap-6 mb-8">
+                   <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">{avatar.name[0]}</div>
+                   <div>
+                      <h3 className="text-2xl font-black">{avatar.name}, {avatar.age} ans</h3>
+                      <p className="text-sm text-muted-foreground italic">"{avatar.situation}"</p>
+                   </div>
+                </div>
+                <Button className="w-full h-14 btn-glow font-bold gap-2" onClick={generateIdeas}>Identifier les produits gagnants <ArrowRight size={18} /></Button>
+              </Card>
+            )}
+
+            {step === "ideation" && ideas && (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                  {ideas.map(idea => (
+                    <Card key={idea.id} className={`p-6 cursor-pointer border-2 transition-all ${selectedIdea?.id === idea.id ? "border-primary bg-primary/5" : "hover:border-primary/40"}`} onClick={() => setSelectedIdea(idea)}>
+                       <h3 className="text-xl font-bold mb-2">{idea.title}</h3>
+                       <p className="text-xs text-muted-foreground mb-4">{idea.description}</p>
+                       {selectedIdea?.id === idea.id && <Button className="w-full gap-2" onClick={() => setStep("design")}>Concevoir ce produit <ChevronRight size={16} /></Button>}
+                    </Card>
+                  ))}
+               </div>
+            )}
+
+            {/* STEP 4: INFINITE DESIGNER */}
+            {step === "design" && selectedIdea && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="lg:col-span-2 space-y-6">
+                  <Card className="p-8 space-y-6 border-primary/20">
+                     <div className="flex items-center justify-between">
+                        <h3 className="text-2xl font-black">Plan de Production</h3>
+                        <Button variant="outline" size="sm" onClick={addChapter} className="gap-2 text-xs border-primary/30 text-primary">
+                          <Plus size={14} /> Ajouter un chapitre
+                        </Button>
+                     </div>
+                     
+                     <div className="space-y-3">
+                        {chapters.map((ch, i) => (
+                          <div key={ch.id} className="flex items-center gap-3 group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${i * 50}ms` }}>
+                             <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center font-bold text-xs shrink-0">{i+1}</div>
+                             <Input 
+                               value={ch.title} 
+                               onChange={(e) => updateChapterTitle(ch.id, e.target.value)} 
+                               className="h-12 bg-background border-border/50"
+                             />
+                             <Button variant="ghost" size="icon" onClick={() => removeChapter(ch.id)} className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Trash2 size={16} />
+                             </Button>
                           </div>
-                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                            <ChevronRight size={20} />
-                          </div>
+                        ))}
+                     </div>
+                  </Card>
+                </div>
+
+                <div className="lg:col-span-1 space-y-6">
+                   <Card className="p-8 bg-primary/5 border-primary/20 space-y-6 flex flex-col h-full">
+                      <div className="space-y-4 flex-1">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-primary">Configuration Factory</h4>
+                        <div className="space-y-2">
+                           <div className="flex justify-between text-xs"><span>Format:</span> <span className="font-bold">{selectedType}</span></div>
+                           <div className="flex justify-between text-xs"><span>Chapitres:</span> <span className="font-bold">{chapters.length}</span></div>
+                           <div className="flex justify-between text-xs"><span>Délai estimé:</span> <span className="font-bold">~{chapters.length * 1.5} min</span></div>
                         </div>
-
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
-                          <div className="p-2 rounded bg-muted/40">
-                            <span className="font-bold block text-primary uppercase text-[9px]">Manque identifié</span>
-                            {idea.marketGap}
-                          </div>
-                          <div className="p-2 rounded bg-muted/40">
-                            <span className="font-bold block text-primary uppercase text-[9px]">Audience cible</span>
-                            {idea.targetAudience}
-                          </div>
+                        <div className="p-4 rounded-xl bg-white/50 border border-primary/10 text-[10px] italic leading-relaxed">
+                          "Claude va générer environ 400 mots par chapitre. Le document final fera approximativement {chapters.length * 400} mots."
                         </div>
-
-                        {selectedIdea?.id === idea.id && (
-                          <div className="mt-6 pt-4 border-t border-primary/20 flex justify-end">
-                            <Button size="sm" className="gap-2" onClick={() => setStep("design")}>
-                              Sélectionner cette idée <ArrowRight size={14} />
-                            </Button>
-                          </div>
-                        )}
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="h-full min-h-[300px] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center text-muted-foreground space-y-4">
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                        <Info size={24} />
                       </div>
-                      <p className="text-sm">Lancez une recherche pour voir les opportunités</p>
-                    </div>
-                  )}
+                      <Button className="w-full h-14 rounded-2xl btn-glow font-black gap-2" onClick={startMassiveGeneration}>
+                        Lancer la Rédaction Totale <Sparkles size={20} />
+                      </Button>
+                   </Card>
                 </div>
               </div>
             )}
 
-            {step === "design" && selectedIdea && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-500">
-                <Card className="p-6 space-y-6 border-primary/20">
-                  <h3 className="text-xl font-bold">1. Choisir le format du produit</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {PRODUCT_TYPES.map((type) => (
-                      <button
-                        key={type.id}
-                        onClick={() => setSelectedType(type.id)}
-                        className={`p-4 rounded-xl border text-left transition-all hover:scale-[1.02] ${
-                          selectedType === type.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/40"
-                        }`}
-                      >
-                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${type.color} text-white flex items-center justify-center mb-3`}>
-                          <type.icon size={18} />
-                        </div>
-                        <p className="font-bold text-sm">{type.label}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{type.description}</p>
-                      </button>
-                    ))}
-                  </div>
-                </Card>
-
-                <Card className="p-6 space-y-6 border-primary/20 flex flex-col">
-                   <div className="flex-1 space-y-6">
-                    <h3 className="text-xl font-bold">2. Structure stratégique</h3>
-                    <div className="rounded-xl bg-muted/40 p-5 space-y-3">
-                      <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Sommaire Suggéré</h4>
-                      <ul className="space-y-2">
-                        {selectedIdea.suggestedStructure.map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-sm">
-                            <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[10px] font-bold text-primary">{i+1}</span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-                      <p className="text-xs leading-relaxed">
-                        <strong>Note :</strong> Claude va rédiger environ 4 000 mots pour ce produit en se basant sur les douleurs spécifiques du marché {country}.
-                      </p>
-                    </div>
-                   </div>
-
-                   <Button className="w-full btn-glow gap-2 mt-8 h-12" onClick={startGeneration}>
-                      Lancer la génération du contenu <Sparkles size={18} />
-                   </Button>
-                </Card>
-              </div>
-            )}
-
-            {step === "generate" && selectedIdea && (
-              <div className="space-y-6 animate-in zoom-in-95 duration-500">
-                {generationProgress < 100 ? (
-                  <Card className="p-12 text-center space-y-6 border-primary/20">
-                    <div className="relative h-24 w-24 mx-auto">
-                      <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-                      <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-                      <div className="absolute inset-0 flex items-center justify-center font-bold text-xl">
-                        {Math.floor(generationProgress)}%
+            {/* STEP 5: GENERATION LOGIC */}
+            {step === "generate" && (
+              <div className="max-w-4xl mx-auto space-y-12 py-12 animate-in zoom-in-95">
+                <div className="text-center space-y-6">
+                   <div className="relative h-40 w-40 mx-auto">
+                      <div className="absolute inset-0 rounded-full border-8 border-muted" />
+                      <div className="absolute inset-0 rounded-full border-8 border-primary border-t-transparent animate-spin" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                         <span className="font-black text-4xl">{generationProgress}%</span>
+                         <span className="text-[10px] font-bold text-muted-foreground uppercase">Écrit</span>
                       </div>
+                   </div>
+                   <div className="space-y-2">
+                      <h2 className="text-3xl font-black">Mindhubs Deep-Write™</h2>
+                      <p className="text-muted-foreground italic">Génération du chapitre : {currentGeneratingChapter !== null ? chapters[currentGeneratingChapter].title : "Finalisation..."}</p>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {chapters.map((ch, i) => (
+                    <div key={ch.id} className={`p-4 rounded-xl border transition-all flex items-center justify-between ${
+                      ch.isGenerated ? "bg-green-500/5 border-green-500/20" : 
+                      currentGeneratingChapter === i ? "bg-primary/5 border-primary animate-pulse" : "bg-muted/20 border-border"
+                    }`}>
+                      <span className="text-xs font-bold truncate pr-4">{i+1}. {ch.title}</span>
+                      {ch.isGenerated ? <CheckCircle2 className="text-green-500" size={16} /> : <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />}
                     </div>
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-bold">Génération en cours...</h2>
-                      <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                        Claude est en train de rédiger votre {selectedType} : "{selectedIdea.title}". 
-                        Cela inclut le texte, la structure et la page de vente.
-                      </p>
-                    </div>
-                    <Progress value={generationProgress} className="h-2 max-w-md mx-auto" />
-                  </Card>
-                ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                    <Card className="xl:col-span-1 p-6 space-y-6 border-border/60 bg-muted/20">
-                       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-primary via-accent to-primary p-5 shadow-xl flex flex-col justify-between relative overflow-hidden group mb-6">
-                          <div className="absolute inset-0 bg-black/10 opacity-50" />
-                          <div className="relative z-10 text-white space-y-1">
-                             <Badge className="bg-white/20 text-white border-none backdrop-blur-md text-[9px]">{selectedType.toUpperCase()}</Badge>
-                             <h2 className="text-sm font-bold leading-tight line-clamp-3">{selectedIdea.title}</h2>
-                          </div>
-                          <div className="relative z-10">
-                             <p className="text-[9px] font-bold text-white/80 uppercase tracking-widest">{vendor?.shop_name || "Mindhubs"}</p>
-                          </div>
-                       </div>
+                  ))}
+                </div>
 
-                       <div className="space-y-4">
-                          <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                             <span className="text-muted-foreground">Statut</span>
-                             <span className="font-bold text-green-500 flex items-center gap-1">
-                                <CheckCircle2 size={12} /> Finalisé
-                             </span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                             <span className="text-muted-foreground">Lisibilité</span>
-                             <span className="font-bold">Optimale (Score 94)</span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                             <span className="text-muted-foreground">Mots</span>
-                             <span className="font-bold">4 280</span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                             <span className="text-muted-foreground">Ton IA</span>
-                             <Badge variant="secondary" className="text-[9px]">Persuasif Pro</Badge>
-                          </div>
-                       </div>
-
-                       <div className="pt-4 space-y-2">
-                          <Button variant="outline" className="w-full gap-2 text-xs h-9">
-                             <Palette size={14} /> Style Visuel
-                          </Button>
-                          <Button variant="outline" className="w-full gap-2 text-xs h-9" onClick={() => toast.info("Régénération lancée...")}>
-                             <RefreshCw size={14} /> Régénérer
-                          </Button>
-                       </div>
-                    </Card>
-
-                    <Card className="xl:col-span-3 overflow-hidden border-primary/20">
-                       <div className="border-b border-border bg-card p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                <FileText size={16} />
-                             </div>
-                             <div>
-                                <h3 className="text-sm font-bold">Aperçu du contenu rédigé</h3>
-                                <p className="text-[10px] text-muted-foreground">Chapitre 1 : Introduction Stratégique</p>
-                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             <Button variant="ghost" size="icon" className="h-8 w-8"><ChevronLeft size={16} /></Button>
-                             <span className="text-xs font-mono">1 / 5</span>
-                             <Button variant="ghost" size="icon" className="h-8 w-8"><ChevronRight size={16} /></Button>
-                          </div>
-                       </div>
-
-                       <div className="p-8 md:p-12 max-h-[600px] overflow-y-auto bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 font-serif leading-relaxed space-y-6">
-                          <h1 className="text-3xl font-bold font-sans text-zinc-900 dark:text-zinc-100">
-                             Le paradoxe de {niche} au {country}
-                          </h1>
-                          <p className="text-lg italic text-zinc-500">
-                             Comment transformer les contraintes locales en leviers de profit exponentiels.
-                          </p>
-                          <div className="h-px w-24 bg-primary/30" />
-                          <p>
-                             Le marché du {niche} au {country} traverse actuellement une phase de mutation sans précédent. Alors que la majorité des acteurs se concentrent sur les méthodes traditionnelles, une opportunité invisible émerge pour ceux qui savent allier technologie et expertise de terrain...
-                          </p>
-                          <p>
-                             Dans ce chapitre, nous allons déconstruire les trois piliers fondamentaux qui régissent cette industrie localement : la confiance client, la logistique de proximité et la digitalisation accélérée des flux de paiement.
-                          </p>
-                          <div className="rounded-xl bg-muted/50 p-6 font-sans border-l-4 border-primary">
-                             <h4 className="text-sm font-bold mb-2">💡 Insight Stratégique Claude</h4>
-                             <p className="text-xs italic">
-                                "L'analyse des données de recherche montre que 82% des utilisateurs au {country} privilégient les solutions offrant un support via WhatsApp Business, un élément que nous avons intégré dans ce kit."
-                             </p>
-                          </div>
-                       </div>
-
-                       <div className="border-t border-border bg-muted/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground italic">
-                             <Sparkles size={12} className="text-primary" /> Contenu protégé par droits d'auteur Mindhubs Factory
-                          </div>
-                          <div className="flex items-center gap-3">
-                             <Button variant="outline" className="gap-2">
-                                <Download size={14} /> Brouillon PDF
-                             </Button>
-                             <Button className="btn-glow gap-2" onClick={() => setStep("publish")}>
-                                <ShoppingCart size={16} /> Étape de Mise en vente
-                             </Button>
-                          </div>
-                       </div>
-                    </Card>
-                  </div>
+                {generationProgress === 100 && (
+                  <Button className="w-full h-16 rounded-2xl btn-glow text-xl font-black gap-3" onClick={() => setStep("publish")}>
+                    Finaliser & Télécharger <ChevronRight size={24} />
+                  </Button>
                 )}
               </div>
             )}
 
-            {step === "publish" && selectedIdea && (
-              <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <Card className="p-8 text-center space-y-6 border-primary shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4">
-                    <CheckCircle2 className="text-green-500 h-12 w-12" />
-                  </div>
-                  <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <Store className="text-primary h-10 w-10" />
-                  </div>
-                  <h2 className="text-3xl font-bold">Félicitations !</h2>
-                  <p className="text-muted-foreground">
-                    Votre produit <strong>"{selectedIdea.title}"</strong> est prêt à être monétisé. 
-                    Tous les fichiers ont été générés et votre page de vente est optimisée pour le marché {country}.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <Button variant="outline" className="h-16 flex flex-col gap-1">
-                      <Download size={20} />
-                      <span className="text-[10px] uppercase font-bold">Télécharger les fichiers</span>
-                    </Button>
-                    <Button className="h-16 flex flex-col gap-1 btn-glow" onClick={() => {
-                      toast.success("Produit ajouté à votre inventaire !");
-                    }}>
-                      <ShoppingCart size={20} />
-                      <span className="text-[10px] uppercase font-bold">Vendre sur Mindhubs</span>
-                    </Button>
-                  </div>
-                </Card>
-              </div>
+            {/* STEP 6: PUBLISH & PDF */}
+            {step === "publish" && (
+               <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+                  <Card className="p-12 text-center space-y-8 border-primary shadow-2xl bg-gradient-to-br from-card to-primary/5 relative">
+                     <div className="h-24 w-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                        <CheckCircle2 size={50} />
+                     </div>
+                     <div className="space-y-2">
+                        <h2 className="text-4xl font-black">Votre Guide est prêt !</h2>
+                        <p className="text-muted-foreground italic font-medium">"{selectedIdea?.title}"</p>
+                     </div>
+
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                        <Button className="h-20 flex flex-col gap-1 rounded-2xl btn-glow text-lg font-black" onClick={exportToPDF}>
+                           <FileDown size={24} />
+                           <span className="text-[10px] font-black uppercase tracking-widest">Télécharger le PDF</span>
+                        </Button>
+                        <Button variant="outline" className="h-20 flex flex-col gap-1 rounded-2xl border-primary/40 hover:bg-primary/5">
+                           <ShoppingCart size={24} />
+                           <span className="text-[10px] font-black uppercase tracking-widest">Mettre en vente sur Mindhubs</span>
+                        </Button>
+                     </div>
+
+                     <div className="pt-8 border-t border-border/50 grid grid-cols-3 gap-6">
+                        <div className="space-y-1">
+                           <p className="text-xs font-black text-primary">VOLUME</p>
+                           <p className="text-sm font-bold">{chapters.length * 400}+ mots</p>
+                        </div>
+                        <div className="space-y-1">
+                           <p className="text-xs font-black text-primary">CHAPITRES</p>
+                           <p className="text-sm font-bold">{chapters.length}</p>
+                        </div>
+                        <div className="space-y-1">
+                           <p className="text-xs font-black text-primary">VALEUR EST.</p>
+                           <p className="text-sm font-bold">14 900 FCFA</p>
+                        </div>
+                     </div>
+                  </Card>
+               </div>
             )}
           </div>
         </DashboardLayout>
