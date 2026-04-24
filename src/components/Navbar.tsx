@@ -32,6 +32,11 @@ const Navbar = () => {
   const { totalItems, cartBounce } = useCart();
   const { theme, toggleTheme } = useTheme();
   const { data: currentVendor } = useCurrentVendor();
+  const { user, signOut } = useAuth();
+  const userInitials = user
+    ? (user.user_metadata?.full_name || user.email || "U")
+        .split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "";
   const { data: searchResults = [] } = useSearchProducts(searchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
