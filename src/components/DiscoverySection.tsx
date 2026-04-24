@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen } from "lucide-react";
+import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen, Briefcase, Code, Paintbrush, Megaphone } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ProductCard from "@/components/ProductCard";
 import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
@@ -10,6 +10,10 @@ const categories = [
   { label: "Populaire", icon: TrendingUp },
   { label: "Nouveautés", icon: Sparkles },
   { label: "E-books", icon: BookOpen },
+  { label: "Business", icon: Briefcase },
+  { label: "Développement", icon: Code },
+  { label: "Design", icon: Paintbrush },
+  { label: "Marketing", icon: Megaphone },
 ];
 
 const DiscoverySection = () => {
@@ -42,7 +46,7 @@ const DiscoverySection = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && query.trim()) navigate(`/boutique`);
+                  if (e.key === "Enter" && query.trim()) navigate(`/boutique?q=${encodeURIComponent(query.trim())}`);
                 }}
                 className="w-full pl-9 sm:pl-11 pr-4 py-3 sm:py-3.5 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
               />

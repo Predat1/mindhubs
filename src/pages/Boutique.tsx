@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, Package, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -14,8 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const Boutique = () => {
-  const [activeCategory, setActiveCategory] = useState<Category>("Tous");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeCategory, setActiveCategory] = useState<Category>(
+    (searchParams.get("category") as Category) || "Tous"
+  );
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const { data: products = [], isLoading } = useProducts();
   const rankedProducts = useSmartRanking(products);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -78,7 +82,14 @@ const Boutique = () => {
               type="text"
               placeholder="Rechercher une formation, un e-book..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim()) {
+                  setSearchParams({ q: e.target.value.trim() });
+                } else {
+                  setSearchParams({});
+                }
+              }}
               className="w-full pl-14 pr-6 h-14 rounded-2xl bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
@@ -88,7 +99,16 @@ const Boutique = () => {
              {categories.map((cat) => (
                <button
                  key={cat}
-                 onClick={() => setActiveCategory(cat)}
+                 onClick={() => {
+                   setActiveCategory(cat);
+                   const newParams = new URLSearchParams(searchParams);
+                   if (cat === "Tous") {
+                     newParams.delete("category");
+                   } else {
+                     newParams.set("category", cat);
+                   }
+                   setSearchParams(newParams);
+                 }}
                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                    activeCategory === cat
                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
@@ -105,7 +125,16 @@ const Boutique = () => {
              {categories.map((cat) => (
                <button
                  key={cat}
-                 onClick={() => setActiveCategory(cat)}
+                 onClick={() => {
+                   setActiveCategory(cat);
+                   const newParams = new URLSearchParams(searchParams);
+                   if (cat === "Tous") {
+                     newParams.delete("category");
+                   } else {
+                     newParams.set("category", cat);
+                   }
+                   setSearchParams(newParams);
+                 }}
                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                    activeCategory === cat
                      ? "bg-primary text-primary-foreground"

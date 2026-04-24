@@ -112,7 +112,13 @@ const Navbar = () => {
               <div ref={searchRef} className="relative hidden md:block">
                  <div className={`flex items-center bg-muted/40 rounded-2xl border border-white/5 transition-all duration-500 ${searchOpen ? "w-64" : "w-10"}`}>
                     <button 
-                      onClick={() => setSearchOpen(!searchOpen)}
+                      onClick={() => {
+                        if (searchOpen && searchQuery.trim()) {
+                          handleSearchSubmit();
+                        } else {
+                          setSearchOpen(!searchOpen);
+                        }
+                      }}
                       className="h-10 w-10 shrink-0 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
                     >
                        <Search size={18} />
