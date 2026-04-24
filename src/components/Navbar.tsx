@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
   { label: "Boutique", href: "/boutique" },
   { label: "À propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
-  { label: "Mon compte", href: "/mon-compte" },
 ];
 
 const Navbar = () => {
