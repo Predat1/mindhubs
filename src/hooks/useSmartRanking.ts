@@ -41,8 +41,8 @@ function getPersonalizationBoost(productId: string, viewedIds: string[]): number
   if (viewedIds.length === 0) return 1;
   const idx = viewedIds.indexOf(productId);
   if (idx === -1) return 1.05;
-  if (idx < 3) return 0.7;
-  return 0.8;
+  if (idx < 3) return 0.85; // reduced penalty for recent views to maintain engagement
+  return 0.95;
 }
 
 function getPriceBoost(price: string): number {
@@ -57,6 +57,14 @@ function getPriceBoost(price: string): number {
 
 function getTagBoost(tag?: string): number {
   return tag ? TAG_BOOST[tag] ?? 1 : 1;
+}
+
+function getRatingBoost(rating?: number): number {
+  if (!rating) return 1.0;
+  if (rating >= 4.8) return 1.35;
+  if (rating >= 4.5) return 1.20;
+  if (rating >= 4.0) return 1.05;
+  return 0.9;
 }
 
 /**
@@ -102,6 +110,7 @@ export function computeProductScore(
   const personalization = getPersonalizationBoost(product.id, viewedIds);
   const priceBoost = getPriceBoost(product.price);
   const tagBoost = getTagBoost(product.tag);
+  const ratingBoost = getRatingBoost(product.rating);
   const conversion = getConversionBoost(stat);
   const demand = getDemandBoost(stat);
   const momentum = getMomentumBoost(stat);
@@ -114,6 +123,7 @@ export function computeProductScore(
         personalization *
         priceBoost *
         tagBoost *
+        ratingBoost *
         conversion *
         demand *
         momentum *
