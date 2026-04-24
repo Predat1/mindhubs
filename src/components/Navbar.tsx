@@ -311,6 +311,13 @@ const Navbar = () => {
               </Link>
             ))}
             <Link
+              to="/mon-compte"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <User size={16} /> {user ? "Mon compte" : "Connexion"}
+            </Link>
+            <Link
               to={currentVendor ? "/dashboard" : "/become-a-seller"}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 py-3 text-sm font-semibold text-primary"
@@ -318,6 +325,14 @@ const Navbar = () => {
               {currentVendor ? <LayoutDashboard size={16} /> : <Store size={16} />}
               {currentVendor ? "Mon dashboard vendeur" : "Devenir vendeur"}
             </Link>
+            {user && (
+              <button
+                onClick={async () => { await signOut(); setOpen(false); navigate("/"); }}
+                className="flex items-center gap-2 py-3 text-sm text-destructive w-full"
+              >
+                <LogOut size={16} /> Déconnexion
+              </button>
+            )}
           </div>
         )}
       </nav>
