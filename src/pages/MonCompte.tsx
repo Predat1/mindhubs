@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import GoogleButton from "@/components/auth/GoogleButton";
@@ -19,7 +20,7 @@ import {
   User, Mail, Lock, LogOut, Eye, EyeOff, ShoppingBag,
   Calendar, Shield, BookOpen, ArrowRight, Package, Clock,
   CheckCircle2, XCircle, Truck, MailCheck, Store, LayoutDashboard,
-  KeyRound, ArrowLeft, Zap, Sparkles, ShieldCheck
+  KeyRound, ArrowLeft, Zap, Sparkles, ShieldCheck, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,58 @@ const MonCompte = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
+
+  const handleGoogle = async () => {
+    setSubmitting(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      toast({ title: "Erreur Google", description: err.message || "Échec de la connexion Google.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      if (mode === "register") {
+        const score = getPasswordScore(password);
+        if (score < 2) {
+          toast({ title: "Mot de passe faible", description: "Veuillez choisir un mot de passe plus sécurisé.", variant: "destructive" });
+          setSubmitting(false);
+          return;
+        }
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        } else {
+          setPendingEmail(email);
+          setMode("check-email" as Mode);
+          toast({ title: "Inscription réussie !", description: "Vérifiez votre boîte mail pour confirmer votre compte." });
+        }
+      } else if (mode === "login") {
+        const { error } = await signIn(email, password);
+        if (error) {
+          toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        }
+      } else if (mode === "forgot") {
+        const { error } = await resetPassword(email);
+        if (error) {
+          toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        } else {
+          setPendingEmail(email);
+          setMode("check-email" as Mode);
+          toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe." });
+        }
+      }
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Une erreur est survenue.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const { data: orders = [] } = useQuery({
     queryKey: ["user-orders", user?.id],
