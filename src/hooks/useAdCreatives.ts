@@ -66,6 +66,72 @@ export const useAdCreatives = (vendorId: string | undefined) =>
     },
   });
 
+// ---- shared helpers ----
+const fetchProduct = async (productId: string) => {
+  const { data, error } = await supabase.from("products").select("*").eq("id", productId).maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("Produit introuvable");
+  return data as any;
+};
+
+const generateCopy = async (product: any, angle: AdAngle) => {
+  const { data, error } = await supabase.functions.invoke("generate-ad-copy", {
+    body: {
+      productTitle: product.title,
+      productDescription: product.description,
+      productCategory: product.category,
+      productPrice: product.price,
+      productFeatures: product.key_features,
+      angle,
+    },
+  });
+  if (error) throw new Error(error.message);
+  if ((data as any)?.error) throw new Error((data as any).error);
+  return data as AdCopyData;
+};
+
+const generateTargeting = async (product: any) => {
+  const { data, error } = await supabase.functions.invoke("generate-ad-targeting", {
+    body: {
+      productTitle: product.title,
+      productDescription: product.description,
+      productCategory: product.category,
+      productPrice: product.price,
+    },
+  });
+  if (error) throw new Error(error.message);
+  if ((data as any)?.error) throw new Error((data as any).error);
+  return data as AdTargetingData;
+};
+
+const generateImage = async (params: {
+  product: any;
+  copy: AdCopyData;
+  angle: AdAngle;
+  format: AdFormat;
+  userId: string;
+}) => {
+  const { product, copy, angle, format, userId } = params;
+  const headline = copy.headlines?.[0] ?? product.title;
+  const { data, error } = await supabase.functions.invoke("generate-ad-creative", {
+    body: {
+      productTitle: product.title,
+      productDescription: product.description,
+      productCategory: product.category,
+      productImageUrl: product.image_url,
+      headline,
+      cta: copy.cta,
+      angle,
+      format,
+      userId,
+    },
+  });
+  if (error) throw new Error(error.message);
+  if ((data as any)?.error) throw new Error((data as any).error);
+  return (data as any).url as string;
+};
+
+// ---- main full-kit generation ----
 export const useGenerateAdKit = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -88,54 +154,12 @@ export const useGenerateAdKit = () => {
       const results: AdCreative[] = [];
 
       for (const angle of angles) {
-        // 1. copy
-        const { data: copyData, error: copyErr } = await supabase.functions.invoke("generate-ad-copy", {
-          body: {
-            productTitle: product.title,
-            productDescription: product.description,
-            productCategory: product.category,
-            productPrice: product.price,
-            productFeatures: product.key_features,
-            angle,
-          },
-        });
-        if (copyErr) throw new Error(copyErr.message);
-        if ((copyData as any)?.error) throw new Error((copyData as any).error);
+        const copy = await generateCopy(product, angle);
+        const targeting = await generateTargeting(product);
 
-        // 2. targeting (1 per angle)
-        const { data: targetingData, error: targErr } = await supabase.functions.invoke("generate-ad-targeting", {
-          body: {
-            productTitle: product.title,
-            productDescription: product.description,
-            productCategory: product.category,
-            productPrice: product.price,
-          },
-        });
-        if (targErr) throw new Error(targErr.message);
-        if ((targetingData as any)?.error) throw new Error((targetingData as any).error);
-
-        const headline = (copyData as AdCopyData).headlines?.[0] ?? product.title;
-        const cta = (copyData as AdCopyData).cta;
-
-        // 3. one image per format for this angle
         for (const format of formats) {
-          const { data: imgData, error: imgErr } = await supabase.functions.invoke("generate-ad-creative", {
-            body: {
-              productTitle: product.title,
-              productDescription: product.description,
-              productCategory: product.category,
-              productImageUrl: product.image_url,
-              headline,
-              cta,
-              angle,
-              format,
-              userId,
-            },
-          });
-          if (imgErr) throw new Error(imgErr.message);
-          if ((imgData as any)?.error) throw new Error((imgData as any).error);
+          const image_url = await generateImage({ product, copy, angle, format, userId });
 
-          // persist
           const { data: inserted, error: insErr } = await supabase
             .from("ad_creatives")
             .insert({
@@ -143,9 +167,9 @@ export const useGenerateAdKit = () => {
               product_id: product.id,
               angle,
               format,
-              image_url: (imgData as any).url,
-              copy_data: copyData as any,
-              targeting_data: targetingData as any,
+              image_url,
+              copy_data: copy as any,
+              targeting_data: targeting as any,
             })
             .select()
             .single();
@@ -157,6 +181,121 @@ export const useGenerateAdKit = () => {
     },
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["ad-creatives", vars.vendorId] });
+    },
+  });
+};
+
+// ---- granular regenerations (operate on an existing creative row) ----
+
+/** Regenerate ONLY the image for an existing creative (keeps copy + targeting) */
+export const useRegenerateImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { creative: AdCreative; userId: string }) => {
+      const { creative, userId } = params;
+      const product = await fetchProduct(creative.product_id);
+      const image_url = await generateImage({
+        product,
+        copy: creative.copy_data,
+        angle: creative.angle,
+        format: creative.format,
+        userId,
+      });
+      const { data, error } = await supabase
+        .from("ad_creatives")
+        .update({ image_url })
+        .eq("id", creative.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as AdCreative;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ad-creatives"] });
+    },
+  });
+};
+
+/** Regenerate ONLY the copywriting for an existing creative (keeps image + targeting) */
+export const useRegenerateCopy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { creative: AdCreative }) => {
+      const { creative } = params;
+      const product = await fetchProduct(creative.product_id);
+      const copy = await generateCopy(product, creative.angle);
+      const { data, error } = await supabase
+        .from("ad_creatives")
+        .update({ copy_data: copy as any })
+        .eq("id", creative.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as AdCreative;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ad-creatives"] });
+    },
+  });
+};
+
+/** Regenerate ONLY the targeting for an existing creative */
+export const useRegenerateTargeting = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { creative: AdCreative }) => {
+      const { creative } = params;
+      const product = await fetchProduct(creative.product_id);
+      const targeting = await generateTargeting(product);
+      const { data, error } = await supabase
+        .from("ad_creatives")
+        .update({ targeting_data: targeting as any })
+        .eq("id", creative.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as AdCreative;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ad-creatives"] });
+    },
+  });
+};
+
+/** Regenerate a full new variant for ONE angle in ONE format (creates a new row) */
+export const useRegenerateVariant = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      vendorId: string;
+      userId: string;
+      productId: string;
+      angle: AdAngle;
+      format: AdFormat;
+    }) => {
+      const { vendorId, userId, productId, angle, format } = params;
+      const product = await fetchProduct(productId);
+      const copy = await generateCopy(product, angle);
+      const targeting = await generateTargeting(product);
+      const image_url = await generateImage({ product, copy, angle, format, userId });
+      const { data, error } = await supabase
+        .from("ad_creatives")
+        .insert({
+          vendor_id: vendorId,
+          product_id: productId,
+          angle,
+          format,
+          image_url,
+          copy_data: copy as any,
+          targeting_data: targeting as any,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as AdCreative;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ad-creatives"] });
     },
   });
 };
