@@ -27,7 +27,6 @@ import BecomeSeller from "./pages/BecomeSeller.tsx";
 import VendorStore from "./pages/VendorStore.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
 import VendorProductForm from "./pages/VendorProductForm.tsx";
-import VendorProductTypeSelector from "./pages/VendorProductTypeSelector.tsx";
 import VendorSales from "./pages/VendorSales.tsx";
 import VendorProducts from "./pages/VendorProducts.tsx";
 import VendorCustomers from "./pages/VendorCustomers.tsx";
@@ -73,8 +72,7 @@ const App = () => (
                 <Route path="/become-a-seller" element={<BecomeSeller />} />
                 <Route path="/store/:username" element={<VendorStore />} />
                 <Route path="/dashboard" element={<VendorDashboard />} />
-                <Route path="/dashboard/new-product" element={<VendorProductTypeSelector />} />
-                <Route path="/dashboard/new-product/form" element={<VendorProductForm />} />
+                <Route path="/dashboard/new-product" element={<VendorProductForm />} />
                 <Route path="/dashboard/edit-product/:id" element={<VendorProductForm />} />
                 <Route path="/dashboard/sales" element={<VendorSales />} />
                 <Route path="/dashboard/products" element={<VendorProducts />} />
