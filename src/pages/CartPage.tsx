@@ -4,9 +4,12 @@ import FooterSection from "@/components/FooterSection";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/contexts/CartContext";
 import { useProducts } from "@/hooks/useProducts";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, ShieldCheck, Zap } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const CartPage = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
@@ -20,21 +23,27 @@ const CartPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background aurora-bg">
         <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
         <Navbar />
-        <section className="pt-32 pb-16 sm:pb-20">
+        <section className="pt-48 pb-20">
           <div className="container mx-auto px-4 text-center">
-            <AnimateOnScroll>
-              <div className="stat-card rounded-xl sm:rounded-2xl py-12 sm:py-16 px-6 sm:px-8 max-w-lg mx-auto space-y-5 sm:space-y-6">
-                <ShoppingBag className="mx-auto text-muted-foreground" size={48} />
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Votre panier est vide</h1>
-                <p className="text-muted-foreground text-xs sm:text-sm">Découvrez nos formations et ajoutez-les à votre panier</p>
-                <Link to="/boutique" className="btn-primary-brand inline-block px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm hover-scale">
-                  VOIR NOS FORMATIONS
-                </Link>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-card rounded-[3rem] py-20 px-8 max-w-xl mx-auto space-y-8"
+            >
+              <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
+                 <ShoppingBag size={48} />
               </div>
-            </AnimateOnScroll>
+              <div className="space-y-2">
+                 <h1 className="text-3xl font-black">Votre panier est vide</h1>
+                 <p className="text-muted-foreground font-medium">Découvrez nos formations et commencez votre transformation.</p>
+              </div>
+              <Button asChild className="h-14 rounded-2xl px-10 btn-glow font-black text-lg">
+                 <Link to="/boutique">Explorer la Boutique</Link>
+              </Button>
+            </motion.div>
           </div>
         </section>
         <FooterSection />
@@ -43,96 +52,138 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background aurora-bg">
       <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
       <Navbar />
 
-      <section className="pt-28 sm:pt-24">
-        <div className="relative py-6 sm:py-12 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent" />
-          <h1 className="relative text-xl sm:text-3xl md:text-4xl font-bold text-foreground">Mon Panier</h1>
+      <section className="pt-32 pb-12">
+        <div className="container mx-auto px-4">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="max-w-5xl mx-auto flex items-center justify-between"
+           >
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter">Mon <span className="text-gradient-primary italic">Panier</span></h1>
+              <Badge className="bg-primary/20 text-primary border-none font-black px-4 py-1.5">{items.length} Article{items.length > 1 ? "s" : ""}</Badge>
+           </motion.div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-8 sm:pb-10">
-        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
-          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-            {items.map((item, idx) => (
-              <AnimateOnScroll key={item.product.id} delay={idx * 100}>
-                <div className="stat-card rounded-xl p-4 sm:p-4 flex gap-3 sm:gap-4 items-start">
-                  <Link to={`/produit/${item.product.id}`} className="shrink-0">
-                    <img src={item.product.image} alt={item.product.title} className="w-20 h-20 sm:w-20 sm:h-20 rounded-lg object-cover hover-scale" />
-                  </Link>
-                  <div className="flex-1 min-w-0 space-y-1.5">
-                    <Link to={`/produit/${item.product.id}`}>
-                      <h3 className="text-foreground font-semibold text-sm leading-tight line-clamp-2 hover:text-primary transition-colors">{item.product.title}</h3>
-                    </Link>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground line-through text-xs">{item.product.oldPrice}</span>
-                      <span className="text-accent font-bold text-sm">{item.product.price}</span>
-                    </div>
-                    <div className="flex items-center gap-2 pt-1">
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
-                        <Minus size={14} />
-                      </button>
-                      <span className="text-foreground font-semibold text-sm w-6 text-center">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="text-muted-foreground hover:text-destructive transition-colors p-2 hover-scale shrink-0 mt-1">
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </AnimateOnScroll>
-            ))}
-            <button onClick={clearCart} className="text-xs sm:text-sm text-muted-foreground hover:text-destructive transition-colors underline">
-              Vider le panier
+      <section className="container mx-auto px-4 pb-20">
+        <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          
+          {/* Items List */}
+          <div className="lg:col-span-2 space-y-4">
+            <AnimatePresence>
+              {items.map((item, idx) => (
+                <motion.div 
+                  key={item.product.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="glass-card rounded-[2rem] p-4 flex gap-6 items-center border-white/5 bg-card/40"
+                >
+                   <Link to={`/produit/${item.product.id}`} className="shrink-0 h-24 w-24 rounded-2xl overflow-hidden border border-white/5">
+                      <img src={item.product.image} alt={item.product.title} className="h-full w-full object-cover" />
+                   </Link>
+                   
+                   <div className="flex-1 min-w-0 space-y-2">
+                      <Link to={`/produit/${item.product.id}`}>
+                        <h3 className="text-foreground font-black text-sm leading-tight line-clamp-1 hover:text-primary transition-colors">{item.product.title}</h3>
+                      </Link>
+                      <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground line-through text-[10px] font-bold">{item.product.oldPrice}</span>
+                        <span className="text-foreground font-black text-lg">{item.product.price}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 pt-1">
+                        <div className="flex items-center bg-muted/30 rounded-xl p-1 border border-white/5">
+                           <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-muted-foreground transition-colors">
+                             <Minus size={14} />
+                           </button>
+                           <span className="text-foreground font-black text-sm w-8 text-center">{item.quantity}</span>
+                           <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-muted-foreground transition-colors">
+                             <Plus size={14} />
+                           </button>
+                        </div>
+                        <button onClick={() => removeFromCart(item.product.id)} className="text-muted-foreground hover:text-destructive transition-all flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest">
+                           <Trash2 size={14} /> Retirer
+                        </button>
+                      </div>
+                   </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            <button onClick={clearCart} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-destructive transition-colors ml-4">
+              Vider l'intégralité du panier
             </button>
           </div>
 
-          <AnimateOnScroll delay={200}>
-            <div className="stat-card rounded-xl sm:rounded-2xl p-5 sm:p-6 space-y-5 sm:space-y-6 sticky top-24">
-              <h2 className="text-lg font-bold text-foreground">Récapitulatif</h2>
-              <div className="space-y-3 border-b border-border pb-4">
+          {/* Summary Sidebar */}
+          <div className="lg:col-span-1">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-card rounded-[2.5rem] p-8 space-y-8 sticky top-24 border-primary/20 shadow-primary/5"
+            >
+              <h2 className="text-xl font-black">Récapitulatif</h2>
+              
+              <div className="space-y-4 border-b border-white/5 pb-6">
                 {items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between gap-3 text-sm">
-                    <span className="text-muted-foreground line-clamp-1 flex-1">{item.product.title}</span>
-                    <span className="text-foreground font-medium whitespace-nowrap shrink-0">x{item.quantity}</span>
+                  <div key={item.product.id} className="flex justify-between gap-4">
+                    <span className="text-xs font-medium text-muted-foreground truncate flex-1">{item.product.title}</span>
+                    <span className="text-xs font-black text-foreground shrink-0">x{item.quantity}</span>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-foreground font-bold text-base">Total</span>
-                <span className="text-accent font-bold text-xl">{totalPrice.toLocaleString()} FCFA</span>
+
+              <div className="space-y-2">
+                 <div className="flex justify-between items-center text-xs text-muted-foreground font-bold uppercase tracking-widest">
+                    <span>Sous-total</span>
+                    <span>{totalPrice.toLocaleString()} FCFA</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-lg font-black">Total</span>
+                    <span className="text-2xl font-black text-primary">{totalPrice.toLocaleString()} FCFA</span>
+                 </div>
               </div>
-              <Link to="/checkout" className="block w-full btn-primary-brand py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm tracking-wide hover-scale text-center shadow-glow">
-                COMMANDER
-              </Link>
-              <Link to="/boutique" className="block text-center text-xs sm:text-sm text-primary hover:underline">
-                ← Continuer mes achats
-              </Link>
-            </div>
-          </AnimateOnScroll>
+
+              <div className="space-y-4">
+                 <Button asChild className="w-full h-14 rounded-2xl btn-glow font-black text-lg gap-3">
+                    <Link to="/checkout">Paiement Sécurisé <Zap size={20} fill="currentColor" /></Link>
+                 </Button>
+                 <Link to="/boutique" className="flex items-center justify-center gap-2 text-xs font-black text-muted-foreground hover:text-primary uppercase tracking-widest transition-colors">
+                    <ArrowLeft size={14} /> Continuer mes achats
+                 </Link>
+              </div>
+
+              <div className="pt-4 flex flex-col gap-3">
+                 <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+                    <ShieldCheck size={14} className="text-emerald-500" /> Transactions cryptées SSL
+                 </div>
+                 <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+                    <Zap size={14} className="text-amber-500" /> Accès immédiat après achat
+                 </div>
+              </div>
+            </motion.div>
+          </div>
+
         </div>
       </section>
 
       {/* Cross-sell */}
       {crossSell.length > 0 && (
-        <section className="container mx-auto px-4 pb-16 sm:pb-20">
-          <div className="max-w-5xl mx-auto">
-            <AnimateOnScroll>
-              <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
-                <h2 className="text-sm sm:text-lg font-bold text-foreground whitespace-nowrap">Complétez votre formation</h2>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-            </AnimateOnScroll>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {crossSell.map((p, i) => (
-                <AnimateOnScroll key={p.id} delay={i * 100}>
-                  <ProductCard product={p} />
-                </AnimateOnScroll>
+        <section className="container mx-auto px-4 pb-24">
+          <div className="max-w-5xl mx-auto space-y-8">
+            <div className="flex items-center gap-4">
+               <h2 className="text-xl font-black">Vous pourriez aussi aimer...</h2>
+               <div className="flex-1 h-px bg-white/5" />
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              {crossSell.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>

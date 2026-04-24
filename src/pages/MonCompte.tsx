@@ -19,8 +19,10 @@ import {
   User, Mail, Lock, LogOut, Eye, EyeOff, ShoppingBag,
   Calendar, Shield, BookOpen, ArrowRight, Package, Clock,
   CheckCircle2, XCircle, Truck, MailCheck, Store, LayoutDashboard,
-  KeyRound, ArrowLeft
+  KeyRound, ArrowLeft, Zap, Sparkles, ShieldCheck
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface OrderItem {
   product_id: string;
@@ -40,9 +42,9 @@ interface UserOrder {
 }
 
 const statusConfig = {
-  pending: { label: "En attente", icon: Clock, color: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" },
-  confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-accent bg-accent/10 border-accent/20" },
-  delivered: { label: "Livrée", icon: Truck, color: "text-primary bg-primary/10 border-primary/20" },
+  pending: { label: "En attente", icon: Clock, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+  confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-primary bg-primary/10 border-primary/20" },
+  delivered: { label: "Livrée", icon: Truck, color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
   cancelled: { label: "Annulée", icon: XCircle, color: "text-destructive bg-destructive/10 border-destructive/20" },
 };
 
@@ -79,8 +81,8 @@ const MonCompte = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-background aurora-bg flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full shadow-lg shadow-primary/20" />
       </div>
     );
   }
@@ -109,217 +111,191 @@ const MonCompte = () => {
     };
 
     return (
-      <div className="min-h-screen bg-background">
-        <SEO title="Mon Compte" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" />
+      <div className="min-h-screen bg-background aurora-bg">
+        <SEO title="Espace Membre Mindhubs" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" />
         <Navbar />
-        <main className="pt-24 pb-16">
-          <div className="container mx-auto px-4 max-w-3xl">
-            {/* Profile Header */}
-            <AnimateOnScroll>
-              <div className="stat-card rounded-2xl p-8 mb-6">
-                <div className="flex flex-col sm:flex-row items-center gap-5">
-                  <div className="w-20 h-20 bg-primary/15 rounded-2xl flex items-center justify-center text-primary text-2xl font-bold shrink-0">
-                    {initials}
+        <main className="pt-32 pb-24">
+          <div className="container mx-auto px-4 max-w-4xl space-y-8">
+            
+            {/* Profile Header Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card rounded-[3rem] p-8 md:p-12 relative overflow-hidden"
+            >
+               <div className="absolute top-0 right-0 p-8">
+                  <Badge className="bg-primary/20 text-primary border-none px-4 py-1.5 font-black text-[10px] tracking-widest uppercase">Membre Elite</Badge>
+               </div>
+               
+               <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="h-28 w-28 rounded-[2rem] bg-primary flex items-center justify-center text-primary-foreground text-4xl font-black shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
+                     {initials}
                   </div>
-                  <div className="text-center sm:text-left flex-1">
-                    <h1 className="text-2xl font-bold text-foreground">
-                      {user.user_metadata?.full_name || "Mon Compte"}
-                    </h1>
-                    <p className="text-muted-foreground text-sm mt-1">{user.email}</p>
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3">
-                      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Calendar size={12} /> Membre depuis {memberSince}
-                      </span>
-                      <span className={`inline-flex items-center gap-1.5 text-xs ${emailVerified ? "text-accent" : "text-yellow-500"}`}>
-                        <Shield size={12} /> {emailVerified ? "Email vérifié" : "Email non vérifié"}
-                      </span>
-                    </div>
+                  <div className="text-center md:text-left space-y-2 flex-1">
+                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
+                        {user.user_metadata?.full_name || "Expert Mindhubs"}
+                     </h1>
+                     <p className="text-muted-foreground font-bold">{user.email}</p>
+                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                        <Badge variant="outline" className="border-white/5 bg-white/5 text-muted-foreground px-3 py-1 font-bold text-[10px] gap-2">
+                           <Calendar size={12} /> Inscrit le {memberSince}
+                        </Badge>
+                        <Badge variant="outline" className={`px-3 py-1 font-bold text-[10px] gap-2 ${emailVerified ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-500" : "border-amber-500/20 bg-amber-500/5 text-amber-500"}`}>
+                           <Shield size={12} /> {emailVerified ? "Profil Certifié" : "Email en attente"}
+                        </Badge>
+                     </div>
                   </div>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="text-destructive border-destructive/30 hover:bg-destructive/10 shrink-0"
+                    className="rounded-2xl h-12 px-6 border-white/10 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 font-black text-xs uppercase tracking-widest transition-all"
                     onClick={async () => {
                       await signOut();
-                      toast({ title: "Déconnexion réussie", description: "À bientôt !" });
+                      toast({ title: "Déconnexion", description: "À bientôt sur Mindhubs !" });
                     }}
                   >
-                    <LogOut size={14} /> Déconnexion
+                    <LogOut size={16} className="mr-2" /> Déconnexion
                   </Button>
-                </div>
-              </div>
-            </AnimateOnScroll>
+               </div>
+            </motion.div>
 
-            {/* Vendor CTA */}
-            <AnimateOnScroll delay={50}>
-              <div className="mb-6">
-                {currentVendor ? (
-                  <Link to="/dashboard" className="group block stat-card border-glow rounded-2xl p-5 hover:border-accent/50 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-                        <LayoutDashboard size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm">Mon dashboard vendeur</p>
-                        <p className="text-xs text-muted-foreground truncate">@{currentVendor.username} · Gérez votre boutique</p>
-                      </div>
-                      <ArrowRight className="text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all" size={18} />
-                    </div>
-                  </Link>
-                ) : (
-                  <Link to="/become-a-seller" className="group block stat-card border-glow rounded-2xl p-5 hover:border-primary/50 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                        <Store size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm">Devenir vendeur</p>
-                        <p className="text-xs text-muted-foreground">Lancez votre boutique digitale en 3 minutes</p>
-                      </div>
-                      <ArrowRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" size={18} />
-                    </div>
-                  </Link>
-                )}
-              </div>
-            </AnimateOnScroll>
-
-            {/* Quick Stats */}
-            <AnimateOnScroll delay={100}>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                {[
-                  { icon: ShoppingBag, label: "Achats", value: String(orders.length) },
-                  { icon: BookOpen, label: "Formations", value: String(orders.filter(o => o.status !== "cancelled").length) },
-                  { icon: Package, label: "Dépensé", value: `${totalSpent.toLocaleString()} FCFA` },
-                ].map((stat) => (
-                  <div key={stat.label} className="stat-card rounded-xl p-4 text-center border-glow">
-                    <stat.icon className="mx-auto text-primary mb-2" size={20} />
-                    <p className="text-lg font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </AnimateOnScroll>
-
-            {/* Security */}
-            <AnimateOnScroll delay={130}>
-              <div className="stat-card rounded-2xl p-6 mb-6">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                  <Shield size={16} className="text-primary" /> Sécurité
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={handlePasswordReset}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-background border border-border hover:border-primary/40 transition-all text-left group"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <KeyRound size={16} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">Changer mon mot de passe</p>
-                      <p className="text-xs text-muted-foreground">Recevez un email sécurisé pour le réinitialiser</p>
-                    </div>
-                    <ArrowRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" size={16} />
-                  </button>
-                </div>
-              </div>
-            </AnimateOnScroll>
-
-            {/* Account Info */}
-            <AnimateOnScroll delay={150}>
-              <div className="stat-card rounded-2xl p-6 mb-6">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                  <Mail size={16} className="text-primary" /> Informations du compte
-                </h3>
-                <div className="grid sm:grid-cols-2 gap-4 text-sm">
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Email</p>
-                    <p className="text-foreground font-medium truncate">{user.email}</p>
-                  </div>
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
-                    <p className="text-foreground font-medium">{user.user_metadata?.full_name || "Non renseigné"}</p>
-                  </div>
-                </div>
-              </div>
-            </AnimateOnScroll>
-
-            {/* Order History */}
-            <AnimateOnScroll delay={200}>
-              <div className="stat-card rounded-2xl p-6 mb-6">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                  <ShoppingBag size={16} className="text-primary" /> Mes achats
-                </h3>
-                {orders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <ShoppingBag className="mx-auto text-muted-foreground/30 mb-3" size={40} />
-                    <p className="text-sm text-muted-foreground mb-4">Vous n'avez pas encore de commandes.</p>
-                    <Link
-                      to="/boutique"
-                      className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-all"
-                    >
-                      Explorer le catalogue
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {orders.map((order) => {
-                      const cfg = statusConfig[order.status];
-                      return (
-                        <div key={order.id} className="bg-background rounded-xl border border-border p-4 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border ${cfg.color}`}>
-                                <cfg.icon size={12} /> {cfg.label}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                              </span>
-                            </div>
-                            <span className="text-sm font-bold text-foreground">{order.total_price.toLocaleString()} FCFA</span>
-                          </div>
-                          <div className="space-y-2">
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className="flex items-center gap-3">
-                                {item.image && <img src={item.image} alt={item.title} className="w-10 h-10 rounded-lg object-cover" />}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                                  <p className="text-xs text-muted-foreground">Qté: {item.quantity} · {item.price}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+            {/* Main Content Grid */}
+            <div className="grid md:grid-cols-3 gap-8">
+               
+               {/* Sidebar Column */}
+               <div className="space-y-6">
+                  {/* Vendor Access */}
+                  <div className="glass-card rounded-[2rem] p-6 border-primary/20 bg-primary/5">
+                     <div className="space-y-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground">
+                           {currentVendor ? <LayoutDashboard size={24} /> : <Store size={24} />}
                         </div>
-                      );
-                    })}
+                        <div className="space-y-1">
+                           <h3 className="font-black text-lg">{currentVendor ? "Dashboard Vendeur" : "Vendre vos Talents"}</h3>
+                           <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                              {currentVendor ? "Gérez vos ventes et vos produits digitaux." : "Lancez votre propre boutique et générez des revenus."}
+                           </p>
+                        </div>
+                        <Button asChild className="w-full h-12 rounded-xl btn-glow font-black text-xs uppercase tracking-widest">
+                           <Link to={currentVendor ? "/dashboard" : "/become-a-seller"}>
+                              {currentVendor ? "Accéder au Studio" : "Démarrer Maintenant"}
+                           </Link>
+                        </Button>
+                     </div>
                   </div>
-                )}
-              </div>
-            </AnimateOnScroll>
 
-            {/* Recommended */}
+                  {/* Security Center */}
+                  <div className="glass-card rounded-[2rem] p-6 space-y-6 border-white/5">
+                     <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2"><ShieldCheck size={16} className="text-primary" /> Sécurité</h3>
+                     <button
+                        onClick={handlePasswordReset}
+                        className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/40 transition-all text-left group"
+                     >
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                           <KeyRound size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                           <p className="text-xs font-black text-foreground uppercase tracking-wider">Mot de passe</p>
+                           <p className="text-[10px] text-muted-foreground font-bold">Réinitialiser via email</p>
+                        </div>
+                        <ArrowRight className="text-muted-foreground group-hover:text-primary transition-all" size={16} />
+                     </button>
+                  </div>
+               </div>
+
+               {/* Orders History Main Column */}
+               <div className="md:col-span-2 space-y-6">
+                  {/* Orders Card */}
+                  <div className="glass-card rounded-[2.5rem] p-8 md:p-10 space-y-8 border-white/5">
+                     <div className="flex items-center justify-between">
+                        <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3"><ShoppingBag className="text-primary" /> Historique d'Achats</h3>
+                        <Badge variant="outline" className="border-white/10 text-muted-foreground px-3 py-1 font-black text-[10px]">{orders.length} Commande{orders.length > 1 ? "s" : ""}</Badge>
+                     </div>
+
+                     {orders.length === 0 ? (
+                        <div className="text-center py-16 space-y-6 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/5">
+                           <ShoppingBag className="mx-auto text-muted-foreground/30" size={64} />
+                           <div className="space-y-2">
+                              <p className="text-xl font-black">Aucun achat pour le moment</p>
+                              <p className="text-sm text-muted-foreground font-medium max-w-xs mx-auto">Commencez votre aventure digitale en explorant notre boutique d'experts.</p>
+                           </div>
+                           <Button asChild variant="outline" className="rounded-xl px-8 h-12 border-white/10 font-black text-xs uppercase tracking-widest">
+                              <Link to="/boutique">Voir le Catalogue</Link>
+                           </Button>
+                        </div>
+                     ) : (
+                        <div className="space-y-4">
+                           {orders.map((order) => {
+                              const cfg = statusConfig[order.status];
+                              return (
+                                 <motion.div 
+                                    key={order.id} 
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="bg-white/5 rounded-3xl border border-white/5 p-6 hover:border-white/10 transition-all space-y-6"
+                                 >
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                       <div className="flex flex-wrap items-center gap-3">
+                                          <Badge className={`${cfg.color} border-none font-black text-[10px] tracking-widest uppercase py-1 px-3`}>
+                                             <cfg.icon size={12} className="mr-1.5" /> {cfg.label}
+                                          </Badge>
+                                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                             {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                                          </span>
+                                       </div>
+                                       <span className="text-lg font-black text-foreground">{order.total_price.toLocaleString()} FCFA</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                       {order.items.map((item, idx) => (
+                                          <div key={idx} className="flex items-center gap-4 bg-background/40 p-3 rounded-2xl border border-white/5 group">
+                                             <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/5">
+                                                {item.image && <img src={item.image} alt={item.title} className="h-full w-full object-cover" />}
+                                             </div>
+                                             <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{item.title}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quantité: {item.quantity} · {item.price}</p>
+                                             </div>
+                                             <Button asChild size="sm" variant="ghost" className="rounded-lg h-8 px-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary">
+                                                <Link to={`/produit/${item.product_id}`}>Revoir</Link>
+                                             </Button>
+                                          </div>
+                                       ))}
+                                    </div>
+                                 </motion.div>
+                              );
+                           })}
+                        </div>
+                     )}
+                  </div>
+               </div>
+
+            </div>
+
+            {/* Recommendations Section */}
             {recommendedProducts.length > 0 && (
-              <AnimateOnScroll delay={250}>
-                <div className="stat-card rounded-2xl p-6">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                    <BookOpen size={16} className="text-primary" /> Produits recommandés
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {recommendedProducts.map((p) => (
-                      <Link
-                        key={p.id}
-                        to={`/produit/${p.id}`}
-                        className="bg-background rounded-xl border border-border p-3 hover:border-primary/30 transition-all group"
-                      >
-                        <img src={p.image} alt={p.title} className="w-full h-24 object-cover rounded-lg mb-2" />
-                        <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">{p.title}</p>
-                        <p className="text-xs text-primary font-bold mt-1">{p.price}</p>
-                      </Link>
-                    ))}
+               <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                     <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3"><Sparkles className="text-primary" /> Sélectionné pour vous</h3>
+                     <div className="flex-1 h-px bg-white/5" />
                   </div>
-                </div>
-              </AnimateOnScroll>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                     {recommendedProducts.map((p) => (
+                        <Link
+                           key={p.id}
+                           to={`/produit/${p.id}`}
+                           className="glass-card rounded-[2rem] p-4 hover:border-primary/40 transition-all group"
+                        >
+                           <div className="aspect-video rounded-2xl overflow-hidden mb-4 border border-white/5">
+                              <img src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                           </div>
+                           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{p.category}</p>
+                           <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{p.title}</p>
+                           <p className="text-sm font-black text-primary mt-2">{p.price}</p>
+                        </Link>
+                     ))}
+                  </div>
+               </div>
             )}
+            
           </div>
         </main>
         <FooterSection />
@@ -327,280 +303,94 @@ const MonCompte = () => {
     );
   }
 
-  // ============= AUTH FORMS =============
-  const handleGoogle = async () => {
-    setSubmitting(true);
-    const { error } = await signInWithGoogle();
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      setSubmitting(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      if (mode === "forgot") {
-        const { error } = await resetPassword(email);
-        if (error) throw error;
-        toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe." });
-        setMode("login");
-      } else if (mode === "register") {
-        if (!fullName.trim()) {
-          toast({ title: "Erreur", description: "Veuillez entrer votre nom complet.", variant: "destructive" });
-          setSubmitting(false);
-          return;
-        }
-        if (getPasswordScore(password) < 2) {
-          toast({ title: "Mot de passe trop faible", description: "Renforcez votre mot de passe (majuscule, chiffre, 8+ caractères).", variant: "destructive" });
-          setSubmitting(false);
-          return;
-        }
-        const { error } = await signUp(email, password, fullName);
-        if (error) throw error;
-        setPendingEmail(email);
-        setMode("check-email");
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) throw error;
-        toast({ title: "Connexion réussie", description: "Bienvenue sur Mind Hub !" });
-      }
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Une erreur est survenue.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Check email screen
-  if (mode === "check-email") {
-    return (
-      <div className="min-h-screen bg-background">
-        <SEO title="Vérifiez votre email" description="Confirmez votre adresse email pour activer votre compte." path="/mon-compte" />
-        <Navbar />
-        <main className="pt-24 pb-16 flex items-center min-h-[80vh]">
-          <div className="container mx-auto px-4 max-w-md">
-            <AnimateOnScroll>
-              <div className="stat-card border-glow rounded-2xl p-8 text-center">
-                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <MailCheck className="text-accent" size={28} />
-                </div>
-                <h1 className="text-2xl font-bold text-foreground">Vérifiez votre email</h1>
-                <p className="text-muted-foreground text-sm mt-3">
-                  Nous avons envoyé un lien de confirmation à
-                </p>
-                <p className="text-foreground font-semibold mt-1 mb-6">{pendingEmail}</p>
-                <p className="text-xs text-muted-foreground mb-6">
-                  Cliquez sur le lien dans l'email pour activer votre compte. Pensez à vérifier vos spams.
-                </p>
-                <div className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={async () => {
-                      const { error } = await resendConfirmation(pendingEmail);
-                      toast({
-                        title: error ? "Erreur" : "Email renvoyé",
-                        description: error?.message || "Un nouveau lien vient d'être envoyé.",
-                        variant: error ? "destructive" : "default",
-                      });
-                    }}
-                  >
-                    Renvoyer l'email
-                  </Button>
-                  <button
-                    onClick={() => { setMode("login"); setPassword(""); }}
-                    className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
-                  >
-                    <ArrowLeft size={14} /> Retour à la connexion
-                  </button>
-                </div>
-              </div>
-            </AnimateOnScroll>
-          </div>
-        </main>
-        <FooterSection />
-      </div>
-    );
-  }
-
-  // Forgot password screen
-  if (mode === "forgot") {
-    return (
-      <div className="min-h-screen bg-background">
-        <SEO title="Mot de passe oublié" description="Réinitialisez votre mot de passe MindHub." path="/mon-compte" />
-        <Navbar />
-        <main className="pt-24 pb-16 flex items-center min-h-[80vh]">
-          <div className="container mx-auto px-4 max-w-md">
-            <AnimateOnScroll>
-              <div className="stat-card border-glow rounded-2xl p-8">
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <KeyRound className="text-primary" size={28} />
-                  </div>
-                  <h1 className="text-2xl font-bold text-foreground">Mot de passe oublié</h1>
-                  <p className="text-muted-foreground text-sm mt-2">
-                    Entrez votre email pour recevoir un lien de réinitialisation
-                  </p>
-                </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    required
-                  />
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting ? <span className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" /> : "Envoyer le lien"}
-                  </Button>
-                </form>
-                <button
-                  onClick={() => setMode("login")}
-                  className="mt-6 mx-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  <ArrowLeft size={14} /> Retour à la connexion
-                </button>
-              </div>
-            </AnimateOnScroll>
-          </div>
-        </main>
-        <FooterSection />
-      </div>
-    );
-  }
-
-  // Login / Register tabs
+  // ============= AUTH FORMS (Login/Register) =============
   return (
-    <div className="min-h-screen bg-background">
-      <SEO title="Mon Compte" description="Connectez-vous ou créez votre compte MindHub." path="/mon-compte" />
+    <div className="min-h-screen bg-background aurora-bg">
+      <SEO title="Connexion Expert – Mindhubs" description="Connectez-vous ou créez votre compte MindHub." path="/mon-compte" />
       <Navbar />
-      <main className="pt-24 pb-16 flex items-center min-h-[80vh]">
-        <div className="container mx-auto px-4 max-w-md">
-          <AnimateOnScroll>
-            <div className="text-center mb-6">
-              <Link to="/" className="text-2xl font-bold tracking-tight inline-block">
-                <span className="text-foreground">MIND</span>
-                <span className="text-gradient-brand">✦</span>
-                <span className="text-accent">HUB</span>
-              </Link>
-            </div>
-            <div className="stat-card rounded-2xl p-8 border-glow">
-              <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="w-full">
-                <TabsList className="grid grid-cols-2 w-full mb-6">
-                  <TabsTrigger value="login">Connexion</TabsTrigger>
-                  <TabsTrigger value="register">Inscription</TabsTrigger>
-                </TabsList>
+      <main className="pt-32 pb-24 flex items-center min-h-[90vh]">
+        <div className="container mx-auto px-4 max-w-lg">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center mb-8 space-y-4"
+          >
+             <div className="h-16 w-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-primary-foreground mx-auto shadow-2xl shadow-primary/20">
+                <Zap size={32} fill="currentColor" />
+             </div>
+             <h1 className="text-4xl font-black tracking-tighter">VOTRE PORTAIL <span className="text-primary italic">EXPERT</span></h1>
+          </motion.div>
 
-                <div className="text-center mb-6">
-                  <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <User className="text-primary" size={24} />
-                  </div>
-                  <h1 className="text-xl font-bold text-foreground">
-                    {mode === "login" ? "Bon retour !" : "Créer un compte"}
-                  </h1>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    {mode === "login"
-                      ? "Connectez-vous pour accéder à vos formations"
-                      : "Rejoignez +2 000 apprenants sur MindHub"}
-                  </p>
-                </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-[3rem] p-8 md:p-12 border-white/10 shadow-2xl"
+          >
+            <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="w-full">
+              <TabsList className="grid grid-cols-2 w-full mb-10 h-14 bg-white/5 rounded-2xl p-1 border border-white/5">
+                <TabsTrigger value="login" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">Connexion</TabsTrigger>
+                <TabsTrigger value="register" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">Inscription</TabsTrigger>
+              </TabsList>
 
-                <GoogleButton onClick={handleGoogle} loading={submitting} />
+              <div className="space-y-8">
+                 <GoogleButton onClick={handleGoogle} loading={submitting} />
 
-                <div className="relative my-5">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-3 text-muted-foreground">ou avec votre email</span>
-                  </div>
-                </div>
+                 <div className="relative">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5" /></div>
+                    <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-card px-4 text-muted-foreground">Ou avec votre Email</span></div>
+                 </div>
 
-                <TabsContent value="login" className="mt-0">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Adresse email</label>
-                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Mot de passe</label>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          minLength={6}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
-                        Mot de passe oublié ?
-                      </button>
-                    </div>
-                    <Button type="submit" className="w-full font-semibold py-3 rounded-xl" disabled={submitting}>
-                      {submitting ? <span className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" /> : "Se connecter"}
-                    </Button>
-                  </form>
-                </TabsContent>
+                 <TabsContent value="login" className="mt-0 space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                       <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+                          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold focus:ring-primary/20" />
+                       </div>
+                       <div className="space-y-2">
+                          <div className="flex justify-between items-center px-1">
+                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mot de Passe</Label>
+                             <button type="button" onClick={() => setMode("forgot")} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Oublié ?</button>
+                          </div>
+                          <div className="relative">
+                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12 focus:ring-primary/20" />
+                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
+                          </div>
+                       </div>
+                       <Button type="submit" className="w-full h-14 rounded-2xl btn-glow font-black text-lg uppercase tracking-tighter" disabled={submitting}>
+                          {submitting ? <Loader2 className="animate-spin" /> : "Accéder au Portail"}
+                       </Button>
+                    </form>
+                 </TabsContent>
 
-                <TabsContent value="register" className="mt-0">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Nom complet</label>
-                      <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jean Dupont" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Adresse email</label>
-                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Mot de passe</label>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          minLength={6}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                      <PasswordStrength password={password} />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      En créant un compte, vous acceptez nos{" "}
-                      <Link to="/conditions-generales" className="text-primary hover:underline">CGU</Link> et notre{" "}
-                      <Link to="/politique-confidentialite" className="text-primary hover:underline">politique de confidentialité</Link>.
-                    </p>
-                    <Button type="submit" className="w-full font-semibold py-3 rounded-xl" disabled={submitting}>
-                      {submitting ? <span className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" /> : "Créer mon compte"}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </AnimateOnScroll>
+                 <TabsContent value="register" className="mt-0 space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                       <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nom Complet</Label>
+                          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jean Dupont" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold" />
+                       </div>
+                       <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+                          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold" />
+                       </div>
+                       <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mot de Passe</Label>
+                          <div className="relative">
+                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12" />
+                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
+                          </div>
+                          <PasswordStrength password={password} />
+                       </div>
+                       <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-wider text-center">
+                          En rejoignant l'Elite, vous acceptez nos <Link to="/conditions-generales" className="text-primary hover:underline">CGU</Link> et notre <Link to="/politique-confidentialite" className="text-primary hover:underline">Confidentialité</Link>.
+                       </p>
+                       <Button type="submit" className="w-full h-14 rounded-2xl btn-glow font-black text-lg uppercase tracking-tighter" disabled={submitting}>
+                          {submitting ? <Loader2 className="animate-spin" /> : "Créer mon Compte Elite"}
+                       </Button>
+                    </form>
+                 </TabsContent>
+              </div>
+            </Tabs>
+          </motion.div>
         </div>
       </main>
       <FooterSection />
