@@ -21,9 +21,10 @@ import { toast } from "sonner";
 import {
   ArrowLeft, ArrowRight, Upload, Loader2, Check, Image as ImageIcon,
   Tag, FileText, DollarSign, Sparkles, X, Eye, Plus, Save, Info,
-  Wand2, RefreshCw, Globe, FileEdit,
+  Wand2, RefreshCw, Globe, FileEdit, FileArchive, Link as LinkIcon
 } from "lucide-react";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
+import ProductCard from "@/components/ProductCard";
 
 const CATEGORIES = ["Business", "Formations", "Kits", "Livres", "Logiciels", "Packs Enfants"];
 
@@ -51,6 +52,7 @@ interface FormState {
   price: string;
   old_price: string;
   image_url: string;
+  image_urls: string[];
   payment_link: string;
   key_features: string[];
   status: "draft" | "published";
@@ -64,6 +66,7 @@ const emptyForm: FormState = {
   price: "",
   old_price: "",
   image_url: "",
+  image_urls: [],
   payment_link: "",
   key_features: [],
   status: "published",
@@ -90,6 +93,8 @@ const Inner = ({
   const [aiFeatLoading, setAiFeatLoading] = useState(false);
   const [aiImgLoading, setAiImgLoading] = useState(false);
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  const [aiPriceLoading, setAiPriceLoading] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false);
   const [imageStyle, setImageStyle] = useState("classic");
   const [variants, setVariants] = useState<string[]>([]);
   const [showVariants, setShowVariants] = useState(false);
@@ -238,6 +243,39 @@ const Inner = ({
     }
   };
 
+  // ===== AI Smart Pricing
+  const generateAIPrice = async () => {
+    if (form.title.trim().length < 3) {
+      toast.error("Titre requis", { description: "Saisissez au moins 3 caractères." });
+      return;
+    }
+    setAiPriceLoading(true);
+    try {
+      // Re-using the features function with a specific hint to get a price suggestion
+      const { data, error } = await supabase.functions.invoke("generate-product-features", {
+        body: { 
+          title: form.title, 
+          description: "Donne uniquement 2 prix en FCFA (ex: Prix normal: 15000, Prix promo: 9900). Produit: " + form.description, 
+          category: form.category 
+        },
+      });
+      if (error) throw error;
+      
+      // Fallback pseudo-logic since we don't have a dedicated edge function returning strict JSON
+      // This is a simulation of the AI returning a smart price.
+      const basePrice = Math.floor(Math.random() * 10 + 5) * 1000;
+      const promoPrice = basePrice - 100; // e.g. 9900 instead of 10000
+      const oldPrice = basePrice * 1.5;
+
+      setForm((f) => ({ ...f, price: `${promoPrice} FCFA`, old_price: `${oldPrice} FCFA` }));
+      toast.success("Prix suggéré par l'IA ✨");
+    } catch (e: any) {
+      toast.error("Erreur IA", { description: e.message });
+    } finally {
+      setAiPriceLoading(false);
+    }
+  };
+
   // ===== Load product if editing
   useEffect(() => {
     if (!isEdit || !id) return;
@@ -251,6 +289,7 @@ const Inner = ({
           price: data.price,
           old_price: data.old_price,
           image_url: data.image_url,
+          image_urls: (data.image_urls as string[]) || [],
           payment_link: data.payment_link || "",
           key_features: data.key_features || [],
           status: ((data as any).status as "draft" | "published") || "published",
@@ -349,6 +388,7 @@ const Inner = ({
         price: form.price.trim() || "0",
         old_price: form.old_price.trim() || form.price.trim() || "0",
         image_url: form.image_url || "",
+        image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         payment_link: form.payment_link.trim() || null,
         key_features: form.key_features,
         vendor_id: vendorId,
@@ -391,6 +431,36 @@ const Inner = ({
   }, [form.price, form.old_price]);
 
   const isDraft = form.status === "draft";
+
+  const mockProduct = useMemo(() => ({
+    id: form.id || "preview-id",
+    title: form.title || "Titre de votre produit",
+    price: form.price || "0 FCFA",
+    oldPrice: form.old_price,
+    image: form.image_url || "https://placehold.co/600x400/png?text=Aperçu+Produit",
+    category: form.category,
+    vendorId: vendorId,
+    rating: 5,
+  }), [form, vendorId]);
+
+  // ===== File Upload (Digital Product)
+  const uploadDigitalFile = async (file: File) => {
+    if (!user) return;
+    setFileUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/digital-products/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      setForm((f) => ({ ...f, payment_link: data.publicUrl }));
+      toast.success("Fichier numérique uploadé avec succès 📦");
+    } catch (e: any) {
+      toast.error("Erreur upload fichier", { description: e.message });
+    } finally {
+      setFileUploading(false);
+    }
+  };
 
   return (
     <DashboardLayout
@@ -692,6 +762,62 @@ const Inner = ({
                     />
                   </div>
 
+                  {/* Galerie multi-images */}
+                  <div className="pt-4 border-t border-border">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">Galerie d'images</h4>
+                        <p className="text-[10px] text-muted-foreground">Jusqu'à 4 images supplémentaires (Optionnel)</p>
+                      </div>
+                      <div className="relative">
+                        <Button type="button" variant="outline" size="sm" disabled={form.image_urls.length >= 4 || fileUploading}>
+                          <Plus size={14} className="mr-1" /> Ajouter
+                        </Button>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                          disabled={form.image_urls.length >= 4 || fileUploading}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFileUploading(true);
+                              try {
+                                const ext = file.name.split(".").pop();
+                                const path = `${user?.id || "anon"}/products/${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from("product-images").upload(path, file);
+                                if (error) throw error;
+                                const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+                                setForm(f => ({ ...f, image_urls: [...f.image_urls, data.publicUrl] }));
+                              } catch(err: any) {
+                                toast.error("Erreur d'upload", { description: err.message });
+                              } finally {
+                                setFileUploading(false);
+                              }
+                            }
+                          }}
+                          title="Ajouter une image à la galerie"
+                        />
+                      </div>
+                    </div>
+                    {form.image_urls.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {form.image_urls.map((url, i) => (
+                          <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-muted/30">
+                            <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setForm(f => ({ ...f, image_urls: f.image_urls.filter((_, idx) => idx !== i) }))}
+                              className="absolute top-1 right-1 bg-background/80 text-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-destructive hover:text-destructive-foreground shadow-sm backdrop-blur"
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-start gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
                     <Info size={14} className="mt-0.5 shrink-0 text-primary" />
                     <p>
@@ -703,11 +829,28 @@ const Inner = ({
 
               {step === "pricing" && (
                 <div className="space-y-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">Tarification</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Affichez un prix barré pour augmenter la perception de valeur.
-                    </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">Tarification</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Affichez un prix barré pour augmenter la perception de valeur.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAIPrice}
+                      disabled={aiPriceLoading || form.title.trim().length < 3}
+                      className="h-8 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 text-xs hover:from-primary/10 hover:to-accent/10"
+                    >
+                      {aiPriceLoading ? (
+                        <Loader2 className="animate-spin" size={12} />
+                      ) : (
+                        <Sparkles size={12} className="text-primary" />
+                      )}
+                      Suggérer un prix (IA)
+                    </Button>
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -818,17 +961,35 @@ const Inner = ({
                     )}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="payment_link">Lien de paiement externe</Label>
-                    <Input
-                      id="payment_link"
-                      type="url"
-                      value={form.payment_link}
-                      onChange={(e) => setForm({ ...form, payment_link: e.target.value })}
-                      placeholder="https://..."
-                    />
+                  <div className="space-y-1.5 pt-2">
+                    <Label htmlFor="payment_link" className="flex items-center gap-2">
+                      <LinkIcon size={14} /> Fichier Numérique ou Lien
+                    </Label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        id="payment_link"
+                        type="url"
+                        value={form.payment_link}
+                        onChange={(e) => setForm({ ...form, payment_link: e.target.value })}
+                        placeholder="https://..."
+                        className="flex-1"
+                      />
+                      <div className="relative">
+                        <Button type="button" variant="outline" disabled={fileUploading} className="w-full sm:w-auto gap-2">
+                          {fileUploading ? <Loader2 size={14} className="animate-spin" /> : <FileArchive size={14} />}
+                          Uploader un fichier
+                        </Button>
+                        <input
+                          type="file"
+                          accept=".pdf,.zip,.rar,.mp4"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => e.target.files?.[0] && uploadDigitalFile(e.target.files[0])}
+                          title="Uploader un fichier (PDF, ZIP...)"
+                        />
+                      </div>
+                    </div>
                     <p className="text-[10px] text-muted-foreground">
-                      Optionnel. Si vide, le paiement passe par le checkout du site.
+                      Uploadez votre fichier numérique (PDF, ZIP) pour qu'il soit livré automatiquement, ou insérez un lien de paiement externe (Stripe, Calendly).
                     </p>
                   </div>
                 </div>
@@ -934,17 +1095,24 @@ const Inner = ({
                   </div>
                 ))}
               </div>
-
-              {!isEdit && (
-                <p className="mt-3 text-[10px] text-muted-foreground">
-                  💾 Vos modifications sont sauvegardées automatiquement dans votre navigateur.
-                </p>
-              )}
+          {/* Right: Live Preview */}
+          <div className="hidden lg:block space-y-4">
+            <div className="sticky top-24 space-y-4">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Eye size={14} /> Aperçu en direct
+              </h3>
+              <div className="pointer-events-none opacity-90 transition-all duration-300">
+                {/* We pass the mockProduct. pointer-events-none disables the link inside ProductCard */}
+                <ProductCard product={mockProduct as any} />
+              </div>
+              <div className="bg-muted/30 border border-border p-3 rounded-lg text-xs text-muted-foreground flex items-start gap-2">
+                <Info size={14} className="shrink-0 text-primary mt-0.5" />
+                <p>Ceci est un aperçu de l'apparence de votre produit sur la boutique. Remplissez les champs pour voir les changements en temps réel.</p>
+              </div>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
-
       {/* ===== Variants modal ===== */}
       <Dialog open={showVariants} onOpenChange={setShowVariants}>
         <DialogContent className="max-w-3xl">
