@@ -463,4 +463,19 @@
     animation: fade-in 0.55s ease both;
     opacity: 0;
   }
+
+  /* Force visibility fallback if animations stall */
+  .js-focus-visible :focus:not(.focus-visible) {
+    outline: none;
+  }
+}
+
+/* Fallback: ensuring content is visible even if intersection observer fails after 3s */
+@keyframes force-visible {
+  to { opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+
+[style*="opacity: 0"] {
+  animation: force-visible 0.1s forwards;
+  animation-delay: 2.5s;
 }
