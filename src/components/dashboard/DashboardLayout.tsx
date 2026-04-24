@@ -4,6 +4,7 @@ import {
   Home, ShoppingBag, Package, Users, DollarSign, BarChart3, Megaphone,
   Sparkles, Settings, HelpCircle, LogOut, Search, Bell, Plus, ExternalLink,
   Menu, ChevronDown, Store, MessageSquare, ShieldCheck, Sun, Moon, Zap, Info,
+  Factory,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,6 +48,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3, group: "growth" },
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
+  { label: "AI Factory", href: "/dashboard/factory", icon: Factory, group: "growth", badge: "Premium", badgeVariant: "hot", badgeTooltip: "L'usine à produits digitaux : passez de l'idée au profit en 15 minutes." },
   { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, group: "growth" },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];
