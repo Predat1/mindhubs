@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { useAuth } from "@/contexts/AuthContext";
@@ -135,6 +136,11 @@ const Navbar = () => {
                       />
                     )}
                  </div>
+              </div>
+
+              {/* Notifications */}
+              <div className="hidden sm:block">
+                <NotificationBell />
               </div>
 
               {/* Cart */}

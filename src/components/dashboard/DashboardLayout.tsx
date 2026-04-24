@@ -6,6 +6,7 @@ import {
   Menu, ChevronDown, Store, MessageSquare, ShieldCheck, Sun, Moon, Zap, Info,
   Factory,
 } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -427,15 +428,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                 </TooltipTrigger>
                 <TooltipContent>{theme === "dark" ? "Mode clair" : "Mode sombre"}</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="relative rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground">
-                    <Bell size={16} />
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-background animate-pulse" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Notifications</TooltipContent>
-              </Tooltip>
+              <NotificationBell />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground shadow-md ring-2 ring-background hover:ring-primary/30 transition">
