@@ -1,11 +1,18 @@
 import { useState } from "react";
-import { Copy, Download, Check, Trash2, ExternalLink, Target, Megaphone } from "lucide-react";
+import { Copy, Download, Check, Trash2, ExternalLink, Target, Megaphone, RefreshCw, Image as ImageIcon, FileText, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { ANGLE_OPTIONS, type AdCreative, useDeleteAdCreative } from "@/hooks/useAdCreatives";
+import {
+  ANGLE_OPTIONS, type AdCreative,
+  useDeleteAdCreative, useRegenerateImage, useRegenerateCopy, useRegenerateTargeting, useRegenerateVariant,
+} from "@/hooks/useAdCreatives";
+import { useAuth } from "@/contexts/AuthContext";
 
 const FORMAT_RATIO: Record<string, string> = {
   "1:1": "aspect-square",
@@ -33,7 +40,41 @@ interface AdKitCardProps {
 const AdKitCard = ({ creative, productLink }: AdKitCardProps) => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const angle = ANGLE_OPTIONS.find((a) => a.value === creative.angle);
+  const { user } = useAuth();
   const del = useDeleteAdCreative();
+  const regenImage = useRegenerateImage();
+  const regenCopy = useRegenerateCopy();
+  const regenTargeting = useRegenerateTargeting();
+  const regenVariant = useRegenerateVariant();
+
+  const isRegenerating =
+    regenImage.isPending || regenCopy.isPending || regenTargeting.isPending || regenVariant.isPending;
+
+  const runWithToast = async (label: string, fn: () => Promise<unknown>) => {
+    const t = toast.loading(`Régénération : ${label}…`);
+    try {
+      await fn();
+      toast.success(`${label} régénéré ✨`, { id: t });
+    } catch (e: any) {
+      toast.error("Erreur de régénération", { id: t, description: e.message });
+    }
+  };
+
+  const handleRegenImage = () =>
+    user && runWithToast("Image", () => regenImage.mutateAsync({ creative, userId: user.id }));
+  const handleRegenCopy = () => runWithToast("Copywriting", () => regenCopy.mutateAsync({ creative }));
+  const handleRegenTargeting = () => runWithToast("Ciblage", () => regenTargeting.mutateAsync({ creative }));
+  const handleRegenFullAngle = () =>
+    user &&
+    runWithToast("Nouvelle variante", () =>
+      regenVariant.mutateAsync({
+        vendorId: creative.vendor_id,
+        userId: user.id,
+        productId: creative.product_id,
+        angle: creative.angle,
+        format: creative.format,
+      }),
+    );
 
   const handleCopy = (text: string, key: string, label: string) => {
     copyText(text, label);
@@ -112,13 +153,54 @@ ${targetingText}`;
               </p>
             </div>
             <div className="flex gap-1">
-              <Button size="sm" variant="ghost" onClick={handleDownload} title="Télécharger l'image">
+              <Button size="sm" variant="ghost" onClick={handleDownload} title="Télécharger l'image" disabled={isRegenerating}>
                 <Download size={14} />
               </Button>
               <Button size="sm" variant="ghost" onClick={() => handleCopy(fullKitText, "kit", "Kit complet")} title="Copier tout le kit">
                 {copiedKey === "kit" ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
               </Button>
-              <Button size="sm" variant="ghost" onClick={handleDelete} className="text-destructive hover:text-destructive" title="Supprimer">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" title="Régénérer" disabled={isRegenerating}>
+                    {isRegenerating ? <Loader2 size={14} className="animate-spin text-primary" /> : <RefreshCw size={14} />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Régénérer uniquement
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem onClick={handleRegenImage} className="gap-2">
+                    <ImageIcon size={14} className="text-primary" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold">L'image</span>
+                      <span className="text-[10px] text-muted-foreground">Garde texte + ciblage</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleRegenCopy} className="gap-2">
+                    <FileText size={14} className="text-primary" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold">Le copywriting</span>
+                      <span className="text-[10px] text-muted-foreground">Nouveaux titres + texte</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleRegenTargeting} className="gap-2">
+                    <Target size={14} className="text-primary" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold">Le ciblage</span>
+                      <span className="text-[10px] text-muted-foreground">Audience, intérêts, budget</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleRegenFullAngle} className="gap-2">
+                    <Sparkles size={14} className="text-primary" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold">Variante complète</span>
+                      <span className="text-[10px] text-muted-foreground">Crée une nouvelle créative</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm" variant="ghost" onClick={handleDelete} className="text-destructive hover:text-destructive" title="Supprimer" disabled={isRegenerating}>
                 <Trash2 size={14} />
               </Button>
             </div>
