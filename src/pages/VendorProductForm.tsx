@@ -23,6 +23,7 @@ import {
   Tag, FileText, DollarSign, Sparkles, X, Eye, Plus, Save, Info,
   Wand2, RefreshCw, Globe, FileEdit,
 } from "lucide-react";
+import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 
 const CATEGORIES = ["Business", "Formations", "Kits", "Livres", "Logiciels", "Packs Enfants"];
 
@@ -86,7 +87,6 @@ const Inner = ({
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [featureDraft, setFeatureDraft] = useState("");
-  const [aiDescLoading, setAiDescLoading] = useState(false);
   const [aiFeatLoading, setAiFeatLoading] = useState(false);
   const [aiImgLoading, setAiImgLoading] = useState(false);
   const [aiEditLoading, setAiEditLoading] = useState(false);
@@ -135,27 +135,7 @@ const Inner = ({
     try { localStorage.removeItem(DRAFT_KEY); } catch {/* ignore */}
   };
 
-  // ===== AI Description
-  const generateAIDescription = async () => {
-    if (form.title.trim().length < 3) {
-      toast.error("Titre requis", { description: "Saisissez au moins 3 caractères." });
-      return;
-    }
-    setAiDescLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-product-description", {
-        body: { title: form.title, category: form.category, hint: form.description },
-      });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      setForm((f) => ({ ...f, description: (data as any).description }));
-      toast.success("Description générée ✨");
-    } catch (e: any) {
-      toast.error("Erreur IA", { description: e.message });
-    } finally {
-      setAiDescLoading(false);
-    }
-  };
+  // ===== AI Description logic removed (now in RichDescriptionEditor)
 
   // ===== AI Key Features
   const generateAIFeatures = async () => {
@@ -580,35 +560,14 @@ const Inner = ({
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="description">Description</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={generateAIDescription}
-                        disabled={aiDescLoading || form.title.trim().length < 3}
-                        className="h-8 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 text-xs hover:from-primary/10 hover:to-accent/10"
-                      >
-                        {aiDescLoading ? (
-                          <Loader2 className="animate-spin" size={12} />
-                        ) : (
-                          <Sparkles size={12} className="text-primary" />
-                        )}
-                        Générer avec l'IA
-                      </Button>
-                    </div>
-                    <Textarea
-                      id="description"
+                  <div className="space-y-1.5 pt-2">
+                    <Label htmlFor="description">Description marketing</Label>
+                    <RichDescriptionEditor
                       value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      rows={8}
-                      placeholder="Décrivez votre produit en détail. Quels problèmes résout-il ? À qui s'adresse-t-il ?"
+                      onChange={(val) => setForm({ ...form, description: val })}
+                      title={form.title}
+                      category={form.category}
                     />
-                    <p className="text-[10px] text-muted-foreground">
-                      💡 Astuce : remplissez le titre puis cliquez sur "Générer avec l'IA" pour obtenir une description vendeuse en 1 clic.
-                    </p>
                   </div>
                 </div>
               )}
