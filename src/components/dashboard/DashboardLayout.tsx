@@ -241,7 +241,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             size="sm"
             className="group relative w-full overflow-hidden bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] text-primary-foreground shadow-md hover:shadow-[0_0_24px_hsl(var(--primary)/0.45)] hover:bg-[position:100%_0] transition-all duration-500"
           >
-            <Link to="/dashboard/products/new" onClick={() => setMobileOpen(false)}>
+            <Link to="/dashboard/new-product" onClick={() => setMobileOpen(false)}>
               <Plus size={14} className="mr-1 transition-transform group-hover:rotate-90" />
               Nouveau produit
             </Link>
@@ -408,11 +408,9 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
               {shopUrl && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex border-border/60 hover:border-primary/40 hover:bg-primary/5">
-                      <Link to={shopUrl}>
-                        <ExternalLink size={14} className="mr-1" /> Ma boutique
-                      </Link>
-                    </Button>
+                    <Link to={shopUrl} className="hidden sm:inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-border/60 bg-transparent hover:bg-primary/5 hover:border-primary/40 h-9 px-3">
+                      <ExternalLink size={14} className="mr-1" /> Ma boutique
+                    </Link>
                   </TooltipTrigger>
                   <TooltipContent>Voir la boutique publique</TooltipContent>
                 </Tooltip>
