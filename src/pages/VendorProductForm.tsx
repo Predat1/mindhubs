@@ -1437,7 +1437,8 @@ const Inner = ({
                     <p className="text-[10px] text-muted-foreground">
                       Uploadez votre fichier numérique (PDF, ZIP) pour qu'il
                       soit livré automatiquement, ou insérez un lien de paiement
-                      externe (Stripe, Calendly).
+                      externe contenant votre produit ailleurs (Lien de paiement
+                      chariow, maketou, Stripe, Calendly etc..).
                     </p>
                   </div>
                 </div>
