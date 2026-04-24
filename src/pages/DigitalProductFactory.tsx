@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Search,
   ArrowRight,
@@ -85,6 +86,14 @@ interface CountryInfo {
   adsPotential: "high" | "medium" | "low";
   avgCpc: string;
   paymentEase: string;
+  nicheRelevance?: string;
+}
+
+interface AdsTargeting {
+  country: string;
+  ageRange: string;
+  interests: string;
+  dailyBudget: string;
 }
 
 const ALL_COUNTRIES: CountryInfo[] = [
@@ -115,49 +124,67 @@ const DigitalProductFactory = () => {
   const [step, setStep] = useState<"niche" | "market_strategy" | "problem_select" | "design" | "generate" | "ads_kit" | "publish">("niche");
   const [niche, setNiche] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("SN");
+  const [selectedCountryName, setSelectedCountryName] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [painPoints, setPainPoints] = useState<PainPoint[]>([]);
   const [selectedPainPoint, setSelectedPainPoint] = useState<PainPoint | null>(null);
   const [selectedType, setSelectedType] = useState<ProductType>("ebook");
   const [generationProgress, setGenerationProgress] = useState(0);
   const [adsKit, setAdsKit] = useState<AdCopy[]>([]);
+  const [adsTargeting, setAdsTargeting] = useState<AdsTargeting | null>(null);
   
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [analyzedCountries, setAnalyzedCountries] = useState<CountryInfo[]>([]);
 
-  // Derived Recommandations
-  const recommendedCountries = useMemo(() => {
-    if (!niche) return [];
-    return ALL_COUNTRIES.filter(c => c.adsPotential === "high" || Math.random() > 0.6).slice(0, 3);
-  }, [niche]);
-
-  const handleNicheSubmit = () => {
+  const handleNicheSubmit = async () => {
     if (!niche) return toast.error("Veuillez entrer une niche.");
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("factory-analyze-niche", {
+        body: { niche },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const countries = (data as any).countries as CountryInfo[];
+      if (!countries?.length) throw new Error("Aucun pays recommandé");
+      setAnalyzedCountries(countries);
       setStep("market_strategy");
-    }, 1200);
+    } catch (e: any) {
+      toast.error("Erreur d'analyse", { description: e.message });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleCountrySelect = (code: string) => {
+  const handleCountrySelect = async (code: string) => {
+    const country = analyzedCountries.find(c => c.code === code);
     setSelectedCountry(code);
+    setSelectedCountryName(country?.name || code);
     setIsProcessing(true);
-    setTimeout(() => {
-      setPainPoints([
-        { id: "1", title: "Manque de visibilité locale", urgency: 95, description: "L'impossibilité de toucher les clients au-delà du quartier.", fbAdsInsight: "Ciblage 'Personnes habitant ici' très efficace." },
-        { id: "2", title: "Gestion des stocks complexe", urgency: 88, description: "Pertes financières dues à une mauvaise prévision.", fbAdsInsight: "Lead generation pour pré-ventes recommandé." },
-        { id: "3", title: "Paiements non sécurisés", urgency: 92, description: "Crainte de l'arnaque chez les acheteurs en ligne.", fbAdsInsight: "Highlight Wave/Momo dans la créative publicitaire." },
-      ].sort((a, b) => b.urgency - a.urgency));
-      setIsProcessing(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("factory-generate-painpoints", {
+        body: { niche, countryCode: code, countryName: country?.name || code },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const points = ((data as any).painPoints || []).map((p: any, i: number) => ({
+        ...p,
+        id: String(i + 1),
+      }));
+      setPainPoints(points.sort((a: PainPoint, b: PainPoint) => b.urgency - a.urgency));
       setStep("problem_select");
-    }, 1200);
+    } catch (e: any) {
+      toast.error("Erreur d'analyse marché", { description: e.message });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleProblemSelect = (point: PainPoint) => {
     setSelectedPainPoint(point);
     setChapters([
       { id: "1", title: `Introduction : Comprendre ${point.title}`, content: "", isGenerated: false },
-      { id: "2", title: `Pourquoi ce problème bloque 90% des business au ${selectedCountry}`, content: "", isGenerated: false },
+      { id: "2", title: `Pourquoi ce problème bloque 90% des business au ${selectedCountryName}`, content: "", isGenerated: false },
       { id: "3", title: "La Méthode Mindhubs pour une solution radicale", content: "", isGenerated: false },
       { id: "4", title: "Plan d'Action Immédiat", content: "", isGenerated: false },
     ]);
@@ -167,30 +194,60 @@ const DigitalProductFactory = () => {
   const startGeneration = async () => {
     setStep("generate");
     setGenerationProgress(0);
-    for (let i = 0; i < chapters.length; i++) {
-      await new Promise(r => setTimeout(r, 800));
-      setChapters(prev => prev.map((c, idx) => idx === i ? { ...c, isGenerated: true } : c));
-      setGenerationProgress(Math.round(((i + 1) / (chapters.length + 1)) * 100));
-    }
-    
-    // Generate Ads Kit
-    setAdsKit([
-      { 
-        type: "Story-Telling", 
-        hook: `J'en avais marre de voir mon business de ${niche} stagner à cause de ${selectedPainPoint?.title}...`,
-        body: `C'est l'histoire de beaucoup d'entrepreneurs au ${selectedCountry}. On a le produit, on a l'ambition, mais ${selectedPainPoint?.description}. Voici comment j'ai tout changé en 7 jours.`,
-        cta: "Découvrez la méthode ici 👇"
-      },
-      { 
-        type: "Bénéfice Direct", 
-        hook: `Marre de ${selectedPainPoint?.title} ? Voici la solution finale.`,
-        body: `✅ Éliminez ${selectedPainPoint?.title}\n✅ Augmentez vos revenus de 30%\n✅ Simplifiez votre gestion quotidienne au ${selectedCountry}.`,
-        cta: "Télécharger mon guide maintenant"
+
+    // Animate progress while waiting for Claude
+    const progressInterval = setInterval(() => {
+      setGenerationProgress(prev => Math.min(prev + 2, 85));
+    }, 300);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("factory-generate-kit", {
+        body: {
+          niche,
+          countryCode: selectedCountry,
+          countryName: selectedCountryName,
+          painPointTitle: selectedPainPoint?.title,
+          painPointDescription: selectedPainPoint?.description,
+          productType: selectedType,
+          chapterTitles: chapters.map(c => c.title),
+        },
+      });
+      clearInterval(progressInterval);
+
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      const kit = data as any;
+
+      // Update chapters with real AI content
+      if (kit.chapters?.length) {
+        setChapters(kit.chapters.map((ch: any, i: number) => ({
+          id: String(i + 1),
+          title: ch.title,
+          content: ch.content,
+          isGenerated: true,
+        })));
+      } else {
+        setChapters(prev => prev.map(c => ({ ...c, isGenerated: true })));
       }
-    ]);
-    
-    setGenerationProgress(100);
-    setTimeout(() => setStep("ads_kit"), 800);
+
+      // Set AI-generated ads kit
+      if (kit.adsKit?.length) {
+        setAdsKit(kit.adsKit);
+      }
+
+      // Set AI-generated targeting
+      if (kit.targeting) {
+        setAdsTargeting(kit.targeting);
+      }
+
+      setGenerationProgress(100);
+      setTimeout(() => setStep("ads_kit"), 600);
+    } catch (e: any) {
+      clearInterval(progressInterval);
+      toast.error("Erreur de génération", { description: e.message });
+      setStep("design");
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -237,15 +294,20 @@ const DigitalProductFactory = () => {
               {/* STEP 2: GEO-ADS */}
               {step === "market_strategy" && (
                 <motion.div key="market" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-                   <h2 className="text-3xl font-black text-center">Top Pays Recommandés (FB Ads)</h2>
+                   <h2 className="text-3xl font-black text-center">Top Pays Recommandés par Claude AI</h2>
+                   <p className="text-center text-muted-foreground text-sm">Analyse IA personnalisée pour la niche <strong>"{niche}"</strong></p>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {recommendedCountries.map(c => (
-                        <Card key={c.code} onClick={() => handleCountrySelect(c.code)} className="p-8 cursor-pointer border-2 hover:border-primary transition-all">
+                      {analyzedCountries.map(c => (
+                        <Card key={c.code} onClick={() => handleCountrySelect(c.code)} className="p-8 cursor-pointer border-2 hover:border-primary transition-all group">
                            <span className="text-4xl mb-4 block">{c.flag}</span>
-                           <h3 className="text-2xl font-black mb-4">{c.name}</h3>
+                           <h3 className="text-2xl font-black mb-2">{c.name}</h3>
+                           {c.nicheRelevance && (
+                             <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">{c.nicheRelevance}</p>
+                           )}
                            <div className="space-y-2 text-xs">
-                              <div className="flex justify-between"><span>ROI Potentiel:</span> <Badge className="bg-emerald-500">MAX</Badge></div>
+                              <div className="flex justify-between"><span>Potentiel Ads:</span> <Badge className={c.adsPotential === "high" ? "bg-emerald-500" : c.adsPotential === "medium" ? "bg-amber-500" : "bg-zinc-500"}>{c.adsPotential.toUpperCase()}</Badge></div>
                               <div className="flex justify-between"><span>CPC Estimé:</span> <span className="font-bold">{c.avgCpc}</span></div>
+                              <div className="flex justify-between"><span>Paiement:</span> <span className="font-bold">{c.paymentEase}</span></div>
                            </div>
                         </Card>
                       ))}
@@ -338,26 +400,26 @@ const DigitalProductFactory = () => {
                          <div className="flex items-center gap-4 mb-4">
                             <div className="h-10 w-10 rounded-full bg-blue-500 text-white flex items-center justify-center"><Facebook size={20} /></div>
                             <div>
-                               <h4 className="font-black">Ciblage Recommandé</h4>
+                               <h4 className="font-black">Ciblage Recommandé par Claude AI</h4>
                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Audience Facebook Ads</p>
                             </div>
                          </div>
                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="p-3 bg-white/50 rounded-xl border border-blue-500/10">
+                            <div className="p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-blue-500/10">
                                <p className="text-[9px] font-bold text-blue-600">PAYS</p>
-                               <p className="text-xs font-bold">{selectedCountry}</p>
+                               <p className="text-xs font-bold">{adsTargeting?.country || selectedCountryName}</p>
                             </div>
-                            <div className="p-3 bg-white/50 rounded-xl border border-blue-500/10">
+                            <div className="p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-blue-500/10">
                                <p className="text-[9px] font-bold text-blue-600">ÂGE</p>
-                               <p className="text-xs font-bold">25 - 45 ans</p>
+                               <p className="text-xs font-bold">{adsTargeting?.ageRange || "25 - 45 ans"}</p>
                             </div>
-                            <div className="p-3 bg-white/50 rounded-xl border border-blue-500/10">
+                            <div className="p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-blue-500/10">
                                <p className="text-[9px] font-bold text-blue-600">INTÉRÊTS</p>
-                               <p className="text-xs font-bold truncate">Entrepreneur, {niche}</p>
+                               <p className="text-xs font-bold truncate">{adsTargeting?.interests || `Entrepreneur, ${niche}`}</p>
                             </div>
-                            <div className="p-3 bg-white/50 rounded-xl border border-blue-500/10">
+                            <div className="p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-blue-500/10">
                                <p className="text-[9px] font-bold text-blue-600">BUDGET MIN.</p>
-                               <p className="text-xs font-bold">5$ / jour</p>
+                               <p className="text-xs font-bold">{adsTargeting?.dailyBudget || "5$ / jour"}</p>
                             </div>
                          </div>
                       </Card>
@@ -382,8 +444,38 @@ const DigitalProductFactory = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
                         <Button className="h-24 flex flex-col gap-1 rounded-3xl btn-glow text-2xl font-black" onClick={() => {
                            const doc = new jsPDF();
-                           doc.text("Mindhubs Launch Engine V5", 20, 20);
-                           doc.save(`Mindhubs_BusinessKit_${niche}.pdf`);
+                           let y = 20;
+                           doc.setFontSize(18);
+                           doc.text("Mindhubs Business Kit - " + niche, 20, y); y += 12;
+                           doc.setFontSize(10);
+                           doc.text("Pays: " + selectedCountryName + " | Probleme: " + (selectedPainPoint?.title || ""), 20, y); y += 12;
+                           chapters.forEach((ch) => {
+                             if (y > 260) { doc.addPage(); y = 20; }
+                             doc.setFontSize(13);
+                             doc.text(ch.title, 20, y); y += 8;
+                             doc.setFontSize(9);
+                             const lines = doc.splitTextToSize(ch.content || "", 170);
+                             lines.forEach((line: string) => {
+                               if (y > 280) { doc.addPage(); y = 20; }
+                               doc.text(line, 20, y); y += 5;
+                             });
+                             y += 6;
+                           });
+                           if (adsKit.length) {
+                             doc.addPage(); y = 20;
+                             doc.setFontSize(15);
+                             doc.text("Kit Publicitaire Facebook Ads", 20, y); y += 10;
+                             adsKit.forEach((ad) => {
+                               doc.setFontSize(11);
+                               doc.text("[" + ad.type + "]", 20, y); y += 7;
+                               doc.setFontSize(9);
+                               doc.text("Hook: " + ad.hook, 20, y); y += 6;
+                               const bodyLines = doc.splitTextToSize("Body: " + ad.body, 170);
+                               bodyLines.forEach((l: string) => { doc.text(l, 20, y); y += 5; });
+                               doc.text("CTA: " + ad.cta, 20, y); y += 10;
+                             });
+                           }
+                           doc.save("Mindhubs_BusinessKit_" + niche + ".pdf");
                         }}>
                            <FileDown size={32} />
                            <span className="text-[10px] font-black uppercase">Télécharger le Kit Business</span>

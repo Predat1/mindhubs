@@ -501,7 +501,7 @@ const Inner = () => {
 const VendorAdsStudio = () => (
   <VendorGuard>
     {() => (
-      <div className="dark min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
         <Inner />
       </div>
     )}
