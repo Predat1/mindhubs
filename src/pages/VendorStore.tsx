@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import ExpertChat from "@/components/ExpertChat";
 
 const VendorStore = () => {
   const { username } = useParams<{ username: string }>();
@@ -230,6 +231,13 @@ const VendorStore = () => {
       </section>
 
       <FooterSection />
+      
+      {/* Expert Chat Widget */}
+      <ExpertChat 
+        vendorName={vendor.shop_name} 
+        vendorUsername={vendor.username} 
+        vendorAvatar={vendor.avatar_url} 
+      />
     </div>
   );
 };
