@@ -24,7 +24,7 @@ const CartPage = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background aurora-bg">
-        <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
+        <SEO title="Panier" description="Votre panier MindHub. Finalisez vos achats de formations digitales premium." path="/panier" keywords="panier mindhub, achat formation, checkout mindhubs, valider commande" />
         <Navbar />
         <section className="pt-48 pb-20">
           <div className="container mx-auto px-4 text-center">
@@ -53,7 +53,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-background aurora-bg">
-      <SEO title="Panier" description="Votre panier MindHub" path="/panier" />
+      <SEO title="Panier" description="Votre panier MindHub. Finalisez vos achats de formations digitales premium." path="/panier" keywords="panier mindhub, achat formation, checkout mindhubs, valider commande" />
       <Navbar />
 
       <section className="pt-32 pb-12">

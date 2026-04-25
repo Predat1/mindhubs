@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  LucideIcon,
   Search,
   ArrowRight,
   TrendingUp,
@@ -109,7 +110,7 @@ const ALL_COUNTRIES: CountryInfo[] = [
   { code: "BF", name: "Burkina Faso", flag: "🇧🇫", adsPotential: "medium", avgCpc: "0.04$", paymentEase: "Moov/OM" },
 ];
 
-const PRODUCT_TYPES: Record<ProductType, { label: string; icon: any; color: string; gradient: string }> = {
+const PRODUCT_TYPES: Record<ProductType, { label: string; icon: LucideIcon; color: string; gradient: string }> = {
   ebook: { label: "E-book Premium", icon: FileText, color: "#3b82f6", gradient: "from-blue-600 to-cyan-500" },
   planner: { label: "Digital Planner", icon: Layout, color: "#ec4899", gradient: "from-pink-600 to-rose-500" },
   course: { label: "Masterclass", icon: Zap, color: "#f59e0b", gradient: "from-amber-500 to-orange-600" },
@@ -144,13 +145,14 @@ const DigitalProductFactory = () => {
         body: { niche },
       });
       if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const countries = (data as any).countries as CountryInfo[];
+      const typedData = data as { countries?: CountryInfo[]; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
+      const countries = typedData.countries as CountryInfo[];
       if (!countries?.length) throw new Error("Aucun pays recommandé");
       setAnalyzedCountries(countries);
       setStep("market_strategy");
-    } catch (e: any) {
-      toast.error("Erreur d'analyse", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur d'analyse", { description: (e as Error).message });
     } finally {
       setIsProcessing(false);
     }
@@ -166,15 +168,16 @@ const DigitalProductFactory = () => {
         body: { niche, countryCode: code, countryName: country?.name || code },
       });
       if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const points = ((data as any).painPoints || []).map((p: any, i: number) => ({
+      const typedData = data as { painPoints?: PainPoint[]; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
+      const points = (typedData.painPoints || []).map((p: PainPoint, i: number) => ({
         ...p,
         id: String(i + 1),
       }));
       setPainPoints(points.sort((a: PainPoint, b: PainPoint) => b.urgency - a.urgency));
       setStep("problem_select");
-    } catch (e: any) {
-      toast.error("Erreur d'analyse marché", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur d'analyse marché", { description: (e as Error).message });
     } finally {
       setIsProcessing(false);
     }
@@ -215,13 +218,11 @@ const DigitalProductFactory = () => {
       clearInterval(progressInterval);
 
       if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const typedData = data as { chapters?: Chapter[]; adsKit?: AdCopy[]; targeting?: AdsTargeting; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
 
-      const kit = data as any;
-
-      // Update chapters with real AI content
-      if (kit.chapters?.length) {
-        setChapters(kit.chapters.map((ch: any, i: number) => ({
+      if (typedData.chapters?.length) {
+        setChapters(typedData.chapters.map((ch, i: number) => ({
           id: String(i + 1),
           title: ch.title,
           content: ch.content,
@@ -231,21 +232,18 @@ const DigitalProductFactory = () => {
         setChapters(prev => prev.map(c => ({ ...c, isGenerated: true })));
       }
 
-      // Set AI-generated ads kit
-      if (kit.adsKit?.length) {
-        setAdsKit(kit.adsKit);
+      if (typedData.adsKit) {
+        setAdsKit(typedData.adsKit);
       }
-
-      // Set AI-generated targeting
-      if (kit.targeting) {
-        setAdsTargeting(kit.targeting);
+      if (typedData.targeting) {
+        setAdsTargeting(typedData.targeting);
       }
 
       setGenerationProgress(100);
       setTimeout(() => setStep("ads_kit"), 600);
-    } catch (e: any) {
+    } catch (e: unknown) {
       clearInterval(progressInterval);
-      toast.error("Erreur de génération", { description: e.message });
+      toast.error("Erreur de génération", { description: (e as Error).message });
       setStep("design");
     }
   };

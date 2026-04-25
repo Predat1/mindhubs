@@ -20,7 +20,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
 
   const statsMap = useMemo(() => {
     const m: Record<string, { views: number; purchases: number }> = {};
-    (stats as any[]).forEach((s) => {
+    (stats as unknown as Array<{ product_id: string; total_views: number | null; total_purchases: number | null }>).forEach((s) => {
       m[s.product_id] = { views: s.total_views ?? 0, purchases: s.total_purchases ?? 0 };
     });
     return m;
@@ -50,7 +50,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
 
   return (
     <DashboardLayout variant="vendor" title="Produits" shopName={shopName} shopUrl={shopUrl}>
-      <SEO title="Produits — Vendeur" description="Gérez votre catalogue" path="/dashboard/products" />
+      <SEO title="Produits — Vendeur" description="Gérez votre catalogue" path="/dashboard/products" keywords="gestion produits, dashboard vendeur, mindhub products, catalogue expert" />
 
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

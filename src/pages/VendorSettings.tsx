@@ -44,8 +44,8 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => ({ ...f, avatar_url: data.publicUrl }));
       toast({ title: "Avatar uploadé" });
-    } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -69,8 +69,8 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
       toast({ title: "Boutique mise à jour ✓" });
       queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
       queryClient.invalidateQueries({ queryKey: ["vendor"] });
-    } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
     } finally {
       setSaving(false);
     }

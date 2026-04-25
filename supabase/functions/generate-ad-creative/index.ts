@@ -58,7 +58,7 @@ STRICT FACEBOOK AD CREATIVE SPECIFICATION:
 - NO Facebook logo, NO watermark, NO blurry text, NO Lorem ipsum
 - All text must be in FRENCH and perfectly spelled`;
 
-    const messages: any[] = productImageUrl
+    const messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }> = productImageUrl
       ? [{
           role: "user",
           content: [

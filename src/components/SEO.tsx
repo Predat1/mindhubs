@@ -15,7 +15,7 @@ const BASE_URL = "https://mindhubs.app";
 const DEFAULT_IMAGE = "/og-image.png";
 
 const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website" }: SEOProps) => {
-  const fullTitle = `${title} | ${SITE_NAME}– Formations Digitales Premium`;
+  const fullTitle = `${title} | ${SITE_NAME} – Formations Digitales Premium Afrique`;
   const url = `${BASE_URL}${path}`;
   const ogImage = image ? (image.startsWith("http") ? image : `${BASE_URL}${image}`) : `${BASE_URL}${DEFAULT_IMAGE}`;
 
@@ -38,6 +38,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("name", "author", "MindHub");
     setMeta("name", "publisher", "MindHub");
     setMeta("name", "theme-color", "#000000");
+    setMeta("name", "apple-mobile-web-app-title", SITE_NAME);
 
     // Open Graph
     setMeta("property", "og:title", fullTitle);
@@ -67,43 +68,54 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     }
     canonical.setAttribute("href", url);
 
-    // JSON-LD
-    const ldId = "seo-json-ld";
-    let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;
-
-    const defaultLd = {
+    // Breadcrumbs
+    const pathSegments = path.split("/").filter(Boolean);
+    const breadcrumbLd = {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: BASE_URL,
-      description,
-      inLanguage: "fr-FR",
-      potentialAction: {
-        "@type": "SearchAction",
-        target: `${BASE_URL}/boutique?q={search_term_string}`,
-        "query-input": "required name=search_term_string",
-      },
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Accueil",
+          item: BASE_URL,
+        },
+        ...pathSegments.map((segment, index) => ({
+          "@type": "ListItem",
+          position: index + 2,
+          name: segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
+          item: `${BASE_URL}/${pathSegments.slice(0, index + 1).join("/")}`,
+        })),
+      ],
     };
 
+    // Organization LD
     const orgLd = {
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "MindHub",
+      name: SITE_NAME,
       url: BASE_URL,
       logo: `${BASE_URL}/favicon.svg`,
-      description: "Plateforme de formations digitales premium en Afrique. Paiement unique, accès illimité à vie.",
+      description: "Plateforme N°1 de formations digitales premium en Afrique. Paiement unique, accès illimité à vie.",
       contactPoint: {
         "@type": "ContactPoint",
         email: "contact@mindhub.com",
         contactType: "customer service",
         availableLanguage: "French",
       },
-      sameAs: [],
     };
 
-    const ldData = jsonLd || defaultLd;
-    const combinedLd = [ldData, orgLd];
+    const combinedLd = [jsonLd || {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: BASE_URL,
+      description,
+      inLanguage: "fr-FR",
+    }, orgLd, breadcrumbLd];
 
+    const ldId = "seo-json-ld";
+    let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;
     if (!ldScript) {
       ldScript = document.createElement("script");
       ldScript.id = ldId;
@@ -113,10 +125,11 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     ldScript.textContent = JSON.stringify(combinedLd);
 
     return () => {
+      // Keep it or remove it? Usually better to remove to avoid duplicates on route changes
       const el = document.getElementById(ldId);
       if (el) el.remove();
     };
-  }, [fullTitle, description, url, ogImage, jsonLd, keywords, type]);
+  }, [fullTitle, description, url, ogImage, jsonLd, keywords, type, path]);
 
   return null;
 };

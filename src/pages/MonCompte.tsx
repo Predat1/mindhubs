@@ -125,7 +125,7 @@ const MonCompte = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data as any) ?? [];
+      return (data as unknown as UserOrder[]) ?? [];
     },
     enabled: !!user,
   });
@@ -165,7 +165,7 @@ const MonCompte = () => {
 
     return (
       <div className="min-h-screen bg-background aurora-bg">
-        <SEO title="Espace Membre Mindhubs" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" />
+        <SEO title="Espace Membre Mindhubs" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" keywords="compte mindhub, espace membre, mes achats formations, profil expert, connexion mindhubs" />
         <Navbar />
         <main className="pt-32 pb-24">
           <div className="container mx-auto px-4 max-w-4xl space-y-8">

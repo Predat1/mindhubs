@@ -247,16 +247,17 @@ const Inner = ({
         },
       );
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const features = (data as any).features as string[];
+      const typedData = data as { features?: string[]; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
+      const features = typedData.features;
       if (!features?.length) throw new Error("Aucune caractéristique générée");
       setForm((f) => ({
         ...f,
         key_features: [...f.key_features, ...features],
       }));
       toast.success(`${features.length} caractéristiques ajoutées ✨`);
-    } catch (e: any) {
-      toast.error("Erreur IA", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur IA", { description: (e as Error).message });
     } finally {
       setAiFeatLoading(false);
     }
@@ -289,13 +290,14 @@ const Inner = ({
         },
       );
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const urls = (data as any).urls as string[];
+      const typedData = data as { urls?: string[]; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
+      const urls = typedData.urls;
       if (!urls?.length) throw new Error("Aucune image générée");
       setVariants(urls);
       toast.success(`${urls.length} variantes générées 🎨`);
-    } catch (e: any) {
-      toast.error("Erreur IA", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur IA", { description: (e as Error).message });
       setShowVariants(false);
     } finally {
       setAiImgLoading(false);
@@ -337,15 +339,16 @@ const Inner = ({
         },
       );
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const urls = (data as any).urls as string[];
+      const typedData = data as { urls?: string[]; error?: string };
+      if (typedData?.error) throw new Error(typedData.error);
+      const urls = typedData.urls;
       if (!urls?.[0]) throw new Error("Pas d'image retournée");
       setForm((f) => ({ ...f, image_url: urls[0] }));
       setShowEditModal(false);
       setEditPrompt("");
       toast.success("Image modifiée ✨");
-    } catch (e: any) {
-      toast.error("Erreur IA", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur IA", { description: (e as Error).message });
     } finally {
       setAiEditLoading(false);
     }
@@ -388,8 +391,8 @@ const Inner = ({
         old_price: `${oldPrice} FCFA`,
       }));
       toast.success("Prix suggéré par l'IA ✨");
-    } catch (e: any) {
-      toast.error("Erreur IA", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur IA", { description: (e as Error).message });
     } finally {
       setAiPriceLoading(false);
     }
@@ -417,7 +420,7 @@ const Inner = ({
             payment_link: data.payment_link || "",
             key_features: data.key_features || [],
             status:
-              ((data as any).status as "draft" | "published") || "published",
+              ((data as Record<string, unknown>).status as "draft" | "published") || "published",
           });
         }
       });
@@ -473,8 +476,8 @@ const Inner = ({
         .getPublicUrl(path);
       setForm((f) => ({ ...f, image_url: data.publicUrl }));
       toast.success("Image ajoutée");
-    } catch (e: any) {
-      toast.error("Erreur upload", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur upload", { description: (e as Error).message });
     } finally {
       setUploading(false);
     }
@@ -549,7 +552,7 @@ const Inner = ({
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
         .slice(0, 50);
-      const productData: any = {
+      const productData: Record<string, unknown> = {
         id: isEdit ? form.id : `${slug}-${Date.now().toString(36)}`,
         title: form.title.trim(),
         description: form.description.trim() || null,
@@ -596,8 +599,8 @@ const Inner = ({
       } else {
         navigate("/dashboard/products");
       }
-    } catch (e: any) {
-      toast.error("Erreur", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur", { description: (e as Error).message });
     } finally {
       setSaving(false);
     }
@@ -621,10 +624,10 @@ const Inner = ({
       image:
         form.image_url ||
         "https://placehold.co/600x400/png?text=Aperçu+Produit",
-      category: form.category,
+      category: form.category as Category,
       vendorId: vendorId,
       rating: 5,
-    }),
+    } as Product),
     [form, vendorId],
   );
 
@@ -644,8 +647,8 @@ const Inner = ({
         .getPublicUrl(path);
       setForm((f) => ({ ...f, payment_link: data.publicUrl }));
       toast.success("Fichier numérique uploadé avec succès 📦");
-    } catch (e: any) {
-      toast.error("Erreur upload fichier", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur upload fichier", { description: (e as Error).message });
     } finally {
       setFileUploading(false);
     }
@@ -1140,9 +1143,9 @@ const Inner = ({
                                     ],
                                   }));
                                   toast.success("Image ajoutée à la galerie");
-                                } catch (err: any) {
+                                } catch (err: unknown) {
                                   toast.error("Erreur d'upload", {
-                                    description: err.message,
+                                    description: (err as Error).message,
                                   });
                                 } finally {
                                   setFileUploading(false);
@@ -1497,7 +1500,7 @@ const Inner = ({
               </div>
 
               <div className="pointer-events-none transition-all duration-300">
-                <ProductCard product={mockProduct as any} />
+                <ProductCard product={mockProduct} />
               </div>
 
               <div className="mt-3 space-y-1">

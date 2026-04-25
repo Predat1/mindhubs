@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await resp.json();
-    const toolUse = data.content?.find((c: any) => c.type === "tool_use");
+    const toolUse = data.content?.find((c: { type: string; input: Record<string, unknown> }) => c.type === "tool_use");
     if (!toolUse) throw new Error("No tool use in response");
 
     return new Response(JSON.stringify(toolUse.input), {

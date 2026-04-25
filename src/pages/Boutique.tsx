@@ -46,6 +46,7 @@ const Boutique = () => {
         title="Boutique Elite – Formations & E-books Premium"
         description="Le catalogue N°1 de formations digitales premium en Afrique. E-books, kits business et expertises IA. Accès illimité à vie."
         path="/boutique"
+        keywords="boutique formation, e-books business, formation marketing digital, vente formation en ligne, MindHub boutique, kits business Afrique"
       />
       <Navbar />
 

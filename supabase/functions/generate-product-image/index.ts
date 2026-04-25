@@ -45,7 +45,7 @@ STRICT MOCKUP DIMENSIONS (MUST be identical every time):
 - Square canvas 1:1 (1024x1024), centered composition
 - NO people outside the cover artwork, NO watermarks, NO text outside the box surface, NO floor/wall/props`;
 
-    let messages: any[];
+    let messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>;
     if (editImageUrl && editPrompt) {
       messages = [{
         role: "user",
@@ -121,8 +121,9 @@ ${MOCKUP_SPEC}`;
       return new Response(JSON.stringify({ urls }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-    } catch (e: any) {
-      if (e.message === "RATE_LIMIT") {
+    } catch (e: unknown) {
+      const err = e as Error;
+      if (err.message === "RATE_LIMIT") {
         return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans un instant." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

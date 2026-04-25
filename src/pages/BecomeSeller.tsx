@@ -98,8 +98,8 @@ const BecomeSeller = () => {
 
       toast({ title: "Boutique créée 🎉", description: "Bienvenue dans la marketplace !" });
       navigate("/dashboard");
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Impossible de créer la boutique", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erreur", description: (err as Error).message || "Impossible de créer la boutique", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

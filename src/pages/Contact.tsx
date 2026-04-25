@@ -54,7 +54,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Contact" description="Contactez l'équipe MindHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" />
+      <SEO title="Contact" description="Contactez l'équipe MindHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" keywords="contact mindhub, support formation, aide mindhubs, WhatsApp mindhub, service client" />
       <Navbar />
 
       {/* Hero */}

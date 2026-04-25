@@ -49,8 +49,8 @@ const ResetPassword = () => {
       toast({ title: "Mot de passe mis à jour", description: "Reconnectez-vous avec votre nouveau mot de passe." });
       await supabase.auth.signOut();
       navigate("/mon-compte");
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

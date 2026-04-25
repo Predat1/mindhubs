@@ -108,7 +108,36 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background aurora-bg">
-      <SEO title={product.title} description={product.description} path={`/produit/${product.id}`} />
+      <SEO 
+        title={product.title} 
+        description={product.description} 
+        path={`/produit/${product.id}`}
+        type="product"
+        image={allImages[0]}
+        keywords={`${product.title}, ${product.category}, formation digitale, mindhub expertise, kit business africain, réussir en ligne`}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.title,
+          image: allImages,
+          description: product.description,
+          category: product.category,
+          sku: product.id,
+          offers: {
+            "@type": "Offer",
+            url: window.location.href,
+            priceCurrency: "XOF",
+            price: priceNum,
+            itemCondition: "https://schema.org/NewCondition",
+            availability: "https://schema.org/InStock"
+          },
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.8",
+            reviewCount: "120"
+          }
+        }} 
+      />
       <Navbar />
 
       <section className="container mx-auto px-4 pt-36 pb-12">

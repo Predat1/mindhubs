@@ -68,8 +68,25 @@ interface Order {
   total_price: number;
   status: "pending" | "completed" | "cancelled" | "shipped";
   payment_method: string;
-  created_at: string;
   items: Array<{ title: string; quantity: number; price: string; image?: string }>;
+}
+
+interface AdminProduct {
+  id: string;
+  title: string;
+  image: string;
+  oldPrice: string;
+  price: string;
+  category: string;
+  rating: string;
+  tag: string;
+  description: string;
+  paymentLink: string;
+  imageUrls: string[];
+  keyFeatures: string[];
+  sort_order: number;
+  featured: boolean;
+  image_url: string;
 }
 
 const statusConfig = {
@@ -97,7 +114,7 @@ const Admin = () => {
   // ─── Queries ───
   const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ["admin-products"],
-    queryFn: async () => {
+    queryFn: async (): Promise<AdminProduct[]> => {
       const { data, error } = await supabase.from("products").select("*").order("sort_order", { ascending: true });
       if (error) throw error;
       return (data || []).map(db => ({
@@ -105,7 +122,7 @@ const Admin = () => {
         category: db.category, rating: db.rating, tag: db.tag, description: db.description,
         paymentLink: db.payment_link, imageUrls: db.image_urls || [], keyFeatures: db.key_features || [],
         sort_order: db.sort_order, featured: db.featured, image_url: db.image_url
-      }));
+      })) as AdminProduct[];
     },
   });
 
@@ -114,7 +131,7 @@ const Admin = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("testimonials").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      return data || [];
+      return (data || []) as TestimonialForm[];
     },
   });
 
@@ -155,7 +172,7 @@ const Admin = () => {
   }, [orders]);
 
   const activityFeed = useMemo(() => {
-    const activity: { id: string; type: string; title: string; subtitle: string; time: string; icon: any; color: string }[] = [];
+    const activity: { id: string; type: string; title: string; subtitle: string; time: string; icon: React.ElementType; color: string }[] = [];
     orders.slice(0, 5).forEach(o => {
       activity.push({
         id: o.id, type: "order", title: "Nouvelle commande",
@@ -193,8 +210,7 @@ const Admin = () => {
     if (!testimonialEditing) return;
     setSaving(true);
     const isNew = !testimonialEditing.id;
-    const data = { ...testimonialEditing };
-    if (isNew) delete (data as any).id;
+    const data = { ...testimonialEditing } as Partial<TestimonialForm> & { id?: string };
     const { error } = isNew 
       ? await supabase.from("testimonials").insert([data])
       : await supabase.from("testimonials").update(data).eq("id", data.id);
@@ -245,12 +261,12 @@ const Admin = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "order" | "vendor"; id: string; label: string } | null>(null);
 
   const filteredProducts = useMemo(() => 
-    products.filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()) || p.category.toLowerCase().includes(productSearch.toLowerCase())),
+    (products as AdminProduct[]).filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()) || p.category.toLowerCase().includes(productSearch.toLowerCase())),
     [products, productSearch]
   );
 
   const filteredTestimonials = useMemo(() => 
-    testimonials.filter(t => t.name.toLowerCase().includes(testimonialSearch.toLowerCase()) || t.content.toLowerCase().includes(testimonialSearch.toLowerCase())),
+    testimonials.filter((t: TestimonialForm) => t.name.toLowerCase().includes(testimonialSearch.toLowerCase()) || t.content.toLowerCase().includes(testimonialSearch.toLowerCase())),
     [testimonials, testimonialSearch]
   );
 
@@ -392,7 +408,7 @@ const Admin = () => {
                             <td className="p-4"><div className="flex items-center gap-3"><img src={p.image} className="w-12 h-12 rounded-xl object-cover" /><span className="font-bold truncate max-w-[200px]">{p.title}</span></div></td>
                             <td className="p-4"><p className="font-bold">{p.price}</p><p className="text-[10px] text-muted-foreground line-through">{p.oldPrice}</p></td>
                             <td className="p-4 hidden md:table-cell"><span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">{p.category}</span></td>
-                            <td className="p-4 text-right"><div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setProductEditing(p as any)} className="p-2 rounded-lg hover:bg-primary/10 text-primary"><Pencil size={16} /></button><button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button></div></td>
+                             <td className="p-4 text-right"><div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setProductEditing(p as unknown as ProductForm)} className="p-2 rounded-lg hover:bg-primary/10 text-primary"><Pencil size={16} /></button><button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button></div></td>
                           </tr>
                         ))}
                       </tbody>
@@ -493,7 +509,6 @@ const Admin = () => {
                   </div>
                </div>
             )}
-          )}
         </div>
       </div>
 
@@ -520,7 +535,7 @@ const Admin = () => {
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Actions</h4>
                       <div className="flex flex-wrap gap-2">
                          {Object.entries(statusConfig).map(([key, cfg]) => (
-                            <button key={key} onClick={() => updateOrderStatus(viewingOrder.id, key as any)} className={`p-3 rounded-xl transition-all ${viewingOrder.status === key ? cfg.color : "bg-muted opacity-40 hover:opacity-100"}`} title={cfg.label}><cfg.icon size={18} /></button>
+                             <button key={key} onClick={() => updateOrderStatus(viewingOrder.id, key as Order["status"])} className={`p-3 rounded-xl transition-all ${viewingOrder.status === key ? cfg.color : "bg-muted opacity-40 hover:opacity-100"}`} title={cfg.label}><cfg.icon size={18} /></button>
                          ))}
                       </div>
                    </div>

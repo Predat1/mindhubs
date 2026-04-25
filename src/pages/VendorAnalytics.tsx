@@ -13,8 +13,8 @@ const VendorAnalyticsInner = ({ vendorId, shopName, shopUrl }: { vendorId: strin
   const { data: orders = [] } = useVendorOrders(productIds);
 
   const totals = useMemo(() => {
-    const views = (stats as any[]).reduce((s, r) => s + (r.total_views ?? 0), 0);
-    const purchases = (stats as any[]).reduce((s, r) => s + (r.total_purchases ?? 0), 0);
+    const views = (stats as unknown as Array<{ total_views: number | null }>).reduce((s, r) => s + (r.total_views ?? 0), 0);
+    const purchases = (stats as unknown as Array<{ total_purchases: number | null }>).reduce((s, r) => s + (r.total_purchases ?? 0), 0);
     const conv = views > 0 ? ((purchases / views) * 100).toFixed(2) : "0.00";
     const validOrders = orders.filter((o) => o.status !== "cancelled").length;
     return { views, purchases, conv, validOrders };
@@ -22,7 +22,7 @@ const VendorAnalyticsInner = ({ vendorId, shopName, shopUrl }: { vendorId: strin
 
   const productPerf = useMemo(() => {
     const map: Record<string, { views: number; purchases: number }> = {};
-    (stats as any[]).forEach((s) => {
+    (stats as unknown as Array<{ product_id: string; total_views: number | null; total_purchases: number | null }>).forEach((s) => {
       map[s.product_id] = { views: s.total_views ?? 0, purchases: s.total_purchases ?? 0 };
     });
     return products

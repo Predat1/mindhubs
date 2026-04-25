@@ -39,8 +39,55 @@ import VendorAdsStudio from "./pages/VendorAdsStudio.tsx";
 import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
 import VendorMessages from "./pages/VendorMessages.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
+import PageTransition from "./components/PageTransition.tsx";
+import { AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const location = useLocation();
+  return (
+    <BackgroundGlow className="min-h-0 items-stretch">
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+          <Route path="/boutique" element={<PageTransition><Boutique /></PageTransition>} />
+          <Route path="/produit/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
+          <Route path="/panier" element={<PageTransition><CartPage /></PageTransition>} />
+          <Route path="/a-propos" element={<PageTransition><About /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/mon-compte" element={<PageTransition><MonCompte /></PageTransition>} />
+          <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+          <Route path="/conditions-generales" element={<PageTransition><ConditionsGenerales /></PageTransition>} />
+          <Route path="/politique-confidentialite" element={<PageTransition><PolitiqueConfidentialite /></PageTransition>} />
+          <Route path="/politique-remboursement" element={<PageTransition><PolitiqueRemboursement /></PageTransition>} />
+          <Route path="/politique-livraison" element={<PageTransition><PolitiqueLivraison /></PageTransition>} />
+          <Route path="/faq" element={<PageTransition><FAQ /></PageTransition>} />
+          <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+          <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
+          <Route path="/become-a-seller" element={<PageTransition><BecomeSeller /></PageTransition>} />
+          <Route path="/store/:username" element={<PageTransition><VendorStore /></PageTransition>} />
+          <Route path="/dashboard" element={<PageTransition><VendorDashboard /></PageTransition>} />
+          <Route path="/dashboard/new-product" element={<PageTransition><VendorProductForm /></PageTransition>} />
+          <Route path="/dashboard/edit-product/:id" element={<PageTransition><VendorProductForm /></PageTransition>} />
+          <Route path="/dashboard/sales" element={<PageTransition><VendorSales /></PageTransition>} />
+          <Route path="/dashboard/products" element={<PageTransition><VendorProducts /></PageTransition>} />
+          <Route path="/dashboard/customers" element={<PageTransition><VendorCustomers /></PageTransition>} />
+          <Route path="/dashboard/revenue" element={<PageTransition><VendorRevenue /></PageTransition>} />
+          <Route path="/dashboard/analytics" element={<PageTransition><VendorAnalytics /></PageTransition>} />
+          <Route path="/dashboard/marketing" element={<PageTransition><VendorMarketing /></PageTransition>} />
+          <Route path="/dashboard/affiliation" element={<PageTransition><VendorAffiliation /></PageTransition>} />
+          <Route path="/dashboard/settings" element={<PageTransition><VendorSettings /></PageTransition>} />
+          <Route path="/dashboard/ads-studio" element={<PageTransition><VendorAdsStudio /></PageTransition>} />
+          <Route path="/dashboard/factory" element={<PageTransition><DigitalProductFactory /></PageTransition>} />
+          <Route path="/dashboard/messages" element={<PageTransition><VendorMessages /></PageTransition>} />
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
+    </BackgroundGlow>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -52,42 +99,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <BackgroundGlow className="min-h-0 items-stretch">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/boutique" element={<Boutique />} />
-                <Route path="/produit/:id" element={<ProductDetail />} />
-                <Route path="/panier" element={<CartPage />} />
-                <Route path="/a-propos" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/mon-compte" element={<MonCompte />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/conditions-generales" element={<ConditionsGenerales />} />
-                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
-                <Route path="/politique-remboursement" element={<PolitiqueRemboursement />} />
-                <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/become-a-seller" element={<BecomeSeller />} />
-                <Route path="/store/:username" element={<VendorStore />} />
-                <Route path="/dashboard" element={<VendorDashboard />} />
-                <Route path="/dashboard/new-product" element={<VendorProductForm />} />
-                <Route path="/dashboard/edit-product/:id" element={<VendorProductForm />} />
-                <Route path="/dashboard/sales" element={<VendorSales />} />
-                <Route path="/dashboard/products" element={<VendorProducts />} />
-                <Route path="/dashboard/customers" element={<VendorCustomers />} />
-                <Route path="/dashboard/revenue" element={<VendorRevenue />} />
-                <Route path="/dashboard/analytics" element={<VendorAnalytics />} />
-                <Route path="/dashboard/marketing" element={<VendorMarketing />} />
-                <Route path="/dashboard/affiliation" element={<VendorAffiliation />} />
-                <Route path="/dashboard/settings" element={<VendorSettings />} />
-                <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
-                <Route path="/dashboard/factory" element={<DigitalProductFactory />} />
-                <Route path="/dashboard/messages" element={<VendorMessages />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BackgroundGlow>
+            <AppContent />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

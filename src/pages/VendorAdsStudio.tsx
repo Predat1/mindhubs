@@ -34,7 +34,7 @@ const Inner = () => {
   const { data: vendor } = useCurrentVendor();
   const { data: products = [], isLoading: productsLoading } = useVendorProducts(vendor?.id);
   const publishedProducts = useMemo(
-    () => (products as any[]).filter((p) => p.status === "published" || !p.status),
+    () => (products as unknown as Array<{ id: string; status: string; title: string; image_url?: string }>).filter((p) => p.status === "published" || !p.status),
     [products],
   );
 
@@ -132,13 +132,13 @@ const Inner = () => {
       await generate.mutateAsync({
         vendorId: vendor.id,
         userId: user.id,
-        product: selectedProduct as any,
+        product: selectedProduct as unknown as { id: string; title: string; image_url?: string },
         angles,
         formats,
       });
       toast.success("🎉 Kit publicitaire généré !", { id: t, description: "Vos créatives sont prêtes ci-dessous." });
-    } catch (e: any) {
-      toast.error("Erreur de génération", { id: t, description: e.message });
+    } catch (e: unknown) {
+      toast.error("Erreur de génération", { id: t, description: (e as Error).message });
     }
   };
 
@@ -152,8 +152,8 @@ const Inner = () => {
   const hasActiveFilters = filterAngle !== "all" || filterFormat !== "all" || search.trim() !== "" || sort !== "newest";
 
   const productMap = useMemo(() => {
-    const m: Record<string, any> = {};
-    for (const p of publishedProducts as any[]) m[p.id] = p;
+    const m: Record<string, { id: string; title: string; image_url?: string }> = {};
+    for (const p of publishedProducts) m[p.id] = p;
     return m;
   }, [publishedProducts]);
 
@@ -197,7 +197,7 @@ const Inner = () => {
               <Select value={productId} onValueChange={setProductId}>
                 <SelectTrigger><SelectValue placeholder="Choisir un produit…" /></SelectTrigger>
                 <SelectContent>
-                  {publishedProducts.map((p: any) => (
+                  {publishedProducts.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       <div className="flex items-center gap-2">
                         {p.image_url && <img src={p.image_url} alt="" className="h-6 w-6 rounded object-cover" />}
