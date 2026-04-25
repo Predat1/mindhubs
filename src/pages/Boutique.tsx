@@ -16,10 +16,9 @@ import { Button } from "@/components/ui/button";
 
 const Boutique = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeCategory, setActiveCategory] = useState<Category>(
-    (searchParams.get("category") as Category) || "Tous"
-  );
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const activeCategory = (searchParams.get("category") as Category) || "Tous";
+  const searchQuery = searchParams.get("q") || "";
+  
   const { data: products = [], isLoading } = useProducts();
   const rankedProducts = useSmartRanking(products);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -85,14 +84,13 @@ const Boutique = () => {
               value={searchQuery}
               onChange={(e) => {
                 const val = e.target.value;
-                setSearchQuery(val);
                 const newParams = new URLSearchParams(searchParams);
                 if (val.trim()) {
                   newParams.set("q", val.trim());
                 } else {
                   newParams.delete("q");
                 }
-                setSearchParams(newParams);
+                setSearchParams(newParams, { replace: true });
               }}
               className="w-full pl-14 pr-6 h-14 rounded-2xl bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
             />
@@ -104,7 +102,6 @@ const Boutique = () => {
                <button
                  key={cat}
                  onClick={() => {
-                   setActiveCategory(cat);
                    const newParams = new URLSearchParams(searchParams);
                    if (cat === "Tous") {
                      newParams.delete("category");
@@ -130,7 +127,6 @@ const Boutique = () => {
                <button
                  key={cat}
                  onClick={() => {
-                   setActiveCategory(cat);
                    const newParams = new URLSearchParams(searchParams);
                    if (cat === "Tous") {
                      newParams.delete("category");
@@ -183,7 +179,7 @@ const Boutique = () => {
                 <h3 className="text-2xl font-black">Aucun résultat trouvé</h3>
                 <p className="text-muted-foreground font-medium">Essayez d'ajuster vos filtres ou votre recherche.</p>
              </div>
-             <Button onClick={() => { setSearchQuery(""); setActiveCategory("Tous"); }} variant="outline" className="rounded-full">
+             <Button onClick={() => setSearchParams({})} variant="outline" className="rounded-full">
                 Réinitialiser les filtres
              </Button>
           </div>
