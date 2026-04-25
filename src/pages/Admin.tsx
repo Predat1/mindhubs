@@ -13,7 +13,7 @@ import SEO from "@/components/SEO";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, Cell } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { Vendor } from "@/hooks/useVendors";
 
 // ─── Types ───
@@ -58,7 +58,7 @@ const DEFAULT_TESTIMONIAL: TestimonialForm = {
   likes: "0", retweets: "0", replies: "0", verified: false,
 };
 
-type Tab = "products" | "testimonials" | "orders" | "vendors" | "security" | "analytics" | "settings";
+type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | "security" | "analytics" | "settings" | "help";
 
 interface Order {
   id: string;
@@ -97,7 +97,10 @@ const statusConfig = {
 };
 
 const Admin = () => {
-  const [tab, setTab] = useState<Tab>("products");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const currentTab = (searchParams.get("tab") as Tab) || "overview";
+
   const [productEditing, setProductEditing] = useState<ProductForm | null>(null);
   const [testimonialEditing, setTestimonialEditing] = useState<TestimonialForm | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
@@ -109,7 +112,13 @@ const Admin = () => {
   const [testimonialSearch, setTestimonialSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
   const [orderFilter, setOrderFilter] = useState<string>("all");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial"; id: string; label: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  const setTab = (newTab: Tab) => {
+    navigate(`/admin?tab=${newTab}`);
+  };
 
   // ─── Queries ───
   const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useQuery({
@@ -147,7 +156,7 @@ const Admin = () => {
     },
   });
 
-  const { data: allVendors = [], isLoading: vendorsLoading } = useQuery({
+  const { data: allVendors = [], isLoading: vendorsLoading, refetch: refetchVendors } = useQuery({
     queryKey: ["admin-vendors"],
     queryFn: async (): Promise<Vendor[]> => {
       const { data, error } = await supabase.from("vendors").select("*").order("created_at", { ascending: false });
@@ -155,6 +164,13 @@ const Admin = () => {
       return data ?? [];
     },
   });
+
+  const toggleVendorVerification = async (vendorId: string, currentStatus: boolean) => {
+    const { error } = await supabase.from("vendors").update({ verified: !currentStatus }).eq("id", vendorId);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Statut mis à jour", description: `Le vendeur est désormais ${!currentStatus ? "vérifié" : "standard"}.` });
+    refetchVendors();
+  };
 
   // ─── Analytics ───
   const revenueChartData = useMemo(() => {
@@ -258,7 +274,6 @@ const Admin = () => {
     setUploading(false);
   };
 
-  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "order" | "vendor"; id: string; label: string } | null>(null);
 
   const filteredProducts = useMemo(() => 
     (products as AdminProduct[]).filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()) || p.category.toLowerCase().includes(productSearch.toLowerCase())),
@@ -278,91 +293,81 @@ const Admin = () => {
       
       <div className="max-w-[1600px] mx-auto space-y-8">
         {/* Dashboard Overview */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Ventes", value: orders.length, icon: ShoppingBag, trend: "+12%", color: "primary" },
-                { label: "Revenu", value: `${(orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total_price, 0) / 1000).toFixed(1)}k`, icon: DollarSign, trend: "+8%", color: "accent" },
-                { label: "Produits", value: products.length, icon: Package, trend: "+2", color: "primary" },
-                { label: "Attente", value: pendingCount, icon: Clock, trend: "-3", color: "yellow-500" },
-              ].map((s, i) => (
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={i} className="stat-card rounded-2xl p-5 border-glow hover:-translate-y-1 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${s.color}/10 text-${s.color}`}><s.icon size={18} /></div>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${s.trend.startsWith("+") ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"}`}>{s.trend}</span>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{s.label}</p>
-                </motion.div>
-              ))}
-            </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentTab}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-8"
+          >
+            {currentTab === "overview" && (
+              <div className="space-y-8">
+                 <div className="grid lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {[
+                          { label: "Ventes", value: orders.length, icon: ShoppingBag, trend: "+12%", color: "primary" },
+                          { label: "Revenu", value: `${(orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total_price, 0) / 1000).toFixed(1)}k`, icon: DollarSign, trend: "+8%", color: "accent" },
+                          { label: "Produits", value: products.length, icon: Package, trend: "+2", color: "primary" },
+                          { label: "Attente", value: pendingCount, icon: Clock, trend: "-3", color: "yellow-500" },
+                        ].map((s, i) => (
+                          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={i} className="stat-card rounded-2xl p-5 border-glow hover:-translate-y-1 transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${s.color}/10 text-${s.color}`}><s.icon size={18} /></div>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${s.trend.startsWith("+") ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"}`}>{s.trend}</span>
+                            </div>
+                            <p className="text-2xl font-bold text-foreground">{s.value}</p>
+                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{s.label}</p>
+                          </motion.div>
+                        ))}
+                      </div>
 
-            <div className="stat-card rounded-2xl p-6 border-glow">
-              <div className="flex items-center justify-between mb-6">
-                <div><h3 className="text-sm font-bold">Performances</h3><p className="text-[10px] text-muted-foreground">14 derniers jours</p></div>
-                <div className="flex gap-3"><div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary" /><span className="text-[10px] text-muted-foreground">Revenu</span></div><div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-accent" /><span className="text-[10px] text-muted-foreground">Commandes</span></div></div>
+                      <div className="stat-card rounded-2xl p-6 border-glow">
+                        <div className="flex items-center justify-between mb-6">
+                          <div><h3 className="text-sm font-bold">Performances Globales</h3><p className="text-[10px] text-muted-foreground">Analytiques temps réel</p></div>
+                          <div className="flex gap-3"><div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary" /><span className="text-[10px] text-muted-foreground">Revenu</span></div><div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-accent" /><span className="text-[10px] text-muted-foreground">Commandes</span></div></div>
+                        </div>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueChartData}>
+                              <defs>
+                                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient>
+                                <linearGradient id="colorOrd" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/></linearGradient>
+                              </defs>
+                              <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} className="fill-muted-foreground" />
+                              <YAxis yAxisId="left" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} className="fill-muted-foreground" />
+                              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "11px" }} />
+                              <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2} />
+                              <Area yAxisId="left" type="monotone" dataKey="orders" stroke="hsl(var(--accent))" fillOpacity={1} fill="url(#colorOrd)" strokeWidth={2} />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="stat-card rounded-2xl p-6 border-glow flex flex-col">
+                      <div className="flex items-center justify-between mb-6"><h3 className="text-sm font-bold">Flux d'activité</h3><button className="text-[10px] font-bold text-primary hover:underline" onClick={() => setTab("orders")}>Voir tout</button></div>
+                      <div className="space-y-5 overflow-y-auto max-h-[400px] pr-2 [scrollbar-width:thin]">
+                        {activityFeed.map((item, i) => (
+                          <div key={i} className="flex gap-4 group">
+                            <div className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${item.color} group-hover:scale-110 transition-transform`}><item.icon size={18} /></div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">{item.subtitle}</p>
+                              <p className="text-[9px] text-muted-foreground/60 mt-1">{new Date(item.time).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {activityFeed.length === 0 && <div className="text-center py-8 text-muted-foreground text-xs">Aucune activité récente.</div>}
+                      </div>
+                    </div>
+                 </div>
               </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueChartData}>
-                    <defs>
-                      <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient>
-                      <linearGradient id="colorOrd" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/></linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} className="fill-muted-foreground" />
-                    <YAxis yAxisId="left" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} className="fill-muted-foreground" />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "11px" }} />
-                    <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2} />
-                    <Area yAxisId="left" type="monotone" dataKey="orders" stroke="hsl(var(--accent))" fillOpacity={1} fill="url(#colorOrd)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+            )}
 
-          <div className="stat-card rounded-2xl p-6 border-glow flex flex-col">
-            <div className="flex items-center justify-between mb-6"><h3 className="text-sm font-bold">Live Feed</h3><button className="text-[10px] font-bold text-primary hover:underline">Voir tout</button></div>
-            <div className="space-y-5 overflow-y-auto max-h-[400px] pr-2 [scrollbar-width:thin]">
-              {activityFeed.map((item, i) => (
-                <div key={i} className="flex gap-4 group">
-                  <div className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${item.color} group-hover:scale-110 transition-transform`}><item.icon size={18} /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{item.subtitle}</p>
-                    <p className="text-[9px] text-muted-foreground/60 mt-1">{new Date(item.time).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Selector */}
-        <div className="flex items-center gap-2 flex-wrap bg-muted/20 p-1.5 rounded-2xl border border-border/50">
-          {([
-            { key: "products", label: "Produits", icon: Package },
-            { key: "testimonials", label: "Avis", icon: MessageSquare },
-            { key: "orders", label: "Commandes", icon: ShoppingBag, badge: pendingCount },
-            { key: "vendors", label: "Vendeurs", icon: Users },
-            { key: "security", label: "Sécurité", icon: ShieldAlert },
-          ] as const).map((t) => (
-            <button
-              key={t.key}
-              onClick={() => { setTab(t.key); setProductEditing(null); setTestimonialEditing(null); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === t.key ? "bg-card text-foreground shadow-sm ring-1 ring-border" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
-            >
-              <t.icon size={16} /> {t.label}
-              {t.badge ? <span className="ml-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">{t.badge}</span> : null}
-            </button>
-          ))}
-          <div className="flex-1" />
-          {tab === "products" && !productEditing && <button onClick={() => setProductEditing(DEFAULT_PRODUCT)} className="btn-primary-brand px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Plus size={16} /> Nouveau</button>}
-          {tab === "testimonials" && !testimonialEditing && <button onClick={() => setTestimonialEditing(DEFAULT_TESTIMONIAL)} className="btn-primary-brand px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Plus size={16} /> Nouveau</button>}
-        </div>
-
-        <div className="space-y-8">
-          {tab === "products" && (
+            {currentTab === "products" && (
               <div className="space-y-6">
                 {productEditing && (
                 <div className="stat-card rounded-2xl p-8 border-glow space-y-6">
@@ -418,7 +423,7 @@ const Admin = () => {
               </div>
             )}
 
-            {tab === "testimonials" && (
+            {currentTab === "testimonials" && (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTestimonials.map(t => (
                   <div key={t.id} className="stat-card rounded-2xl p-5 border-glow hover:scale-[1.02] transition-transform flex flex-col">
@@ -437,7 +442,7 @@ const Admin = () => {
               </div>
             )}
 
-            {tab === "orders" && (
+            {currentTab === "orders" && (
               <div className="stat-card rounded-2xl overflow-hidden border-glow">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-muted/30 border-b border-border text-muted-foreground">
@@ -457,7 +462,7 @@ const Admin = () => {
               </div>
             )}
 
-            {tab === "vendors" && (
+            {currentTab === "vendors" && (
                <div className="stat-card rounded-2xl overflow-hidden border-glow">
                  <table className="w-full text-sm text-left">
                     <thead className="bg-muted/30 border-b border-border text-muted-foreground">
@@ -468,7 +473,14 @@ const Admin = () => {
                           <tr key={v.id} className="border-b border-border last:border-0 hover:bg-muted/10">
                              <td className="p-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{v.shop_name.slice(0, 2).toUpperCase()}</div><p className="font-bold">{v.shop_name}</p></div></td>
                              <td className="p-4 text-muted-foreground">@{v.username}</td>
-                             <td className="p-4">{v.verified ? <span className="text-[10px] font-bold text-emerald-500 uppercase">Vérifié ✓</span> : <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Standard</span>}</td>
+                             <td className="p-4">
+                                <button 
+                                  onClick={() => toggleVendorVerification(v.id, v.verified)}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${v.verified ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : "bg-muted text-muted-foreground hover:bg-muted/40"}`}
+                                >
+                                  {v.verified ? "Vérifié ✓" : "Standard"}
+                                </button>
+                             </td>
                              <td className="p-4 text-right"><button className="p-2 rounded-lg hover:bg-muted"><Pencil size={16} /></button></td>
                           </tr>
                        ))}
@@ -477,7 +489,7 @@ const Admin = () => {
                </div>
             )}
 
-            {tab === "security" && (
+            {currentTab === "security" && (
                <div className="grid md:grid-cols-2 gap-8">
                   <div className="stat-card rounded-2xl p-6 border-glow space-y-6">
                      <div className="flex items-center gap-3"><ShieldAlert className="text-destructive" size={24} /><h3 className="font-bold">Protocoles de Sécurité</h3></div>
@@ -509,6 +521,120 @@ const Admin = () => {
                   </div>
                </div>
             )}
+
+            {currentTab === "analytics" && (
+               <div className="space-y-8">
+                 <div className="grid md:grid-cols-3 gap-6">
+                    {[
+                      { label: "Visites totales", value: "12,450", change: "+14%", color: "primary" },
+                      { label: "Taux de conversion", value: "3.2%", change: "+0.5%", color: "accent" },
+                      { label: "Temps moyen", value: "4m 12s", change: "-2%", color: "yellow-500" },
+                    ].map((s, i) => (
+                      <div key={i} className="stat-card rounded-2xl p-6 border-glow">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{s.label}</p>
+                        <div className="flex items-end gap-3">
+                          <p className="text-3xl font-black">{s.value}</p>
+                          <span className={`text-xs font-bold ${s.change.startsWith("+") ? "text-emerald-500" : "text-destructive"}`}>{s.change}</span>
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+                 <div className="grid lg:grid-cols-2 gap-8">
+                    <div className="stat-card rounded-2xl p-6 border-glow h-80">
+                      <h3 className="text-sm font-bold mb-6">Canaux d'acquisition</h3>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[
+                          { name: "Direct", value: 4500 },
+                          { name: "Social", value: 3200 },
+                          { name: "SEO", value: 2800 },
+                          { name: "Email", value: 1200 },
+                          { name: "Ads", value: 750 },
+                        ]}>
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
+                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="stat-card rounded-2xl p-6 border-glow h-80">
+                      <h3 className="text-sm font-bold mb-6">Sessions par appareil</h3>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={[
+                          { date: "Lun", mobile: 120, desktop: 80 },
+                          { date: "Mar", mobile: 150, desktop: 95 },
+                          { date: "Mer", mobile: 180, desktop: 110 },
+                          { date: "Jeu", mobile: 140, desktop: 130 },
+                          { date: "Ven", mobile: 210, desktop: 160 },
+                          { date: "Sam", mobile: 250, desktop: 120 },
+                          { date: "Dim", mobile: 230, desktop: 90 },
+                        ]}>
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
+                          <Area type="monotone" dataKey="mobile" stroke="hsl(var(--primary))" fill="hsl(var(--primary)/0.2)" />
+                          <Area type="monotone" dataKey="desktop" stroke="hsl(var(--accent))" fill="hsl(var(--accent)/0.2)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                 </div>
+               </div>
+            )}
+
+            {currentTab === "settings" && (
+              <div className="max-w-3xl space-y-8">
+                <div className="stat-card rounded-2xl p-8 border-glow space-y-8">
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Configuration Générale</h3>
+                    <p className="text-sm text-muted-foreground">Paramètres globaux de la plateforme MindHubs.</p>
+                  </div>
+                  <div className="grid gap-6">
+                    <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Nom du site</label><input defaultValue="MindHubs" className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Email de support</label><input defaultValue="contact@mindhubs.com" className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Devise</label><input defaultValue="FCFA" className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+                      <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Langue par défaut</label><input defaultValue="Français" className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Bell size={20} /></div>
+                      <div className="flex-1"><p className="text-sm font-bold">Maintenance</p><p className="text-[10px] text-muted-foreground">Activer le mode maintenance pour les visiteurs.</p></div>
+                      <button className="w-12 h-6 rounded-full bg-muted relative transition-colors"><div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-foreground" /></button>
+                    </div>
+                  </div>
+                  <div className="pt-6 border-t border-border/50 flex justify-end">
+                    <button className="btn-primary-brand px-8 py-2.5 rounded-xl font-bold">Enregistrer les modifications</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentTab === "help" && (
+               <div className="grid md:grid-cols-2 gap-8">
+                 <div className="stat-card rounded-2xl p-8 border-glow space-y-6">
+                    <h3 className="text-xl font-bold flex items-center gap-3"><HelpCircle className="text-primary" /> Guide d'administration</h3>
+                    <div className="space-y-4">
+                       {[
+                         { q: "Comment valider un vendeur ?", a: "Allez dans l'onglet 'Vendeurs' et cliquez sur le badge standard pour le passer en vérifié." },
+                         { q: "Gérer les remboursements", a: "Les remboursements doivent être traités manuellement via le dashboard Stripe/Paystack puis marqués comme annulés ici." },
+                         { q: "Ajouter une catégorie", a: "Les catégories sont actuellement gérées dans le code, contactez l'équipe technique." },
+                       ].map((item, i) => (
+                         <div key={i} className="space-y-1">
+                           <p className="text-sm font-bold text-foreground">{item.q}</p>
+                           <p className="text-xs text-muted-foreground">{item.a}</p>
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+                 <div className="stat-card rounded-2xl p-8 border-glow flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-accent"><MessageSquare size={32} /></div>
+                    <div><h3 className="text-lg font-bold">Support Technique</h3><p className="text-sm text-muted-foreground max-w-[250px]">Besoin d'une assistance directe ou d'une nouvelle fonctionnalité ?</p></div>
+                    <button className="btn-primary-brand w-full py-3 rounded-xl font-bold">Ouvrir un ticket</button>
+                 </div>
+               </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
         </div>
       </div>
 

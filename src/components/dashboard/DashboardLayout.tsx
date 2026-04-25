@@ -62,9 +62,11 @@ export const ADMIN_NAV: SidebarItem[] = [
   { label: "Témoignages", href: "/admin?tab=testimonials", icon: MessageSquare, group: "main" },
   { label: "Vendeurs", href: "/admin?tab=vendors", icon: Store, group: "main" },
   { label: "Sécurité & rôles", href: "/admin?tab=security", icon: ShieldCheck, group: "system" },
-  { label: "Analytiques", href: "/admin?tab=analytics", icon: BarChart3, group: "growth" },
   { label: "Paramètres", href: "/admin?tab=settings", icon: Settings, group: "system" },
+  { label: "Analytiques", href: "/admin?tab=analytics", icon: BarChart3, group: "growth" },
+  { label: "Centre d'aide", href: "/admin?tab=help", icon: HelpCircle, group: "growth" },
 ];
+
 
 const GROUP_LABELS: Record<string, string> = {
   main: "Pilotage",
