@@ -33,7 +33,6 @@ import VendorCustomers from "./pages/VendorCustomers.tsx";
 import VendorRevenue from "./pages/VendorRevenue.tsx";
 import VendorAnalytics from "./pages/VendorAnalytics.tsx";
 import VendorMarketing from "./pages/VendorMarketing.tsx";
-import VendorAffiliation from "./pages/VendorAffiliation.tsx";
 import VendorSettings from "./pages/VendorSettings.tsx";
 import VendorAdsStudio from "./pages/VendorAdsStudio.tsx";
 import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
@@ -79,7 +78,6 @@ const AppContent = () => {
         <Route path="/dashboard/revenue" element={<VendorRevenue />} />
         <Route path="/dashboard/analytics" element={<VendorAnalytics />} />
         <Route path="/dashboard/marketing" element={<VendorMarketing />} />
-        <Route path="/dashboard/affiliation" element={<VendorAffiliation />} />
         <Route path="/dashboard/settings" element={<VendorSettings />} />
         <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
         <Route path="/dashboard/factory" element={<DigitalProductFactory />} />

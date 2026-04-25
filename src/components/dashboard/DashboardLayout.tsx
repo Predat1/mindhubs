@@ -51,7 +51,6 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
   { label: "AI Factory", href: "/dashboard/factory", icon: Factory, group: "growth", badge: "Premium", badgeVariant: "hot", badgeTooltip: "L'usine à produits digitaux : passez de l'idée au profit en 15 minutes." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },
-  { label: "Affiliation", href: "/dashboard/affiliation", icon: Sparkles, group: "growth" },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];
 
@@ -149,11 +148,6 @@ const useVendorLiveBadges = (enabled: boolean) => {
       badge: "Nouveau",
       variant: "new",
       tooltip: "Nouvelle section : campagnes, codes promo et automation.",
-    };
-    map["/dashboard/affiliation"] = map["/dashboard/affiliation"] ?? {
-      badge: "Hot",
-      variant: "hot",
-      tooltip: "Programme d'affiliation premium — recrutez des ambassadeurs.",
     };
     return map;
   }, [products, orders]);
