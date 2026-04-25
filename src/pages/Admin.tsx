@@ -656,9 +656,7 @@ const Admin = () => {
             )}
           </motion.div>
         </AnimatePresence>
-
         </div>
-      </div>
 
       {/* Viewing Order Modal */}
       {viewingOrder && (
