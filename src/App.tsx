@@ -38,6 +38,7 @@ import VendorSettings from "./pages/VendorSettings.tsx";
 import VendorAdsStudio from "./pages/VendorAdsStudio.tsx";
 import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
 import VendorMessages from "./pages/VendorMessages.tsx";
+import ProtectionAcheteur from "./pages/ProtectionAcheteur.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 import PageTransition from "./components/PageTransition.tsx";
 import { AnimatePresence } from "framer-motion";
@@ -66,6 +67,7 @@ const AppContent = () => {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/protection-acheteur" element={<ProtectionAcheteur />} />
         <Route path="/become-a-seller" element={<BecomeSeller />} />
         <Route path="/store/:username" element={<VendorStore />} />
         <Route path="/dashboard" element={<VendorDashboard />} />

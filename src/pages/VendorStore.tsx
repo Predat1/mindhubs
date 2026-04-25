@@ -225,8 +225,10 @@ const VendorStore = () => {
                   Achetez en toute confiance. Mindhubs garantit l'accès à vie et la qualité des contenus de tous ses experts vérifiés.
                </p>
             </div>
-            <Button variant="link" className="text-primary font-black gap-2">
-               En savoir plus sur la protection acheteur <ArrowRight size={14} />
+            <Button asChild variant="link" className="text-primary font-black gap-2">
+               <Link to="/protection-acheteur">
+                 En savoir plus sur la protection acheteur <ArrowRight size={14} />
+               </Link>
             </Button>
          </div>
       </section>

@@ -82,6 +82,7 @@ const FooterSection = () => {
               <Link to="/politique-confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
               <Link to="/politique-remboursement" className="hover:text-foreground transition-colors">Remboursement</Link>
               <Link to="/politique-livraison" className="hover:text-foreground transition-colors">Livraison</Link>
+              <Link to="/protection-acheteur" className="hover:text-foreground transition-colors">Protection</Link>
             </nav>
           </div>
 
