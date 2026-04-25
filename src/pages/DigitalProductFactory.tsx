@@ -483,6 +483,22 @@ const DigitalProductFactory = () => {
                            <span className="text-[10px] font-black uppercase">Mettre en vente sur Mindhubs</span>
                         </Button>
                       </div>
+                      
+                      <div className="pt-8 border-t border-white/5 max-w-sm mx-auto">
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => {
+                            setStep("niche");
+                            setNiche("");
+                            setChapters([]);
+                            setAdsKit([]);
+                            setGenerationProgress(0);
+                          }} 
+                          className="text-xs font-bold text-muted-foreground hover:text-primary"
+                        >
+                          <RefreshCw size={14} className="mr-2" /> Créer un autre produit
+                        </Button>
+                      </div>
                    </Card>
                 </motion.div>
               )}

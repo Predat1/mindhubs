@@ -83,7 +83,7 @@ ${MOCKUP_SPEC}`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
+          model: "google/gemini-2.0-flash-exp", // Correcting to available experimental/preview model for images
           messages,
           modalities: ["image", "text"],
         }),
@@ -128,7 +128,7 @@ ${MOCKUP_SPEC}`;
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (e.message === "CREDITS_EXHAUSTED") {
+      if (err.message === "CREDITS_EXHAUSTED") {
         return new Response(JSON.stringify({ error: "Crédits IA épuisés. Rechargez votre espace." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

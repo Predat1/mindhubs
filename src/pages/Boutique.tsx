@@ -84,12 +84,15 @@ const Boutique = () => {
               placeholder="Rechercher une formation, un e-book..."
               value={searchQuery}
               onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.trim()) {
-                  setSearchParams({ q: e.target.value.trim() });
+                const val = e.target.value;
+                setSearchQuery(val);
+                const newParams = new URLSearchParams(searchParams);
+                if (val.trim()) {
+                  newParams.set("q", val.trim());
                 } else {
-                  setSearchParams({});
+                  newParams.delete("q");
                 }
+                setSearchParams(newParams);
               }}
               className="w-full pl-14 pr-6 h-14 rounded-2xl bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
             />
