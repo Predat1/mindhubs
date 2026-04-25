@@ -43,6 +43,7 @@ import PageTransition from "./components/PageTransition.tsx";
 import { AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
+import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const App = () => (
             <ErrorBoundary>
               <AppContent />
             </ErrorBoundary>
+            <LiveSalesPopup />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

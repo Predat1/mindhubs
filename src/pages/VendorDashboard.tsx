@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import SEO from "@/components/SEO";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,17 @@ import {
   Youtube, MessageCircle, Lightbulb, ExternalLink, Package, Copy,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useGamification } from "@/hooks/useGamification";
+import { LevelProgressBar } from "@/components/gamification/LevelProgressBar";
+import { BadgeGrid } from "@/components/gamification/BadgeSystem";
+import { Trophy, Gift, Share2 as ShareIcon } from "lucide-react";
 
 const VendorDashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { data: vendor, isLoading: vendorLoading } = useCurrentVendor();
   const { data: products = [], refetch } = useVendorProducts(vendor?.id);
+  const { stats: gameStats, nextLevelXp } = useGamification();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -113,25 +119,70 @@ const VendorDashboard = () => {
       <SEO title="Dashboard vendeur — MIND✦HUB" description="Pilotez votre boutique." path="/dashboard" keywords="dashboard expert, gestion boutique mindhub, ventes formations, revenus vendeur" />
 
       <div className="mx-auto max-w-6xl space-y-8">
-        {/* Greeting */}
-        <div>
-          <h2 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Bonjour {firstName} !
-            <span className="text-3xl">☀️</span>
-          </h2>
-          <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <span>🌅</span>
-            Un nouveau départ avec des possibilités infinies. Quelle sera votre première action ?
-          </p>
-        </div>
+        {/* Greeting & Gamification Row */}
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          <div className="lg:col-span-2 space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-8 rounded-3xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20"
+            >
+              <h2 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Bonjour {firstName} !
+                <span className="text-3xl">☀️</span>
+              </h2>
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <span>🌅</span>
+                Un nouveau départ avec des possibilités infinies. Quelle sera votre première action ?
+              </p>
+            </motion.div>
 
-        {/* Quick actions */}
-        <div className="flex flex-wrap gap-3">
-          <Button asChild variant="outline" className="rounded-full">
-            <Link to="/dashboard/new-product">
-              <Plus size={16} /> Ajouter un produit
-            </Link>
-          </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/dashboard/new-product">
+                  <Plus size={16} /> Ajouter un produit
+                </Link>
+              </Button>
+              <Button variant="outline" className="rounded-full gap-2 text-primary border-primary/20 hover:bg-primary/5">
+                <Gift size={16} /> Parrainer & Gagner
+              </Button>
+            </div>
+          </div>
+
+          {/* Gamification Sidebar */}
+          {gameStats && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="stat-card rounded-3xl p-6 border-glow space-y-6 bg-gradient-to-br from-card/50 to-background"
+            >
+              <LevelProgressBar 
+                xp={gameStats.xp} 
+                level={gameStats.level} 
+                tier={gameStats.tier} 
+                nextLevelXp={nextLevelXp} 
+              />
+              
+              <div className="pt-4 border-t border-white/5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Vos Badges</h4>
+                  <button className="text-[10px] font-bold text-primary hover:underline">Voir tout</button>
+                </div>
+                <BadgeGrid badges={gameStats.badges.slice(0, 4)} />
+              </div>
+
+              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between group cursor-pointer hover:bg-primary/10 transition-all">
+                <div className="flex items-center gap-3">
+                   <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary"><ShareIcon size={18} /></div>
+                   <div>
+                      <p className="text-xs font-bold">Lien de parrainage</p>
+                      <p className="text-[10px] font-medium text-muted-foreground">{gameStats.referralCode}</p>
+                   </div>
+                </div>
+                <Copy size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* Stats cards */}
