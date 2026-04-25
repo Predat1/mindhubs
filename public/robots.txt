@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mindhubs.app/sitemap.xml
+Sitemap: https://mindhubs.fun/sitemap.xml

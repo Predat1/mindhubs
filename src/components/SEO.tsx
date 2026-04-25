@@ -11,7 +11,7 @@ interface SEOProps {
 }
 
 const SITE_NAME = "MindHub";
-const BASE_URL = "https://mindhubs.app";
+const BASE_URL = "https://mindhubs.fun";
 const DEFAULT_IMAGE = "/og-image.png";
 
 const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website" }: SEOProps) => {
