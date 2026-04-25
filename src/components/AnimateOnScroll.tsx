@@ -45,10 +45,14 @@ const AnimateOnScroll = ({ children, className = "", delay = 0, duration = 700, 
     const el = ref.current;
     if (!el) return;
 
+    // Safety timeout: if observer doesn't trigger in 2s, show anyway
+    const timeout = setTimeout(() => setVisible(true), 2000);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
+          clearTimeout(timeout);
           observer.unobserve(el);
         }
       },
@@ -56,7 +60,10 @@ const AnimateOnScroll = ({ children, className = "", delay = 0, duration = 700, 
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const styles = variantStyles[variant];
