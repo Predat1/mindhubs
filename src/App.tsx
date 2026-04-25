@@ -42,6 +42,7 @@ import ScrollToTop from "./components/ScrollToTop.tsx";
 import PageTransition from "./components/PageTransition.tsx";
 import { AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary.tsx";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +50,7 @@ const AppContent = () => {
   const location = useLocation();
   return (
     <BackgroundGlow className="min-h-0 items-stretch">
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageTransition><Index /></PageTransition>} />
           <Route path="/boutique" element={<PageTransition><Boutique /></PageTransition>} />
@@ -99,7 +100,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

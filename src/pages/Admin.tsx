@@ -689,7 +689,7 @@ const Admin = () => {
                 <div className="space-y-4">
                    <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Contenu</h4>
                    <div className="space-y-2">
-                      {viewingOrder.items.map((item, i) => (
+                      {viewingOrder.items?.map((item, i) => (
                          <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-background border border-border"><p className="text-sm font-bold">{item.title}</p><p className="text-sm font-black">x{item.quantity}</p></div>
                       ))}
                    </div>
