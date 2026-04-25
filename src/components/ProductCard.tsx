@@ -47,7 +47,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         className="h-full"
       >
         <Link to={`/produit/${product.id}`} className="block group h-full">
-          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-white/5 bg-card/40">
+          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-glass bg-card/40">
             
             {/* Image Container */}
             <div className="relative aspect-square overflow-hidden">
@@ -95,7 +95,7 @@ const ProductCard = ({ product }: { product: Product }) => {
 
               <div className="flex-1" />
 
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
+              <div className="flex items-center justify-between pt-4 border-t border-glass">
                  <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground line-through font-bold">{product.oldPrice}</span>
                     <span className="text-lg font-black text-foreground">{product.price}</span>

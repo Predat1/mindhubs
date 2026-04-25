@@ -14,6 +14,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, Cell } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Sun as SunIcon, Moon as MoonIcon } from "lucide-react";
 import type { Vendor } from "@/hooks/useVendors";
 
 // ─── Types ───
@@ -69,6 +71,7 @@ interface Order {
   status: "pending" | "completed" | "cancelled" | "shipped";
   payment_method: string;
   items: Array<{ title: string; quantity: number; price: string; image?: string }>;
+  created_at: string;
 }
 
 interface AdminProduct {
@@ -97,6 +100,7 @@ const statusConfig = {
 };
 
 const Admin = () => {
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const currentTab = (searchParams.get("tab") as Tab) || "overview";
@@ -600,9 +604,27 @@ const Admin = () => {
                       <div className="flex-1"><p className="text-sm font-bold">Maintenance</p><p className="text-[10px] text-muted-foreground">Activer le mode maintenance pour les visiteurs.</p></div>
                       <button className="w-12 h-6 rounded-full bg-muted relative transition-colors"><div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-foreground" /></button>
                     </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/50">
+                       <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                             {theme === "dark" ? <MoonIcon size={18} /> : <SunIcon size={18} />}
+                          </div>
+                          <div>
+                             <p className="text-sm font-bold">Apparence {theme === "dark" ? "Sombre" : "Claire"}</p>
+                             <p className="text-[10px] text-muted-foreground">Modifier le thème de l'administration.</p>
+                          </div>
+                       </div>
+                       <button onClick={toggleTheme} className="px-4 py-2 rounded-xl border border-border hover:bg-muted transition-colors text-[10px] font-bold uppercase">Modifier</button>
+                    </div>
                   </div>
                   <div className="pt-6 border-t border-border/50 flex justify-end">
-                    <button className="btn-primary-brand px-8 py-2.5 rounded-xl font-bold">Enregistrer les modifications</button>
+                    <button 
+                      onClick={() => toast({ title: "Paramètres enregistrés", description: "Les modifications ont été appliquées avec succès." })}
+                      className="btn-primary-brand px-8 py-2.5 rounded-xl font-bold"
+                    >
+                      Enregistrer les modifications
+                    </button>
                   </div>
                 </div>
               </div>

@@ -111,7 +111,7 @@ const Navbar = () => {
               
               {/* Search Bar (Desktop) */}
               <div ref={searchRef} className="relative hidden md:block">
-                 <div className={`flex items-center bg-muted/40 rounded-2xl border border-white/5 transition-all duration-500 ${searchOpen ? "w-64" : "w-10"}`}>
+                 <div className={`flex items-center bg-muted/40 rounded-2xl border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-10"}`}>
                     <button 
                       onClick={() => {
                         if (searchOpen && searchQuery.trim()) {
@@ -144,7 +144,7 @@ const Navbar = () => {
               </div>
 
               {/* Cart */}
-              <Link to="/panier" className="relative h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-white/5">
+              <Link to="/panier" className="relative h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-glass">
                 <ShoppingCart size={18} />
                 <AnimatePresence>
                   {totalItems > 0 && (
@@ -159,6 +159,15 @@ const Navbar = () => {
                   )}
                 </AnimatePresence>
               </Link>
+
+              {/* Theme Toggle */}
+              <button 
+                onClick={toggleTheme}
+                className="h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-glass"
+                title={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
+              >
+                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
 
               {/* Auth / Profile */}
               {user ? (
@@ -209,7 +218,7 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-card/90 backdrop-blur-3xl border-t border-white/5 overflow-hidden"
+              className="lg:hidden bg-card/90 backdrop-blur-3xl border-t border-glass overflow-hidden"
             >
               <div className="container mx-auto px-6 py-8 space-y-4">
                 {navLinks.map((link) => (

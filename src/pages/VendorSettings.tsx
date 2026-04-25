@@ -11,9 +11,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { Vendor } from "@/hooks/useVendors";
-import { Save, Loader2, Upload, AlertTriangle } from "lucide-react";
+import { Save, Loader2, Upload, AlertTriangle, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
+  const { theme, toggleTheme } = useTheme();
   const queryClient = useQueryClient();
   const { signOut } = useAuth();
   const [form, setForm] = useState({
@@ -129,6 +131,27 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
             Enregistrer
           </Button>
         </form>
+
+        <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4">
+           <div>
+             <h3 className="text-sm font-bold text-foreground">Préférences visuelles</h3>
+             <p className="text-xs text-muted-foreground">Personnalisez votre interface de travail.</p>
+           </div>
+           <div className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/50">
+              <div className="flex items-center gap-3">
+                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+                 </div>
+                 <div>
+                    <p className="text-sm font-bold">{theme === "dark" ? "Mode Sombre" : "Mode Clair"}</p>
+                    <p className="text-[10px] text-muted-foreground">Cliquez pour changer l'ambiance.</p>
+                 </div>
+              </div>
+              <Button onClick={toggleTheme} variant="outline" size="sm" className="rounded-xl border-white/10">
+                 Basculer
+              </Button>
+           </div>
+        </section>
 
         {/* Danger zone */}
         <section className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 sm:p-6">

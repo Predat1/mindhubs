@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 
 interface OrderItem {
   product_id: string;
@@ -55,6 +57,7 @@ const MonCompte = () => {
   const { user, loading, signIn, signUp, signOut, resetPassword, signInWithGoogle, resendConfirmation } = useAuth();
   const { data: currentVendor } = useCurrentVendor();
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -377,8 +380,17 @@ const MonCompte = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card rounded-[3rem] p-8 md:p-12 border-white/10 shadow-2xl"
+            className="glass-card rounded-[3rem] p-8 md:p-12 border-white/10 shadow-2xl relative overflow-hidden"
           >
+            <div className="absolute top-6 right-6">
+               <button 
+                 onClick={toggleTheme}
+                 className="h-10 w-10 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-white/5"
+                 title={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
+               >
+                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+               </button>
+            </div>
             <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="w-full">
               <TabsList className="grid grid-cols-2 w-full mb-10 h-14 bg-white/5 rounded-2xl p-1 border border-white/5">
                 <TabsTrigger value="login" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">Connexion</TabsTrigger>
