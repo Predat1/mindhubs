@@ -10,6 +10,10 @@ export interface Vendor {
   shop_name: string;
   description: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
+  primary_color: string | null;
+  standalone_mode: boolean;
+  custom_footer_text: string | null;
   verified: boolean;
   created_at: string;
 }
