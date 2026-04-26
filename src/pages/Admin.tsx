@@ -3,7 +3,7 @@ import {
   Package, MessageSquare, ShoppingBag, Plus, Pencil, Trash2, Save, X, Eye, 
   ExternalLink, Clock, CheckCircle2, XCircle, 
   Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
-  ShieldAlert, Bell, HelpCircle
+  ShieldAlert, Bell, HelpCircle, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
