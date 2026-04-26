@@ -22,8 +22,8 @@ const schema = z.object({
     .min(3, "3 caractères minimum")
     .max(30)
     .regex(/^[a-z0-9-]+$/, "lettres minuscules, chiffres et tirets uniquement"),
-  email: z.string().trim().email("Email invalide").max(255),
-  password: z.string().min(1, "Mot de passe requis").max(72),
+  email: z.string().trim().email("Email invalide").max(255).optional().or(z.literal("")),
+  password: z.string().max(72).optional().or(z.literal("")),
   description: z.string().trim().max(300).optional(),
 });
 
@@ -47,6 +47,11 @@ const BecomeSeller = () => {
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.errors[0].message);
+      return;
+    }
+
+    if (!user && (!form.email || !form.password)) {
+      toast.error("Email et mot de passe requis");
       return;
     }
     setSubmitting(true);
