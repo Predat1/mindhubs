@@ -76,9 +76,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/mon-compte` },
+      options: {
+        redirectTo: `${window.location.origin}/mon-compte`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
     });
-    return { error: error ? new Error(translateAuthError(error.message)) : null };
+    if (error) {
+      const msg = error.message.includes("not enabled")
+        ? "Le fournisseur Google n'est pas activé. Contactez l'administrateur."
+        : translateAuthError(error.message);
+      return { error: new Error(msg) };
+    }
+    return { error: null };
   };
 
   const signOut = async () => {

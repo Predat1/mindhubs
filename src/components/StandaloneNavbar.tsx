@@ -55,13 +55,13 @@ const StandaloneNavbar = ({ shopName, primaryColor, avatarUrl }: StandaloneNavba
             style={{ backgroundColor: primaryColor }}
             asChild
           >
-            <Link to={user ? "/dashboard" : "/login"}>
+            <Link to={user ? "/dashboard" : "/mon-compte"}>
               {user ? "Espace Membre" : "Connexion"}
             </Link>
           </Button>
           
           <Button variant="outline" size="icon" className="rounded-xl sm:hidden border-white/10" asChild>
-             <Link to="/login"><LogIn size={20} /></Link>
+             <Link to="/mon-compte"><LogIn size={20} /></Link>
           </Button>
         </div>
       </div>

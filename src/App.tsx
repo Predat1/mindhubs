@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BackgroundGlow } from "@/components/ui/background-components";
 import { Toaster } from "@/components/ui/toaster";
@@ -82,6 +82,7 @@ const AppContent = () => {
         <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
         <Route path="/dashboard/factory" element={<DigitalProductFactory />} />
         <Route path="/dashboard/messages" element={<VendorMessages />} />
+        <Route path="/login" element={<Navigate to="/mon-compte" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
@@ -98,7 +99,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
             <LiveSalesPopup />
           </BrowserRouter>
         </CartProvider>
