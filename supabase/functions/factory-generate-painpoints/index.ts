@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
@@ -95,8 +94,13 @@ Deno.serve(async (req) => {
     }
 
     const data = await resp.json();
-    const toolUse = data.content?.find((c: { type: string; input: Record<string, unknown> }) => c.type === "tool_use");
-    if (!toolUse) throw new Error("No tool use in response");
+    console.log("Claude painpoints data:", JSON.stringify(data));
+
+    const toolUse = data.content?.find((c: any) => c.type === "tool_use");
+    if (!toolUse) {
+      console.error("No tool use found for painpoints. Content:", JSON.stringify(data.content));
+      throw new Error("No tool use in response");
+    }
 
     return new Response(JSON.stringify(toolUse.input), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
