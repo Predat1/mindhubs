@@ -5,18 +5,6 @@ import progicielBudget from "@/assets/progiciel-budget.png";
 import kitLogistique from "@/assets/kit-logistique.png";
 import premiersClients from "@/assets/premiers-clients.png";
 import demarreMaintenantImg from "@/assets/demarre-maintenant.png";
-import courseSmma from "@/assets/course-smma.jpg";
-import courseBlog from "@/assets/course-blog.jpg";
-import courseYoutube from "@/assets/course-youtube.jpg";
-import courseAffiliation from "@/assets/course-affiliation.jpg";
-import courseEcommerce from "@/assets/course-ecommerce.jpg";
-import courseAi from "@/assets/course-ai.jpg";
-import courseLivres from "@/assets/course-livres.jpg";
-import courseExcel from "@/assets/course-excel.jpg";
-import courseDessinsAnimes from "@/assets/course-dessins-animes.jpg";
-import courseFournisseurs from "@/assets/course-fournisseurs.jpg";
-import courseMarketing from "@/assets/course-marketing.jpg";
-import courseGuitare from "@/assets/course-guitare.jpg";
 
 export type Category = "Tous" | "Business" | "Formations" | "Kits" | "Livres" | "Logiciels" | "Packs Enfants";
 
@@ -114,155 +102,10 @@ export const allProducts: Product[] = [
     description: "**🔥 DÉMARRE MAINTENANT**\n\nLe plan exact pour lancer ton business en ligne en Afrique en 30 jours\n\nSans expérience. Sans capital. Depuis ton téléphone.\n\n❌ Tu regardes des vidéos business depuis des mois…\n❌ Tu lis des conseils partout…\n❌ Mais tu n'as toujours gagné aucun franc en ligne\n\nTu n'es pas le problème.\n\n👉 Le vrai problème, c'est que personne ne t'a donné une méthode claire, adaptée à ta réalité en Afrique.\n\n**💡 IMAGINE PLUTÔT :**\n\n- Savoir exactement quoi faire chaque jour\n- Lancer ton activité depuis ton téléphone\n- Faire ta première vente en ligne en moins de 30 jours\n\n**📘 Voici la solution :**\n\nDÉMARRE MAINTENANT – Un guide complet + plan d'action qui te montre étape par étape comment :\n\n- Trouver une idée rentable même sans expérience\n- Créer un produit ou service que les gens veulent vraiment\n- Vendre avec WhatsApp, Facebook et TikTok\n- Encaisser avec Mobile Money (MTN, Orange, Wave…)\n- Obtenir tes premiers clients sans publicité\n\n**🎯 CE QUE TU VAS APPRENDRE :**\n\n- Les 4 modèles de business qui marchent en Afrique\n- Comment créer une offre irrésistible\n- Le script exact pour vendre sur WhatsApp\n- Comment trouver tes premiers clients gratuitement\n- Le plan 7 jours pour lancer rapidement\n\n**🎁 BONUS INCLUS :**\n\n🔥 Scripts WhatsApp prêts à copier-coller\n🔥 Modèles de pages de vente\n🔥 Plan d'action 30 jours étape par étape\n\n**⚠️ Pourquoi ce prix ?**\n\nParce que le but n'est pas juste de vendre… c'est de t'aider à faire tes premiers revenus rapidement.\n\n**🚨 IMPORTANT :**\n\nCe guide n'est PAS pour tout le monde.\n\n❌ Si tu veux devenir riche sans rien faire\n❌ Si tu cherches encore \"la méthode magique\"\n\nPasse ton chemin.\n\n✅ Par contre, il est pour toi si :\n\n- Tu veux vraiment passer à l'action\n- Tu es prêt à travailler 30 minutes par jour\n- Tu veux changer ta situation financière\n\n🔥 Des centaines de jeunes africains commencent déjà.\n\nLa seule question : Est-ce que tu continues à regarder… ou tu passes enfin à l'action ?",
     paymentLink: "https://nhvjjgbn.mychariow.shop/prd_2354xd/checkout",
   },
-  {
-    id: "smma",
-    title: "Agence SMMA Elite – Le Guide Complet",
-    image: courseSmma,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Business",
-    rating: 4.8,
-    description: "Lancez votre agence de marketing digital (SMMA) en Afrique et gérez vos premiers clients en 30 jours. Apprenez à trouver des entreprises, à leur proposer des services de gestion de réseaux sociaux et à encaisser des revenus récurrents.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_smma/checkout",
-  },
-  {
-    id: "blog",
-    title: "Blog Rentable 2024 – Vivre de sa plume",
-    image: courseBlog,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Business",
-    rating: 4.7,
-    description: "Découvrez comment créer un blog qui génère des revenus passifs grâce à l'affiliation et à la publicité. Pas besoin d'être un expert en informatique.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_blog/checkout",
-  },
-  {
-    id: "youtube",
-    title: "Empire YouTube Afrique – Sans montrer son visage",
-    image: courseYoutube,
-    oldPrice: "20.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Formations",
-    rating: 4.9,
-    description: "La méthode exacte pour créer des chaînes YouTube automatisées qui génèrent des milliers de dollars chaque mois, même depuis l'Afrique.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_yt/checkout",
-  },
-  {
-    id: "affiliation",
-    title: "Affiliation Express – Gagner ses premières commissions",
-    image: courseAffiliation,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Business",
-    rating: 4.6,
-    description: "Apprenez à vendre les produits des autres et à toucher des commissions sur chaque vente. La méthode la plus simple pour débuter en ligne.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_aff/checkout",
-  },
-  {
-    id: "ecommerce",
-    title: "E-commerce Domination Afrique",
-    image: courseEcommerce,
-    oldPrice: "30.000 FCFA",
-    price: "7.500 FCFA",
-    category: "Business",
-    rating: 4.8,
-    description: "Maîtrisez la vente de produits physiques en Afrique : sourcing, publicité Facebook, et livraison avec paiement à la livraison (COD).",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_eco/checkout",
-  },
-  {
-    id: "ai",
-    title: "Expertise IA – Le Futur du Business",
-    image: courseAi,
-    oldPrice: "50.000 FCFA",
-    price: "10.000 FCFA",
-    category: "Formations",
-    rating: 5.0,
-    description: "Apprenez à utiliser l'Intelligence Artificielle pour automatiser votre business et proposer des services de consulting IA à haute valeur ajoutée.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_ai/checkout",
-  },
-  {
-    id: "livres",
-    title: "Pack 100 E-books Business & Mindset",
-    image: courseLivres,
-    oldPrice: "20.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Livres",
-    rating: 4.5,
-    description: "Une bibliothèque complète des meilleurs livres sur le business, la psychologie de l'argent et le développement personnel.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_books/checkout",
-  },
-  {
-    id: "excel",
-    title: "Excel Expert pour Professionnels",
-    image: courseExcel,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Logiciels",
-    rating: 4.7,
-    description: "Devenez un pro de Microsoft Excel. Maîtrisez les formules complexes, les tableaux croisés dynamiques et l'automatisation de données.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_excel/checkout",
-  },
-  {
-    id: "dessins-animes",
-    title: "Créer des Dessins Animés sur Smartphone",
-    image: courseDessinsAnimes,
-    oldPrice: "20.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Formations",
-    rating: 4.8,
-    description: "Apprenez à créer des animations et des dessins animés professionnels directement depuis votre téléphone portable.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_anime/checkout",
-  },
-  {
-    id: "fournisseurs",
-    title: "Liste Fournisseurs Chine & Turquie",
-    image: courseFournisseurs,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Kits",
-    rating: 4.9,
-    description: "Accédez à une liste vérifiée de fournisseurs fiables pour importer vos produits et lancer votre e-commerce en Afrique.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_suppliers/checkout",
-  },
-  {
-    id: "marketing",
-    title: "Marketing Digital Masterclass",
-    image: courseMarketing,
-    oldPrice: "25.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Formations",
-    rating: 4.7,
-    description: "Apprenez les bases et les techniques avancées du marketing digital : SEO, publicité payante, copywriting et stratégie de contenu.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_mkt/checkout",
-  },
-  {
-    id: "eloquence",
-    title: "L'Art de l'Éloquence & Prise de Parole",
-    image: courseMarketing, // Fallback if specific not found
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Formations",
-    rating: 4.8,
-    description: "Développez votre charisme et votre capacité à convaincre votre audience lors de vos présentations ou rendez-vous business.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_speak/checkout",
-  },
-  {
-    id: "guitare",
-    title: "Apprendre la Guitare – Méthode Rapide",
-    image: courseGuitare,
-    oldPrice: "15.000 FCFA",
-    price: "5.000 FCFA",
-    category: "Formations",
-    rating: 4.6,
-    description: "Devenez guitariste en quelques semaines grâce à des leçons simples et des exercices pratiques quotidiens.",
-    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_guitar/checkout",
   },
 ];
 
-export const featuredProductIds = [
-  "anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", 
-  "smma", "youtube", "ai", "ecommerce", "premiers-clients", "demarre-maintenant"
-];
+export const featuredProductIds = ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
 
 export const categories: Category[] = ["Tous", "Business", "Formations", "Kits", "Livres", "Logiciels", "Packs Enfants"];
 

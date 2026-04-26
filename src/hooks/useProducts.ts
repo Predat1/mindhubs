@@ -68,7 +68,7 @@ export const useFeaturedProducts = () => {
 
       if (error || !data || data.length === 0) {
         return allProducts.filter((p) =>
-          ["smma", "blog", "youtube", "affiliation", "livres", "ecommerce", "anglais", "ai"].includes(p.id)
+          ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"].includes(p.id)
         );
       }
 

@@ -38,7 +38,7 @@ interface ProductForm {
 
 const DEFAULT_PRODUCT: ProductForm = {
   id: "", title: "", image_url: "", old_price: "", price: "",
-  category: "E-books", rating: "4.5", tag: "", description: "",
+  category: "Business", rating: "4.5", tag: "", description: "",
   payment_link: "", image_urls: [], key_features: [], sort_order: 0,
   featured: false,
 };
@@ -215,12 +215,24 @@ const Admin = () => {
   const saveProduct = async () => {
     if (!productEditing) return;
     setSaving(true);
+    
+    // Auto-generate ID if empty
+    if (!productEditing.id) {
+      productEditing.id = productEditing.title.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    }
+
     const isNew = !products.find(p => p.id === productEditing.id);
+    
     const { error } = isNew 
       ? await supabase.from("products").insert([productEditing])
       : await supabase.from("products").update(productEditing).eq("id", productEditing.id);
+      
     setSaving(false);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    if (error) { 
+      toast({ title: "Erreur", description: error.message, variant: "destructive" }); 
+      return; 
+    }
+    
     toast({ title: "Succès", description: `Produit ${isNew ? "ajouté" : "mis à jour"}.` });
     setProductEditing(null);
     refetchProducts();
@@ -374,33 +386,104 @@ const Admin = () => {
             {currentTab === "products" && (
               <div className="space-y-6">
                 {productEditing && (
-                <div className="stat-card rounded-2xl p-8 border-glow space-y-6">
-                    <div className="flex items-center justify-between"><h2 className="text-xl font-bold">{!products.find(p => p.id === productEditing.id) ? "Nouveau produit" : "Modifier"}</h2><button onClick={() => setProductEditing(null)}><X /></button></div>
-                    <div className="grid md:grid-cols-2 gap-8">
-                      <div className="space-y-4">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Image Principale</label>
-                        <div onClick={() => fileInputRef.current?.click()} className="relative aspect-square rounded-2xl border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden group">
-                           {productEditing.image_url ? <img src={productEditing.image_url} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center gap-2"><ImageIcon className="text-muted-foreground/40" size={40} /><p className="text-xs text-muted-foreground">Cliquer pour uploader</p></div>}
-                           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <p className="text-sm font-bold flex items-center gap-2"><Upload size={16} /> Modifier</p>
+                <div className="stat-card rounded-2xl p-8 border-glow space-y-8 animate-in fade-in slide-in-from-top-4">
+                    <div className="flex items-center justify-between border-b border-border/50 pb-6">
+                      <div>
+                        <h2 className="text-2xl font-black">{!products.find(p => p.id === productEditing.id) ? "Ajouter une pépite" : "Modifier le produit"}</h2>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Éditeur de catalogue Elite</p>
+                      </div>
+                      <button onClick={() => setProductEditing(null)} className="p-2 rounded-full hover:bg-muted"><X /></button>
+                    </div>
+                    
+                    <div className="grid lg:grid-cols-3 gap-10">
+                      {/* Left: Image & Preview */}
+                      <div className="space-y-6">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-primary">Visuel Principal</label>
+                          <div onClick={() => fileInputRef.current?.click()} className="relative aspect-square rounded-3xl border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-all overflow-hidden group">
+                             {productEditing.image_url ? (
+                               <img src={productEditing.image_url} className="w-full h-full object-cover" />
+                             ) : (
+                               <div className="flex flex-col items-center gap-3">
+                                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><ImageIcon size={24} /></div>
+                                 <p className="text-[10px] font-bold text-muted-foreground uppercase">Uploader une image</p>
+                               </div>
+                             )}
+                             <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <p className="text-sm font-black flex items-center gap-2"><Upload size={16} /> Remplacer</p>
+                             </div>
+                             <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
+                             {uploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>}
+                          </div>
+                        </div>
+
+                        <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 space-y-4">
+                           <div className="flex items-center gap-2 text-primary"><Eye size={16} /><span className="text-[10px] font-black uppercase">Aperçu rapide</span></div>
+                           <div className="glass-card rounded-2xl p-4 space-y-3">
+                              <div className="aspect-video rounded-xl bg-muted overflow-hidden">
+                                 {productEditing.image_url && <img src={productEditing.image_url} className="w-full h-full object-cover" />}
+                              </div>
+                              <h4 className="font-bold text-sm truncate">{productEditing.title || "Titre du produit"}</h4>
+                              <div className="flex justify-between items-center">
+                                 <span className="text-xs font-black text-primary">{productEditing.price || "0 FCFA"}</span>
+                                 <Badge className="text-[8px] h-4">PREVIEW</Badge>
+                              </div>
                            </div>
-                           <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
-                           {uploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="animate-spin" /></div>}
                         </div>
                       </div>
-                      <div className="grid gap-5">
-                        <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">ID unique (Slug)</label><input value={productEditing.id} onChange={(e) => setProductEditing({ ...productEditing, id: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
-                        <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Titre du produit</label><input value={productEditing.title} onChange={(e) => setProductEditing({ ...productEditing, title: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Ancien Prix</label><input value={productEditing.old_price} onChange={(e) => setProductEditing({ ...productEditing, old_price: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
-                          <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Prix Actuel</label><input value={productEditing.price} onChange={(e) => setProductEditing({ ...productEditing, price: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+
+                      {/* Middle: Core Info */}
+                      <div className="lg:col-span-2 space-y-8">
+                        <div className="grid md:grid-cols-2 gap-6">
+                           <div className="space-y-2">
+                             <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Titre du produit</label>
+                             <input value={productEditing.title} onChange={(e) => setProductEditing({ ...productEditing, title: e.target.value })} placeholder="Ex: Kit Agriculture Pro" className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-bold focus:ring-2 focus:ring-primary/20 transition-all" />
+                           </div>
+                           <div className="space-y-2">
+                             <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Catégorie</label>
+                             <select value={productEditing.category} onChange={(e) => setProductEditing({ ...productEditing, category: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-bold focus:ring-2 focus:ring-primary/20 transition-all">
+                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                             </select>
+                           </div>
+                           <div className="space-y-2">
+                             <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Prix Actuel</label>
+                             <input value={productEditing.price} onChange={(e) => setProductEditing({ ...productEditing, price: e.target.value })} placeholder="Ex: 5.000 FCFA" className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-bold text-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+                           </div>
+                           <div className="space-y-2">
+                             <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Ancien Prix (Promo)</label>
+                             <input value={productEditing.old_price} onChange={(e) => setProductEditing({ ...productEditing, old_price: e.target.value })} placeholder="Ex: 15.000 FCFA" className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-bold text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all" />
+                           </div>
                         </div>
-                        <div className="space-y-2"><label className="text-xs font-bold text-muted-foreground uppercase">Lien de paiement</label><input value={productEditing.payment_link} onChange={(e) => setProductEditing({ ...productEditing, payment_link: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background" /></div>
+
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Lien de paiement (Paystack / Chariow)</label>
+                           <div className="relative">
+                              <Link2 className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                              <input value={productEditing.payment_link} onChange={(e) => setProductEditing({ ...productEditing, payment_link: e.target.value })} placeholder="https://..." className="w-full pl-14 pr-5 py-4 rounded-2xl border border-border bg-muted/10 font-medium focus:ring-2 focus:ring-primary/20 transition-all" />
+                           </div>
+                        </div>
+
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Description Détaillée</label>
+                           <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={6} className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-medium focus:ring-2 focus:ring-primary/20 transition-all resize-none" placeholder="Décrivez les bénéfices de votre produit..." />
+                        </div>
+                        
+                        <div className="flex items-center gap-6 p-4 rounded-2xl bg-muted/5 border border-border">
+                           <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent"><Sparkles size={20} /></div>
+                              <div><p className="text-xs font-bold uppercase tracking-wider">Mettre en avant</p><p className="text-[10px] text-muted-foreground">Afficher dans la section vedettes</p></div>
+                           </div>
+                           <button onClick={() => setProductEditing({...productEditing, featured: !productEditing.featured})} className={`ml-auto w-14 h-8 rounded-full relative transition-all ${productEditing.featured ? "bg-primary" : "bg-muted"}`}><div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all ${productEditing.featured ? "left-7" : "left-1"}`} /></button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
-                      <button onClick={() => setProductEditing(null)} className="px-6 py-2.5 rounded-xl border border-border">Annuler</button>
-                      <button onClick={saveProduct} className="btn-primary-brand px-8 py-2.5 rounded-xl font-bold flex items-center gap-2">{saving && <Loader2 className="animate-spin" size={16} />} Enregistrer</button>
+
+                    <div className="flex justify-end gap-4 pt-8 border-t border-border/50">
+                      <Button variant="outline" onClick={() => setProductEditing(null)} className="h-14 px-8 rounded-2xl border-border font-bold uppercase tracking-widest text-[10px]">Annuler</Button>
+                      <Button onClick={saveProduct} className="btn-primary-brand h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 shadow-xl shadow-primary/20">
+                         {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                         Enregistrer la pépite
+                      </Button>
                     </div>
                 </div>
                 )}
