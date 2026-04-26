@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    /* 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -31,6 +32,7 @@ Deno.serve(async (req) => {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    */
 
     const { niche } = await req.json();
     if (!niche) {
@@ -94,7 +96,7 @@ Deno.serve(async (req) => {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`Claude API error: ${resp.status}`);
+      throw new Error(`Claude API error: ${resp.status} - ${t}`);
     }
 
     const data = await resp.json();
