@@ -24,7 +24,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
     description: vendor.description || "",
     avatar_url: vendor.avatar_url || "",
     banner_url: vendor.banner_url || "",
-    primary_color: vendor.primary_color || "#7C3AED",
+    primary_color: vendor.primary_color || "#F59E0B",
     standalone_mode: vendor.standalone_mode || false,
   });
   const [saving, setSaving] = useState(false);
@@ -38,7 +38,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
       description: vendor.description || "",
       avatar_url: vendor.avatar_url || "",
       banner_url: vendor.banner_url || "",
-      primary_color: vendor.primary_color || "#7C3AED",
+      primary_color: vendor.primary_color || "#F59E0B",
       standalone_mode: vendor.standalone_mode || false,
     });
   }, [vendor]);

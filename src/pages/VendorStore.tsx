@@ -70,7 +70,7 @@ const VendorStore = () => {
   };
 
   const initials = vendor.shop_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  const brandColor = vendor.primary_color || "#7C3AED";
+  const brandColor = vendor.primary_color || "#F59E0B";
   const isStandalone = vendor.standalone_mode;
 
   return (
