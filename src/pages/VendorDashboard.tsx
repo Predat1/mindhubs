@@ -9,8 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Plus, Workflow, Percent, ShoppingBag, Users, DollarSign, Info, Pencil, Trash2,
-  Youtube, MessageCircle, Lightbulb, ExternalLink, Package, Copy,
+  Plus, ShoppingBag, Users, DollarSign, Pencil, Trash2, Package,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useGamification } from "@/hooks/useGamification";

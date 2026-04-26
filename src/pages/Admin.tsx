@@ -1,9 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { 
   Package, MessageSquare, ShoppingBag, Plus, Pencil, Trash2, Save, X, Eye, 
-  ExternalLink, Download, Clock, CheckCircle2, AlertCircle, XCircle, 
-  ArrowLeft, Copy, Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
-  ShieldAlert, Bell, Search, BarChart3, TrendingUp, TrendingDown, HelpCircle
+  ExternalLink, Clock, CheckCircle2, XCircle, 
+  Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
+  ShieldAlert, Bell, HelpCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Sun as SunIcon, Moon as MoonIcon } from "lucide-react";
 import type { Vendor } from "@/hooks/useVendors";
+import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 
 // ─── Types ───
 interface ProductForm {
@@ -465,7 +466,12 @@ const Admin = () => {
 
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Description Détaillée</label>
-                           <textarea value={productEditing.description} onChange={(e) => setProductEditing({ ...productEditing, description: e.target.value })} rows={6} className="w-full px-5 py-4 rounded-2xl border border-border bg-muted/10 font-medium focus:ring-2 focus:ring-primary/20 transition-all resize-none" placeholder="Décrivez les bénéfices de votre produit..." />
+                            <RichDescriptionEditor 
+                               value={productEditing.description} 
+                               onChange={(val) => setProductEditing({ ...productEditing, description: val })}
+                               title={productEditing.title}
+                               category={productEditing.category}
+                            />
                         </div>
                         
                         <div className="flex items-center gap-6 p-4 rounded-2xl bg-muted/5 border border-border">

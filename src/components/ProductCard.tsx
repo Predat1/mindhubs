@@ -102,6 +102,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                  </div>
                  <button
                    onClick={handleBuy}
+                   aria-label={`Acheter ${product.title}`}
                    className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
                  >
                     <ShoppingBag size={18} />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LucideIcon,
@@ -6,40 +7,17 @@ import {
   ArrowRight,
   TrendingUp,
   Sparkles,
-  BookOpen,
   FileText,
   CheckCircle2,
-  ChevronRight,
-  ChevronLeft,
   ShoppingCart,
-  Download,
   RefreshCw,
   Zap,
   Layout,
   Layers,
   Sparkle,
   Megaphone,
-  Palette,
-  Info,
-  UserCheck,
-  Target,
-  ListChecks,
-  FileEdit,
-  Globe,
-  Settings2,
-  Plus,
-  Trash2,
-  Eye,
   FileDown,
-  Wand2,
-  Crown,
-  MousePointer2,
-  Briefcase,
-  Lightbulb,
   Facebook,
-  BarChart,
-  ShieldCheck,
-  ClipboardCheck,
   Rocket,
   Copy,
 } from "lucide-react";
@@ -51,7 +29,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 
@@ -122,6 +99,7 @@ const PRODUCT_TYPES: Record<ProductType, { label: string; icon: LucideIcon; colo
 };
 
 const DigitalProductFactory = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<"niche" | "market_strategy" | "problem_select" | "design" | "generate" | "ads_kit" | "publish">("niche");
   const [niche, setNiche] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("SN");
@@ -442,43 +420,155 @@ const DigitalProductFactory = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
                         <Button className="h-24 flex flex-col gap-1 rounded-3xl btn-glow text-2xl font-black" onClick={() => {
                            const doc = new jsPDF();
-                           let y = 20;
-                           doc.setFontSize(18);
-                           doc.text("Mindhubs Business Kit - " + niche, 20, y); y += 12;
+                           const pageWidth = doc.internal.pageSize.getWidth();
+                           const pageHeight = doc.internal.pageSize.getHeight();
+                           
+                           // --- COVER PAGE ---
+                           doc.setFillColor(20, 20, 20); // Dark background for cover
+                           doc.rect(0, 0, pageWidth, pageHeight, "F");
+                           
+                           doc.setTextColor(255, 255, 255);
+                           doc.setFontSize(28);
+                           doc.setFont("helvetica", "bold");
+                           const titleLines = doc.splitTextToSize(niche.toUpperCase(), pageWidth - 40);
+                           doc.text(titleLines, 20, 80);
+                           
+                           doc.setDrawColor(59, 130, 246); // Primary blue line
+                           doc.setLineWidth(1.5);
+                           doc.line(20, 110, 100, 110);
+                           
+                           doc.setFontSize(16);
+                           doc.setFont("helvetica", "normal");
+                           doc.text("KIT BUSINESS ELITE", 20, 125);
+                           
+                           doc.setFontSize(12);
+                           doc.text(`Marché : ${selectedCountryName}`, 20, 140);
+                           doc.text(`Problème résolu : ${selectedPainPoint?.title || ""}`, 20, 148);
+                           
+                           doc.setFontSize(14);
+                           doc.setFont("helvetica", "bold");
+                           doc.text(`Édité par : ${vendor.shop_name}`, 20, pageHeight - 40);
                            doc.setFontSize(10);
-                           doc.text("Pays: " + selectedCountryName + " | Probleme: " + (selectedPainPoint?.title || ""), 20, y); y += 12;
-                           chapters.forEach((ch) => {
-                             if (y > 260) { doc.addPage(); y = 20; }
-                             doc.setFontSize(13);
-                             doc.text(ch.title, 20, y); y += 8;
-                             doc.setFontSize(9);
-                             const lines = doc.splitTextToSize(ch.content || "", 170);
-                             lines.forEach((line: string) => {
-                               if (y > 280) { doc.addPage(); y = 20; }
-                               doc.text(line, 20, y); y += 5;
-                             });
-                             y += 6;
+                           doc.setFont("helvetica", "normal");
+                           doc.text("Généré par Mindhubs Factory Engine V5", 20, pageHeight - 32);
+                           
+                           // --- CONTENT PAGES ---
+                           doc.addPage();
+                           doc.setFillColor(255, 255, 255);
+                           doc.setTextColor(0, 0, 0);
+                           
+                           let y = 30;
+                           doc.setFontSize(20);
+                           doc.setFont("helvetica", "bold");
+                           doc.text("SOMMAIRE", 20, y); y += 20;
+                           
+                           doc.setFontSize(12);
+                           doc.setFont("helvetica", "normal");
+                           chapters.forEach((ch, idx) => {
+                             doc.text(`${idx + 1}. ${ch.title}`, 20, y); y += 10;
                            });
-                           if (adsKit.length) {
-                             doc.addPage(); y = 20;
-                             doc.setFontSize(15);
-                             doc.text("Kit Publicitaire Facebook Ads", 20, y); y += 10;
-                             adsKit.forEach((ad) => {
-                               doc.setFontSize(11);
-                               doc.text("[" + ad.type + "]", 20, y); y += 7;
-                               doc.setFontSize(9);
-                               doc.text("Hook: " + ad.hook, 20, y); y += 6;
-                               const bodyLines = doc.splitTextToSize("Body: " + ad.body, 170);
-                               bodyLines.forEach((l: string) => { doc.text(l, 20, y); y += 5; });
-                               doc.text("CTA: " + ad.cta, 20, y); y += 10;
+                           
+                           chapters.forEach((ch, idx) => {
+                             doc.addPage();
+                             y = 30;
+                             
+                             // Header
+                             doc.setFontSize(8);
+                             doc.setTextColor(150, 150, 150);
+                             doc.text(`Mindhubs Factory | ${niche}`, 20, 15);
+                             doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - 40, 15);
+                             doc.line(20, 18, pageWidth - 20, 18);
+                             
+                             doc.setTextColor(0, 0, 0);
+                             doc.setFontSize(18);
+                             doc.setFont("helvetica", "bold");
+                             const chTitleLines = doc.splitTextToSize(`${idx + 1}. ${ch.title}`, pageWidth - 40);
+                             doc.text(chTitleLines, 20, y); 
+                             y += (chTitleLines.length * 10) + 5;
+                             
+                             doc.setFontSize(11);
+                             doc.setFont("helvetica", "normal");
+                             const lines = doc.splitTextToSize(ch.content || "", pageWidth - 40);
+                             lines.forEach((line: string) => {
+                               if (y > 275) { 
+                                 doc.addPage(); 
+                                 y = 30; 
+                                 doc.setFontSize(8);
+                                 doc.setTextColor(150, 150, 150);
+                                 doc.text(`Mindhubs Factory | ${niche}`, 20, 15);
+                                 doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - 40, 15);
+                                 doc.line(20, 18, pageWidth - 20, 18);
+                                 doc.setTextColor(0, 0, 0);
+                                 doc.setFontSize(11);
+                               }
+                               doc.text(line, 20, y); 
+                               y += 6;
                              });
+                           });
+                           
+                           // --- ADS KIT PAGE ---
+                           if (adsKit.length) {
+                             doc.addPage();
+                             y = 30;
+                             doc.setFontSize(22);
+                             doc.setFont("helvetica", "bold");
+                             doc.text("KIT PUBLICITAIRE FACEBOOK ADS", 20, y); y += 20;
+                             
+                             adsKit.forEach((ad) => {
+                               doc.setFillColor(245, 245, 245);
+                               doc.rect(15, y - 5, pageWidth - 30, 80, "F");
+                               
+                               doc.setFontSize(14);
+                               doc.setFont("helvetica", "bold");
+                               doc.setTextColor(59, 130, 246);
+                               doc.text(`ANGLE : ${ad.type.toUpperCase()}`, 20, y); y += 10;
+                               
+                               doc.setFontSize(10);
+                               doc.setTextColor(0, 0, 0);
+                               doc.setFont("helvetica", "bold");
+                               doc.text("ACCROCHE (HOOK):", 20, y); y += 6;
+                               doc.setFont("helvetica", "normal");
+                               const hookLines = doc.splitTextToSize(ad.hook, pageWidth - 50);
+                               doc.text(hookLines, 25, y); y += (hookLines.length * 5) + 5;
+                               
+                               doc.setFont("helvetica", "bold");
+                               doc.text("CORPS DU TEXTE (BODY):", 20, y); y += 6;
+                               doc.setFont("helvetica", "normal");
+                               const bodyLines = doc.splitTextToSize(ad.body, pageWidth - 50);
+                               doc.text(bodyLines, 25, y); y += (bodyLines.length * 5) + 5;
+                               
+                               doc.setFont("helvetica", "bold");
+                               doc.text("APPEL À L'ACTION (CTA):", 20, y); y += 6;
+                               doc.setFont("helvetica", "bold");
+                               doc.setTextColor(59, 130, 246);
+                               doc.text(ad.cta, 25, y); y += 25;
+                               
+                               if (y > 240) { doc.addPage(); y = 30; }
+                             });
+                             
+                             if (adsTargeting) {
+                               doc.addPage();
+                               y = 30;
+                               doc.setFontSize(18);
+                               doc.setFont("helvetica", "bold");
+                               doc.setTextColor(0, 0, 0);
+                               doc.text("STRATÉGIE DE CIBLAGE", 20, y); y += 15;
+                               
+                               doc.setFontSize(11);
+                               doc.setFont("helvetica", "normal");
+                               doc.text(`Pays : ${adsTargeting.country}`, 20, y); y += 8;
+                               doc.text(`Âge : ${adsTargeting.ageRange}`, 20, y); y += 8;
+                               doc.text(`Intérêts : ${adsTargeting.interests}`, 20, y); y += 8;
+                               doc.text(`Budget recommandé : ${adsTargeting.dailyBudget}`, 20, y); y += 8;
+                             }
                            }
-                           doc.save("Mindhubs_BusinessKit_" + niche + ".pdf");
+                           
+                           doc.save(`Mindhubs_BusinessKit_${niche.replace(/\s+/g, "_")}.pdf`);
                         }}>
                            <FileDown size={32} />
                            <span className="text-[10px] font-black uppercase">Télécharger le Kit Business</span>
                         </Button>
-                        <Button variant="outline" className="h-24 flex flex-col gap-1 rounded-3xl border-primary/40 hover:bg-primary/5">
+                        <Button variant="outline" className="h-24 flex flex-col gap-1 rounded-3xl border-primary/40 hover:bg-primary/5" onClick={() => navigate("/dashboard/new-product")}>
                            <ShoppingCart size={28} />
                            <span className="text-[10px] font-black uppercase">Mettre en vente sur Mindhubs</span>
                         </Button>

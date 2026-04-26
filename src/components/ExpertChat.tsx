@@ -3,9 +3,6 @@ import {
   MessageSquare, 
   X, 
   Send, 
-  Smile, 
-  MoreVertical, 
-  Check, 
   CheckCheck,
   Zap,
   Info
