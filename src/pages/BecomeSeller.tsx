@@ -23,7 +23,7 @@ const schema = z.object({
     .max(30)
     .regex(/^[a-z0-9-]+$/, "lettres minuscules, chiffres et tirets uniquement"),
   email: z.string().trim().email("Email invalide").max(255),
-  password: z.string().min(6, "6 caractères minimum").max(72),
+  password: z.string().min(1, "Mot de passe requis").max(72),
   description: z.string().trim().max(300).optional(),
 });
 
@@ -252,7 +252,6 @@ const BecomeSeller = () => {
                               value={form.password} 
                               onChange={(e) => setForm({ ...form, password: e.target.value })} 
                               required 
-                              minLength={6} 
                             />
                           </div>
                         </motion.div>

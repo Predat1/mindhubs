@@ -417,7 +417,7 @@ const MonCompte = () => {
                              <button type="button" onClick={() => setMode("forgot")} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Oublié ?</button>
                           </div>
                           <div className="relative">
-                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12 focus:ring-primary/20" />
+                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12 focus:ring-primary/20" />
                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
                           </div>
                        </div>
@@ -440,7 +440,7 @@ const MonCompte = () => {
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mot de Passe</Label>
                           <div className="relative">
-                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12" />
+                             <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12" />
                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
                           </div>
                           <PasswordStrength password={password} />
