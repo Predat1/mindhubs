@@ -207,9 +207,16 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/5 flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                   <ShieldCheck size={18} className="text-emerald-500" />
-                   Paiement Crypté et Sécurisé • Satisfaction Garantie
+                <div className="pt-6 border-t border-white/5 flex flex-wrap items-center gap-6">
+                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/5 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                      <ShieldCheck size={14} /> Paiement 100% Sécurisé
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
+                      <Lock size={14} /> Cryptage SSL 256-bit
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Satisfaction Garantie
+                   </div>
                 </div>
               </motion.div>
             </div>

@@ -99,6 +99,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <AppContent />
+            <LiveSalesPopup />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

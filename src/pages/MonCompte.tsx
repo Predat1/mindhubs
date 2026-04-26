@@ -259,19 +259,18 @@ const MonCompte = () => {
                </div>
 
                {/* Orders History Main Column */}
-               <div className="md:col-span-2 space-y-6">
-                  {/* Orders Card */}
+               <div className="md:col-span-2">
                   <div className="glass-card rounded-[2.5rem] p-8 md:p-10 space-y-8 border-white/5">
                      <div className="flex items-center justify-between">
-                        <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3"><ShoppingBag className="text-primary" /> Historique d'Achats</h3>
-                        <Badge variant="outline" className="border-white/10 text-muted-foreground px-3 py-1 font-black text-[10px]">{orders.length} Commande{orders.length > 1 ? "s" : ""}</Badge>
+                        <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3"><BookOpen className="text-primary" /> Mes Ressources</h3>
+                        <Badge variant="outline" className="border-white/10 text-muted-foreground px-3 py-1 font-black text-[10px]">{purchasedProductIds.size} Article{purchasedProductIds.size > 1 ? "s" : ""}</Badge>
                      </div>
 
                      {orders.length === 0 ? (
                         <div className="text-center py-16 space-y-6 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/5">
                            <ShoppingBag className="mx-auto text-muted-foreground/30" size={64} />
                            <div className="space-y-2">
-                              <p className="text-xl font-black">Aucun achat pour le moment</p>
+                              <p className="text-xl font-black">Aucune ressource pour le moment</p>
                               <p className="text-sm text-muted-foreground font-medium max-w-xs mx-auto">Commencez votre aventure digitale en explorant notre boutique d'experts.</p>
                            </div>
                            <Button asChild variant="outline" className="rounded-xl px-8 h-12 border-white/10 font-black text-xs uppercase tracking-widest">
@@ -279,47 +278,69 @@ const MonCompte = () => {
                            </Button>
                         </div>
                      ) : (
-                        <div className="space-y-4">
-                           {orders.map((order) => {
-                              const cfg = statusConfig[order.status];
-                              return (
-                                 <motion.div 
-                                    key={order.id} 
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="bg-white/5 rounded-3xl border border-white/5 p-6 hover:border-white/10 transition-all space-y-6"
+                        <>
+                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              {orders.flatMap(o => o.items).map((item, idx) => (
+                                 <Link 
+                                    key={idx} 
+                                    to={`/produit/${item.product_id}`}
+                                    className="group relative aspect-square rounded-3xl overflow-hidden border border-white/5 bg-background/40 hover:border-primary/50 transition-all shadow-xl"
                                  >
-                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                       <div className="flex flex-wrap items-center gap-3">
-                                          <Badge className={`${cfg.color} border-none font-black text-[10px] tracking-widest uppercase py-1 px-3`}>
-                                             <cfg.icon size={12} className="mr-1.5" /> {cfg.label}
-                                          </Badge>
-                                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                             {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                                          </span>
-                                       </div>
-                                       <span className="text-lg font-black text-foreground">{order.total_price.toLocaleString()} FCFA</span>
+                                    {item.image && <img src={item.image} alt={item.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                       <p className="text-[10px] font-black text-white truncate">{item.title}</p>
+                                       <p className="text-[8px] font-bold text-primary uppercase">Accéder au cours</p>
                                     </div>
-                                    <div className="space-y-3">
-                                       {order.items.map((item, idx) => (
-                                          <div key={idx} className="flex items-center gap-4 bg-background/40 p-3 rounded-2xl border border-white/5 group">
-                                             <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/5">
-                                                {item.image && <img src={item.image} alt={item.title} className="h-full w-full object-cover" />}
-                                             </div>
-                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{item.title}</p>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quantité: {item.quantity} · {item.price}</p>
-                                             </div>
-                                             <Button asChild size="sm" variant="ghost" className="rounded-lg h-8 px-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary">
-                                                <Link to={`/produit/${item.product_id}`}>Revoir</Link>
-                                             </Button>
+                                 </Link>
+                              ))}
+                           </div>
+
+                           <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                              <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3"><ShoppingBag className="text-primary" /> Historique d'Achats</h3>
+                           </div>
+
+                           <div className="space-y-4">
+                              {orders.map((order) => {
+                                 const cfg = statusConfig[order.status];
+                                 return (
+                                    <motion.div 
+                                       key={order.id} 
+                                       initial={{ opacity: 0, x: 20 }}
+                                       animate={{ opacity: 1, x: 0 }}
+                                       className="bg-white/5 rounded-3xl border border-white/5 p-6 hover:border-white/10 transition-all space-y-6"
+                                    >
+                                       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                          <div className="flex flex-wrap items-center gap-3">
+                                             <Badge className={`${cfg.color} border-none font-black text-[10px] tracking-widest uppercase py-1 px-3`}>
+                                                <cfg.icon size={12} className="mr-1.5" /> {cfg.label}
+                                             </Badge>
+                                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                                {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                                             </span>
                                           </div>
-                                       ))}
-                                    </div>
-                                 </motion.div>
-                              );
-                           })}
-                        </div>
+                                          <span className="text-lg font-black text-foreground">{order.total_price.toLocaleString()} FCFA</span>
+                                       </div>
+                                       <div className="space-y-3">
+                                          {order.items.map((item, idx) => (
+                                             <div key={idx} className="flex items-center gap-4 bg-background/40 p-3 rounded-2xl border border-white/5 group">
+                                                <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/5">
+                                                   {item.image && <img src={item.image} alt={item.title} className="h-full w-full object-cover" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                   <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{item.title}</p>
+                                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quantité: {item.quantity} · {item.price}</p>
+                                                </div>
+                                                <Button asChild size="sm" variant="ghost" className="rounded-lg h-8 px-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary">
+                                                   <Link to={`/produit/${item.product_id}`}>Revoir</Link>
+                                                </Button>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    </motion.div>
+                                 );
+                              })}
+                           </div>
+                        </>
                      )}
                   </div>
                </div>
