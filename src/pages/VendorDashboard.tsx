@@ -57,18 +57,18 @@ const VendorDashboard = () => {
       const { data } = await supabase
         .from("orders")
         .select("total_price,customer_email,items,created_at,status");
-      const valid = (data || []).filter((o: Record<string, any>) =>
+      const valid = (data || []).filter((o) =>
         o.status !== "cancelled" &&
         Array.isArray(o.items) &&
-        o.items.some((i: any) => productIds.includes(i.product_id))
+        o.items.some((i: { product_id: string }) => productIds.includes(i.product_id))
       );
       const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
       return {
-        revenue: valid.reduce((s: number, o: Record<string, any>) => s + (o.total_price || 0), 0),
-        customers: new Set(valid.map((o: Record<string, any>) => o.customer_email)).size,
+        revenue: valid.reduce((s: number, o) => s + (Number(o.total_price) || 0), 0),
+        customers: new Set(valid.map((o) => o.customer_email)).size,
         last7: valid
-          .filter((o: Record<string, any>) => new Date(o.created_at).getTime() > sevenDaysAgo)
-          .reduce((s: number, o: Record<string, any>) => s + (o.total_price || 0), 0),
+          .filter((o) => new Date(o.created_at).getTime() > sevenDaysAgo)
+          .reduce((s: number, o) => s + (Number(o.total_price) || 0), 0),
       };
     },
     enabled: productIds.length > 0,

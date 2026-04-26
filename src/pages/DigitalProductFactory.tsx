@@ -170,11 +170,11 @@ const DigitalProductFactory = () => {
       if (error) throw new Error(error.message);
       const typedData = data as { painPoints?: PainPoint[]; error?: string };
       if (typedData?.error) throw new Error(typedData.error);
-      const points = (typedData.painPoints || []).map((p: PainPoint, i: number) => ({
+      const points = (typedData.painPoints || []).map((p, i: number) => ({
         ...p,
         id: String(i + 1),
       }));
-      setPainPoints(points.sort((a: PainPoint, b: PainPoint) => b.urgency - a.urgency));
+      setPainPoints(points.sort((a, b) => b.urgency - a.urgency));
       setStep("problem_select");
     } catch (e: unknown) {
       toast.error("Erreur d'analyse marché", { description: (e as Error).message });

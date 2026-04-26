@@ -345,8 +345,8 @@ function extractFeatures(desc?: string): string[] {
   const lines = desc.split("\n");
   for (const line of lines) {
     const trimmed = line.trim();
-    if ((trimmed.startsWith("- ") || trimmed.startsWith("• ") || /^\d+[\.\)]\s/.test(trimmed)) && trimmed.length > 10 && trimmed.length < 120) {
-      features.push(trimmed.replace(/^[-•]\s*/, "").replace(/^\d+[\.\)]\s*/, ""));
+    if ((trimmed.startsWith("- ") || trimmed.startsWith("• ") || /^\d+[.)]\s/.test(trimmed)) && trimmed.length > 10 && trimmed.length < 120) {
+      features.push(trimmed.replace(/^[-•]\s*/, "").replace(/^\d+[.)]\s*/, ""));
       if (features.length >= 6) break;
     }
   }

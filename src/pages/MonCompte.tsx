@@ -70,8 +70,8 @@ const MonCompte = () => {
     setSubmitting(true);
     try {
       await signInWithGoogle();
-    } catch (err: any) {
-      toast({ title: "Erreur Google", description: err.message || "Échec de la connexion Google.", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erreur Google", description: (err as Error).message || "Échec de la connexion Google.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -111,8 +111,8 @@ const MonCompte = () => {
           toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe." });
         }
       }
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Une erreur est survenue.", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erreur", description: (err as Error).message || "Une erreur est survenue.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

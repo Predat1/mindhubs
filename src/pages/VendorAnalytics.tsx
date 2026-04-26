@@ -39,7 +39,9 @@ const conversionData = [
   { name: "S5", conversion: 3.8 },
 ];
 
-const VendorAnalyticsInner = ({ vendor }: { vendor: any }) => {
+import type { Vendor } from "@/hooks/useVendors";
+
+const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
   const [timeRange, setTimeRange] = useState("7d");
 
   return (

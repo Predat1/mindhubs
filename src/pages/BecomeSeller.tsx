@@ -131,7 +131,7 @@ const BecomeSeller = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
               >
-                <Sparkles size(14) className="text-primary" />
+                <Sparkles size={14} className="text-primary" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-primary">Creator Program</span>
               </motion.div>
 

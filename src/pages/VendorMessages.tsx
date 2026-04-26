@@ -60,7 +60,9 @@ const mockMessages = [
   { id: "5", sender: "user", text: "D'accord, je vais passer commande tout de suite. Merci !", time: "10:45" },
 ];
 
-const VendorMessagesInner = ({ vendor }: { vendor: any }) => {
+import type { Vendor } from "@/hooks/useVendors";
+
+const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
   const [selectedChat, setSelectedChat] = useState(mockChats[0]);
   const [msgInput, setMsgInput] = useState("");
 

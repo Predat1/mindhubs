@@ -114,7 +114,7 @@ const Checkout = () => {
         total_price: totalPrice,
         items: orderItems,
         status: "pending",
-      } as any);
+      });
       if (error) throw error;
       clearCart();
       setConfirmed(true);
@@ -125,8 +125,8 @@ const Checkout = () => {
         num_items: items.reduce((s, i) => s + i.quantity, 0),
       });
       toast({ title: "Commande confirmée ✅", description: "Merci pour votre achat !" });
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Une erreur est survenue", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erreur", description: (err as Error).message || "Une erreur est survenue", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
