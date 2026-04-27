@@ -10,12 +10,13 @@ import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, ShoppingBag, Users, DollarSign, Pencil, Trash2, Package,
+  Copy, Info, Youtube, Lightbulb, MessageCircle,
+  Trophy, Gift, Share2 as ShareIcon,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useGamification } from "@/hooks/useGamification";
 import { LevelProgressBar } from "@/components/gamification/LevelProgressBar";
 import { BadgeGrid } from "@/components/gamification/BadgeSystem";
-import { Trophy, Gift, Share2 as ShareIcon } from "lucide-react";
 
 const VendorDashboard = () => {
   const { user, loading } = useAuth();
