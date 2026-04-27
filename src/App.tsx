@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { BackgroundGlow } from "@/components/ui/background-components";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
@@ -39,9 +38,6 @@ import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
 import VendorMessages from "./pages/VendorMessages.tsx";
 import ProtectionAcheteur from "./pages/ProtectionAcheteur.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
-import PageTransition from "./components/PageTransition.tsx";
-import { AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 
@@ -101,8 +97,8 @@ const App = () => (
             <ScrollToTop />
             <ErrorBoundary>
               <AppContent />
+              <LiveSalesPopup />
             </ErrorBoundary>
-            <LiveSalesPopup />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
