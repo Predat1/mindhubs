@@ -568,7 +568,16 @@ const DigitalProductFactory = () => {
                            <FileDown size={32} />
                            <span className="text-[10px] font-black uppercase">Télécharger le Kit Business</span>
                         </Button>
-                        <Button variant="outline" className="h-24 flex flex-col gap-1 rounded-3xl border-primary/40 hover:bg-primary/5" onClick={() => navigate("/dashboard/new-product")}>
+                        <Button variant="outline" className="h-24 flex flex-col gap-1 rounded-3xl border-primary/40 hover:bg-primary/5" onClick={() => navigate("/dashboard/new-product", { 
+                           state: { 
+                             prefill: {
+                               title: niche.charAt(0).toUpperCase() + niche.slice(1),
+                               description: chapters.map(c => `## ${c.title}\n\n${c.content}`).join("\n\n"),
+                               category: "Business",
+                               payment_link: chapters.length > 0 ? "PDF Kit Ready" : ""
+                             }
+                           } 
+                         })}>
                            <ShoppingCart size={28} />
                            <span className="text-[10px] font-black uppercase">Mettre en vente sur Mindhubs</span>
                         </Button>

@@ -132,11 +132,24 @@ const Admin = () => {
       const { data, error } = await supabase.from("products").select("*").order("sort_order", { ascending: true });
       if (error) throw error;
       return (data || []).map(db => ({
-        id: db.id, title: db.title, image: db.image_url, oldPrice: db.old_price, price: db.price,
-        category: db.category, rating: db.rating, tag: db.tag, description: db.description,
-        paymentLink: db.payment_link, imageUrls: db.image_urls || [], keyFeatures: db.key_features || [],
-        sort_order: db.sort_order, featured: db.featured, image_url: db.image_url
-      })) as AdminProduct[];
+        id: db.id, 
+        title: db.title, 
+        image: db.image_url, 
+        oldPrice: db.old_price, 
+        price: db.price,
+        category: db.category, 
+        rating: db.rating?.toString() || "5", 
+        tag: db.tag, 
+        description: db.description,
+        paymentLink: db.payment_link, 
+        imageUrls: db.image_urls || [], 
+        keyFeatures: db.key_features || [],
+        sort_order: db.sort_order, 
+        featured: db.featured, 
+        image_url: db.image_url,
+        old_price: db.old_price,
+        payment_link: db.payment_link
+      })) as any[];
     },
   });
 
@@ -216,27 +229,29 @@ const Admin = () => {
   const saveProduct = async () => {
     if (!productEditing) return;
     setSaving(true);
-    
-    // Auto-generate ID if empty
-    if (!productEditing.id) {
-      productEditing.id = productEditing.title.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    }
-
     const isNew = !products.find(p => p.id === productEditing.id);
     
-    const { error } = isNew 
-      ? await supabase.from("products").insert([productEditing])
-      : await supabase.from("products").update(productEditing).eq("id", productEditing.id);
-      
-    setSaving(false);
-    if (error) { 
-      toast({ title: "Erreur", description: error.message, variant: "destructive" }); 
-      return; 
+    // Ensure numeric fields are correctly formatted
+    const productData = {
+      ...productEditing,
+      rating: parseFloat(productEditing.rating) || 5,
+      sort_order: parseInt(productEditing.sort_order.toString()) || 0,
+    };
+
+    try {
+      const { error } = isNew 
+        ? await supabase.from("products").insert([productData])
+        : await supabase.from("products").update(productData).eq("id", productEditing.id);
+
+      if (error) throw error;
+      toast({ title: isNew ? "Produit ajouté" : "Produit mis à jour" });
+      setProductEditing(null);
+      refetchProducts();
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    
-    toast({ title: "Succès", description: `Produit ${isNew ? "ajouté" : "mis à jour"}.` });
-    setProductEditing(null);
-    refetchProducts();
   };
 
   const saveTestimonial = async () => {
@@ -284,9 +299,16 @@ const Admin = () => {
     setUploading(true);
     const ext = file.name.split(".").pop() || "jpg";
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(fileName, file, { upsert: true });
-    if (error) { setUploading(false); toast({ title: "Erreur upload", description: error.message, variant: "destructive" }); return; }
-    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+    const { user } = await supabase.auth.getUser();
+    const path = user ? `${user.id}/${fileName}` : fileName;
+    
+    const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+    if (error) { 
+      setUploading(false); 
+      toast({ title: "Erreur upload", description: error.message, variant: "destructive" }); 
+      return; 
+    }
+    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(path);
     setProductEditing({ ...productEditing, image_url: urlData.publicUrl });
     setUploading(false);
   };
@@ -385,7 +407,27 @@ const Admin = () => {
             )}
 
             {currentTab === "products" && (
-              <div className="space-y-6">
+               <div className="space-y-6">
+                 <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-3xl font-black">Catalogue Produits</h2>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Gérez les pépites de la marketplace</p>
+                    </div>
+                    <Button onClick={() => setProductEditing(DEFAULT_PRODUCT)} className="btn-primary-brand rounded-2xl flex items-center gap-2">
+                      <Plus size={18} /> Ajouter une pépite
+                    </Button>
+                 </div>
+
+                 <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                    <Input 
+                      placeholder="Rechercher une pépite..." 
+                      className="pl-10 h-12 bg-card rounded-2xl border-border/50"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                    />
+                 </div>
+
                 {productEditing && (
                 <div className="stat-card rounded-2xl p-8 border-glow space-y-8 animate-in fade-in slide-in-from-top-4">
                     <div className="flex items-center justify-between border-b border-border/50 pb-6">
@@ -506,7 +548,24 @@ const Admin = () => {
                             <td className="p-4"><div className="flex items-center gap-3"><img src={p.image} className="w-12 h-12 rounded-xl object-cover" /><span className="font-bold truncate max-w-[200px]">{p.title}</span></div></td>
                             <td className="p-4"><p className="font-bold">{p.price}</p><p className="text-[10px] text-muted-foreground line-through">{p.oldPrice}</p></td>
                             <td className="p-4 hidden md:table-cell"><span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">{p.category}</span></td>
-                             <td className="p-4 text-right"><div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setProductEditing(p as unknown as ProductForm)} className="p-2 rounded-lg hover:bg-primary/10 text-primary"><Pencil size={16} /></button><button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button></div></td>
+                             <td className="p-4 text-right"><div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => {
+                           setProductEditing({
+                             id: p.id,
+                             title: p.title,
+                             image_url: (p as any).image_url || p.image,
+                             old_price: (p as any).old_price || p.oldPrice,
+                             price: p.price,
+                             category: p.category,
+                             rating: p.rating,
+                             tag: p.tag,
+                             description: p.description,
+                             payment_link: (p as any).payment_link || p.paymentLink,
+                             image_urls: p.imageUrls,
+                             key_features: p.keyFeatures,
+                             sort_order: p.sort_order,
+                             featured: p.featured,
+                           });
+                         }} className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"><Edit size={16} /></button><button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button></div></td>
                           </tr>
                         ))}
                       </tbody>

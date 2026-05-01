@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
@@ -152,6 +152,7 @@ const Inner = ({
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -179,6 +180,15 @@ const Inner = ({
   // ===== Persistence: load draft from localStorage on mount (only for NEW products)
   useEffect(() => {
     if (isEdit) return;
+    
+    // Check for prefill from Factory
+    const state = location.state as { prefill?: Partial<FormState> };
+    if (state?.prefill) {
+      setForm(prev => ({ ...prev, ...state.prefill }));
+      toast.success("Données de la Factory chargées !");
+      return;
+    }
+
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
@@ -198,7 +208,7 @@ const Inner = ({
     } catch {
       /* ignore */
     }
-  }, [isEdit]);
+  }, [isEdit, location.state]);
 
   // ===== Persistence: save form state to localStorage on every change (debounced)
   useEffect(() => {
