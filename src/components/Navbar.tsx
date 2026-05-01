@@ -21,7 +21,6 @@ import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { label: "Explorer", href: "/boutique" },
-  { label: "AI Factory", href: "/dashboard/factory", premium: true },
   { label: "Expertise", href: "/a-propos" },
   { label: "Support", href: "/contact" },
 ];
