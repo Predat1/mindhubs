@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen, Briefcase, Code, Paintbrush, Megaphone } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ProductCard from "@/components/ProductCard";
-import { useSearchProducts, useFeaturedProducts } from "@/hooks/useProducts";
+import { useSearchProducts, useFeaturedProducts, useProducts } from "@/hooks/useProducts";
 import { useSmartRanking } from "@/hooks/useSmartRanking";
 
 const categories = [

@@ -59,13 +59,10 @@ export const useProducts = () => {
       });
 
       // Smart Ranking Logic:
-      // 1. Featured tag (if any)
-      // 2. High rating (4.5+)
-      // 3. Newness (simulated for static, real for DB)
       return combined.sort((a, b) => {
         // Boost featured products (the ones we explicitly defined)
-        const isAFeatured = featuredProductIds.includes(a.id);
-        const isBFeatured = featuredProductIds.includes(b.id);
+        const isAFeatured = featuredProductIds?.includes(a.id) ?? false;
+        const isBFeatured = featuredProductIds?.includes(b.id) ?? false;
         if (isAFeatured && !isBFeatured) return -1;
         if (!isAFeatured && isBFeatured) return 1;
 
@@ -92,9 +89,7 @@ export const useFeaturedProducts = () => {
         .order("sort_order");
 
       const dbFeatured = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
-      const staticFeatured = allProducts.filter((p) =>
-        ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"].includes(p.id)
-      );
+      const staticFeatured = allProducts.filter((p) => featuredProductIds.includes(p.id));
 
       // Combine and deduplicate
       const combined = [...staticFeatured];
