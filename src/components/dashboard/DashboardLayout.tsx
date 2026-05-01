@@ -50,7 +50,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },
-  { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
+  { label: "Profil & Boutique", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];
 
 export const ADMIN_NAV: SidebarItem[] = [
