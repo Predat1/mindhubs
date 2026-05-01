@@ -39,6 +39,7 @@ import VendorMessages from "./pages/VendorMessages.tsx";
 import ProtectionAcheteur from "./pages/ProtectionAcheteur.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
+import AdminGuard from "./components/dashboard/AdminGuard.tsx";
 import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 
 const queryClient = new QueryClient();
@@ -60,7 +61,7 @@ const AppContent = () => {
         <Route path="/politique-remboursement" element={<PolitiqueRemboursement />} />
         <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
         <Route path="/faq" element={<FAQ />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/protection-acheteur" element={<ProtectionAcheteur />} />
         <Route path="/become-a-seller" element={<BecomeSeller />} />

@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Sun as SunIcon, Moon as MoonIcon } from "lucide-react";
 import type { Vendor } from "@/hooks/useVendors";
+import { useAuth } from "@/contexts/AuthContext";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 
 // ─── Types ───
@@ -101,6 +102,7 @@ const statusConfig = {
 };
 
 const Admin = () => {
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -299,7 +301,6 @@ const Admin = () => {
     setUploading(true);
     const ext = file.name.split(".").pop() || "jpg";
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { user } = await supabase.auth.getUser();
     const path = user ? `${user.id}/${fileName}` : fileName;
     
     const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
@@ -623,8 +624,24 @@ const Admin = () => {
                     <tbody>
                        {allVendors.map(v => (
                           <tr key={v.id} className="border-b border-border last:border-0 hover:bg-muted/10">
-                             <td className="p-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{v.shop_name.slice(0, 2).toUpperCase()}</div><p className="font-bold">{v.shop_name}</p></div></td>
-                             <td className="p-4 text-muted-foreground">@{v.username}</td>
+                             <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                   <div className="w-12 h-12 rounded-2xl overflow-hidden bg-primary/10 border border-white/5 shadow-sm">
+                                      {v.avatar_url ? (
+                                        <img src={v.avatar_url} alt={v.shop_name} className="h-full w-full object-cover" />
+                                      ) : (
+                                        <div className="h-full w-full flex items-center justify-center text-primary font-bold text-xs">
+                                          {v.shop_name.slice(0, 2).toUpperCase()}
+                                        </div>
+                                      )}
+                                   </div>
+                                   <div className="min-w-0">
+                                      <p className="font-black text-sm truncate">{v.shop_name}</p>
+                                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Créé le {new Date(v.created_at).toLocaleDateString()}</p>
+                                   </div>
+                                </div>
+                             </td>
+                             <td className="p-4 font-mono text-[11px] text-primary">@{v.username}</td>
                              <td className="p-4">
                                 <button 
                                   onClick={() => toggleVendorVerification(v.id, v.verified)}
