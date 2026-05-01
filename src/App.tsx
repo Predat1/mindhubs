@@ -42,6 +42,7 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import AdminGuard from "./components/dashboard/AdminGuard.tsx";
 import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 import { ExitIntentPopup } from "./components/ExitIntentPopup.tsx";
+import { ExplorePopup } from "./components/ExplorePopup.tsx";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,7 @@ const App = () => (
               <AppContent />
               <LiveSalesPopup />
               <ExitIntentPopup />
+              <ExplorePopup />
             </ErrorBoundary>
           </BrowserRouter>
         </CartProvider>
