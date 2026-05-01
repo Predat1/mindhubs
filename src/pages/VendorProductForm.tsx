@@ -168,6 +168,7 @@ const Inner = ({
   const [aiPriceLoading, setAiPriceLoading] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [imageStyle, setImageStyle] = useState("classic");
+  const [variantCount, setVariantCount] = useState<number>(3);
   const [variants, setVariants] = useState<string[]>([]);
   const [showVariants, setShowVariants] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -285,7 +286,7 @@ const Inner = ({
             description: form.description,
             userId: user.id,
             style: imageStyle,
-            count: 3,
+            count: variantCount,
           },
         },
       );
