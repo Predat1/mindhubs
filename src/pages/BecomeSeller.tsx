@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
@@ -29,6 +30,7 @@ const schema = z.object({
 
 const BecomeSeller = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [form, setForm] = useState({
     shopName: "",
@@ -97,11 +99,29 @@ const BecomeSeller = () => {
       if (roleError && roleError.code !== "23505") {
         console.error("Role assignment error:", roleError);
       }
+      
+      // CRITICAL: Invalidate the vendor query so the Dashboard redirect logic sees the new profile
+      await queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
+      await queryClient.invalidateQueries({ queryKey: ["vendors"] });
 
       toast.success("Votre boutique MindHubs est prête ! 🚀");
       navigate("/dashboard");
     } catch (err: unknown) {
-      toast.error((err as Error).message || "Impossible de créer la boutique");
+      console.error("Shop creation error:", err);
+      const error = err as any;
+      let message = error.message || "Impossible de créer la boutique";
+      
+      if (error.code === "23505") {
+        if (error.message?.includes("user_id")) {
+          message = "Vous avez déjà une boutique enregistrée avec ce compte.";
+        } else {
+          message = "Ce nom d'utilisateur est déjà pris.";
+        }
+      } else if (error.message?.includes("User already registered")) {
+        message = "Un compte existe déjà avec cet email. Veuillez vous connecter d'abord.";
+      }
+      
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
