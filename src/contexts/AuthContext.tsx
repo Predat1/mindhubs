@@ -28,6 +28,7 @@ export const translateAuthError = (message: string): string => {
     "For security purposes, you can only request this after 60 seconds": "Veuillez patienter 60 secondes avant de réessayer.",
     "New password should be different from the old password": "Le nouveau mot de passe doit être différent de l'ancien.",
     "Auth session missing!": "Session expirée. Veuillez vous reconnecter.",
+    "JWT expired": "Votre session a expiré. Veuillez vous reconnecter.",
   };
   return map[message] || message;
 };

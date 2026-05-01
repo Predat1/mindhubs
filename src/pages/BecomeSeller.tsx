@@ -58,6 +58,14 @@ const BecomeSeller = () => {
     }
     setSubmitting(true);
     try {
+      // Ensure we have a valid session before proceeding
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (user && !sessionData.session) {
+        toast.error("Votre session a expiré. Veuillez vous reconnecter.");
+        navigate("/mon-compte");
+        return;
+      }
+
       let userId = user?.id;
 
       if (!userId) {
