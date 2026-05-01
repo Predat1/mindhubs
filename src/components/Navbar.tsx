@@ -21,7 +21,6 @@ import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { label: "Explorer", href: "/boutique" },
-  { label: "AI Factory", href: "/dashboard/factory", premium: true },
   { label: "Expertise", href: "/a-propos" },
   { label: "Support", href: "/contact" },
 ];
@@ -99,9 +98,7 @@ const Navbar = () => {
                       : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                   }`}
                 >
-                  {link.premium && <Sparkles size={14} className="text-primary" />}
                   {link.label}
-                  {link.premium && <Badge className="h-4 px-1 text-[8px] bg-primary text-white">PRO</Badge>}
                 </Link>
               ))}
             </div>
@@ -229,7 +226,6 @@ const Navbar = () => {
                     className="flex items-center justify-between p-4 rounded-2xl bg-white/5 text-lg font-black hover:bg-primary/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                       {link.premium && <Sparkles size={18} className="text-primary" />}
                        {link.label}
                     </div>
                     <ChevronRight size={18} className="text-muted-foreground" />

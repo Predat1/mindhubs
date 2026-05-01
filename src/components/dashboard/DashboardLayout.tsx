@@ -49,7 +49,6 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3, group: "growth" },
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
-  { label: "AI Factory", href: "/dashboard/factory", icon: Factory, group: "growth", badge: "Premium", badgeVariant: "hot", badgeTooltip: "L'usine à produits digitaux : passez de l'idée au profit en 15 minutes." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];

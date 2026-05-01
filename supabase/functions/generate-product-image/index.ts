@@ -83,7 +83,7 @@ ${MOCKUP_SPEC}`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.0-flash-exp", // Correcting to available experimental/preview model for images
+          model: "google/gemini-2.5-flash-image",
           messages,
           modalities: ["image", "text"],
         }),

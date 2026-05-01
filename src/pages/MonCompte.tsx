@@ -92,9 +92,14 @@ const MonCompte = () => {
         if (error) {
           toast({ title: "Erreur", description: error.message, variant: "destructive" });
         } else {
-          setPendingEmail(email);
-          setMode("check-email" as Mode);
-          toast({ title: "Inscription réussie !", description: "Vérifiez votre boîte mail pour confirmer votre compte." });
+          // Auto-confirm activé : on connecte directement
+          const { error: signInErr } = await signIn(email, password);
+          if (signInErr) {
+            toast({ title: "Compte créé", description: "Connectez-vous avec vos identifiants." });
+            setMode("login");
+          } else {
+            toast({ title: "Bienvenue ! 🎉", description: "Votre compte a été créé avec succès." });
+          }
         }
       } else if (mode === "login") {
         const { error } = await signIn(email, password);
