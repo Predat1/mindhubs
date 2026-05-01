@@ -33,8 +33,12 @@ export const useVendorOrders = (productIds: string[]) => {
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
+        .order("created_at", { ascending: false })
+        .limit(1000); // Prevent crashing if there are tens of thousands of orders
+      if (error) {
+        console.error("Error fetching vendor orders:", error);
+        return [];
+      }
 
       const set = new Set(productIds);
       return (data || [])

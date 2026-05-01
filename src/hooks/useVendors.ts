@@ -77,6 +77,7 @@ export const useVendorProducts = (vendorId: string | undefined) => {
         imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
         keyFeatures: db.key_features ?? [],
         vendorId: db.vendor_id ?? undefined,
+        created_at: db.created_at,
       }));
     },
     enabled: !!vendorId,

@@ -54,9 +54,17 @@ const VendorDashboard = () => {
     queryKey: ["vendor-orders", productIds.join(",")],
     queryFn: async () => {
       if (productIds.length === 0) return { revenue: 0, customers: 0, last7: 0 };
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("orders")
-        .select("total_price,customer_email,items,created_at,status");
+        .select("total_price,customer_email,items,created_at,status")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      
+      if (error) {
+        console.error("Error fetching order stats:", error);
+        return { revenue: 0, customers: 0, last7: 0 };
+      }
+
       const valid = (data || []).filter((o) =>
         o.status !== "cancelled" &&
         Array.isArray(o.items) &&
@@ -99,7 +107,7 @@ const VendorDashboard = () => {
     );
   }
 
-  const firstName = vendor.shop_name.split(" ")[0];
+  const firstName = vendor?.shop_name ? vendor.shop_name.split(" ")[0] : "Vendeur";
   const revenue = orderStats?.revenue ?? 0;
   const last7 = orderStats?.last7 ?? 0;
   const customers = orderStats?.customers ?? 0;
