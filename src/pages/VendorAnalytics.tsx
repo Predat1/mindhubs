@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import { 
   TrendingUp, Users, Eye, ShoppingCart, ArrowUpRight, ArrowDownRight, 
-  Calendar, Download, Filter, Globe, MousePointer2, CreditCard 
+  Calendar, Download, Filter, Globe, MousePointer2, CreditCard, Sparkles 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
