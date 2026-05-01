@@ -19,12 +19,12 @@ const categories = [
 const DiscoverySection = () => {
   const [query, setQuery] = useState("");
   const { data: searchResults = [] } = useSearchProducts(query);
-  const { data: featured = [] } = useFeaturedProducts();
-  const rankedFeatured = useSmartRanking(featured);
+  const { data: allProductsData = [] } = useProducts();
+  const rankedProducts = useSmartRanking(allProductsData);
   const navigate = useNavigate();
 
   const showResults = query.trim().length >= 2 && searchResults.length > 0;
-  const displayProducts = showResults ? searchResults : rankedFeatured.slice(0, 4);
+  const displayProducts = showResults ? searchResults : rankedProducts.slice(0, 8);
 
   return (
     <section className="py-8 sm:py-12 bg-background">

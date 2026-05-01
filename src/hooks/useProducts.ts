@@ -45,12 +45,20 @@ export const useProducts = () => {
         .select("*")
         .order("sort_order");
 
-      if (error || !data || data.length === 0) {
-        // Fallback to static data
-        return allProducts;
-      }
+      const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      
+      // Combine static products with DB products, avoiding duplicates by ID
+      const combined = [...allProducts];
+      dbProducts.forEach(dbP => {
+        const index = combined.findIndex(p => p.id === dbP.id);
+        if (index > -1) {
+          combined[index] = dbP;
+        } else {
+          combined.push(dbP);
+        }
+      });
 
-      return (data as unknown as DbProduct[]).map(mapDbToProduct);
+      return combined;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -66,13 +74,20 @@ export const useFeaturedProducts = () => {
         .eq("featured", true)
         .order("sort_order");
 
-      if (error || !data || data.length === 0) {
-        return allProducts.filter((p) =>
-          ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"].includes(p.id)
-        );
-      }
+      const dbFeatured = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const staticFeatured = allProducts.filter((p) =>
+        ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"].includes(p.id)
+      );
 
-      return (data as unknown as DbProduct[]).map(mapDbToProduct);
+      // Combine and deduplicate
+      const combined = [...staticFeatured];
+      dbFeatured.forEach(dbP => {
+        if (!combined.some(p => p.id === dbP.id)) {
+          combined.push(dbP);
+        }
+      });
+
+      return combined;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -103,17 +118,23 @@ export const useNewProducts = () => {
   return useQuery({
     queryKey: ["products", "new"],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(4);
+        .limit(10);
 
-      if (error || !data || data.length === 0) {
-        return allProducts.slice(0, 4);
-      }
+      const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const combined = [...dbProducts];
+      
+      // Add static products if we have room
+      allProducts.forEach(p => {
+        if (!combined.some(cp => cp.id === p.id)) {
+          combined.push(p);
+        }
+      });
 
-      return (data as unknown as DbProduct[]).map(mapDbToProduct);
+      return combined.slice(0, 8);
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -125,19 +146,25 @@ export const useSearchProducts = (query: string) => {
     queryFn: async (): Promise<Product[]> => {
       if (!query.trim()) return [];
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("products")
         .select("*")
         .ilike("title", `%${query}%`)
         .order("sort_order")
-        .limit(6);
+        .limit(20);
 
-      if (error || !data) {
-        const q = query.toLowerCase();
-        return allProducts.filter((p) => p.title.toLowerCase().includes(q)).slice(0, 6);
-      }
+      const dbResults = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const q = query.toLowerCase();
+      const staticResults = allProducts.filter((p) => p.title.toLowerCase().includes(q));
 
-      return (data as unknown as DbProduct[]).map(mapDbToProduct);
+      const combined = [...dbResults];
+      staticResults.forEach(p => {
+        if (!combined.some(cp => cp.id === p.id)) {
+          combined.push(p);
+        }
+      });
+
+      return combined;
     },
     enabled: query.trim().length >= 2,
   });
