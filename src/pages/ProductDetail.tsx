@@ -75,12 +75,20 @@ const ProductDetail = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !product) {
     return (
       <div className="min-h-screen bg-background aurora-bg">
         <Navbar />
-        <div className="container mx-auto px-4 pt-48 text-center">
-           <div className="glass-card rounded-[3rem] h-[60vh] max-w-5xl mx-auto animate-pulse" />
+        <div className="container mx-auto px-4 pt-36">
+           <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
+              <div className="aspect-square rounded-[3rem] bg-white/5 animate-pulse" />
+              <div className="space-y-8 py-10">
+                 <div className="h-6 w-24 bg-white/5 rounded-full animate-pulse" />
+                 <div className="h-16 w-3/4 bg-white/5 rounded-2xl animate-pulse" />
+                 <div className="h-4 w-1/2 bg-white/5 rounded-full animate-pulse" />
+                 <div className="h-64 w-full bg-white/5 rounded-[2.5rem] animate-pulse" />
+              </div>
+           </div>
         </div>
       </div>
     );

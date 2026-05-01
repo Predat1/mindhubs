@@ -4,6 +4,7 @@ import type { Product } from "@/data/products";
 import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 import { useVendorById } from "@/hooks/useVendors";
+import { usePrefetchProduct } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,6 +29,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const isBestSeller = BEST_SELLERS.includes(product.id);
   const { data: vendor } = useVendorById(product.vendorId);
+  const prefetch = usePrefetchProduct();
 
   const handleBuy = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,6 +46,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     <>
       <motion.div
         whileHover={{ y: -8 }}
+        onMouseEnter={() => prefetch(product.id)}
         className="h-full"
       >
         <Link to={`/produit/${product.id}`} className="block group h-full">

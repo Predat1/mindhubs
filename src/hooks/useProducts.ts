@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { allProducts, type Product, type Category } from "@/data/products";
 
@@ -93,7 +93,11 @@ export const useFeaturedProducts = () => {
   });
 };
 
+
+
 export const useProduct = (id: string) => {
+  const queryClient = useQueryClient();
+  
   return useQuery({
     queryKey: ["products", id],
     queryFn: async (): Promise<Product | null> => {
@@ -110,7 +114,16 @@ export const useProduct = (id: string) => {
 
       return mapDbToProduct(data as unknown as DbProduct);
     },
+    initialData: () => {
+      // Look for the product in the 'products' list cache
+      const listData = queryClient.getQueryData<Product[]>(["products"]);
+      return listData?.find((p) => p.id === id);
+    },
+    initialDataUpdatedAt: () => {
+      return queryClient.getQueryState(["products"])?.dataUpdatedAt;
+    },
     enabled: !!id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
@@ -168,4 +181,30 @@ export const useSearchProducts = (query: string) => {
     },
     enabled: query.trim().length >= 2,
   });
+};
+
+export const usePrefetchProduct = () => {
+  const queryClient = useQueryClient();
+
+  return (id: string) => {
+    if (!id) return;
+    queryClient.prefetchQuery({
+      queryKey: ["products", id],
+      queryFn: async (): Promise<Product | null> => {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error || !data) {
+          const fallback = allProducts.find((p) => p.id === id);
+          return fallback ?? null;
+        }
+
+        return mapDbToProduct(data as unknown as DbProduct);
+      },
+      staleTime: 10 * 60 * 1000,
+    });
+  };
 };
