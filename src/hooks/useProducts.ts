@@ -43,7 +43,7 @@ export const useProducts = () => {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("sort_order");
+        .order("sort_order", { ascending: true }); // Admin priority
 
       const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
       
@@ -58,7 +58,24 @@ export const useProducts = () => {
         }
       });
 
-      return combined;
+      // Smart Ranking Logic:
+      // 1. Featured tag (if any)
+      // 2. High rating (4.5+)
+      // 3. Newness (simulated for static, real for DB)
+      return combined.sort((a, b) => {
+        // Boost featured products (the ones we explicitly defined)
+        const isAFeatured = featuredProductIds.includes(a.id);
+        const isBFeatured = featuredProductIds.includes(b.id);
+        if (isAFeatured && !isBFeatured) return -1;
+        if (!isAFeatured && isBFeatured) return 1;
+
+        // Then by rating
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        if (ratingB !== ratingA) return ratingB - ratingA;
+
+        return 0; // Maintain order from DB (sort_order)
+      });
     },
     staleTime: 5 * 60 * 1000,
   });

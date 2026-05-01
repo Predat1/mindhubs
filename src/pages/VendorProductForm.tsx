@@ -60,14 +60,7 @@ import {
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import ProductCard from "@/components/ProductCard";
 
-const CATEGORIES = [
-  "Business",
-  "Formations",
-  "Kits",
-  "Livres",
-  "Logiciels",
-  "Packs Enfants",
-];
+import { categories as CATEGORIES, type Category } from "@/data/products";
 
 const STYLE_PRESETS = [
   { id: "classic", label: "Classique Or", emoji: "📚" },
@@ -870,7 +863,7 @@ const Inner = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map((c) => (
+                        {CATEGORIES.filter(c => c !== "Tous").map((c) => (
                           <SelectItem key={c} value={c}>
                             <span className="inline-flex items-center gap-2">
                               <Tag
