@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { allProducts, type Product, type Category } from "@/data/products";
+import { allProducts, featuredProductIds, type Product, type Category } from "@/data/products";
 
 export interface DbProduct {
   id: string;
