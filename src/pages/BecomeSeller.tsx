@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Store, CheckCircle2, ShoppingBag, TrendingUp, Sparkles, ArrowRight, ShieldCheck, Zap, Globe, MousePointer2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentVendor } from "@/hooks/useVendors";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,6 +33,7 @@ const BecomeSeller = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { data: existingVendor, isLoading: vendorLoading } = useCurrentVendor();
   const [form, setForm] = useState({
     shopName: "",
     username: "",
@@ -40,6 +42,12 @@ const BecomeSeller = () => {
     description: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (existingVendor) {
+      navigate("/dashboard");
+    }
+  }, [existingVendor, navigate]);
 
   const slugify = (s: string) =>
     s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);

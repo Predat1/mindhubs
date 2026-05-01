@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -7,6 +7,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
+import { useVendorOrders } from "@/hooks/useVendorOrders";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, ShoppingBag, Users, DollarSign, Pencil, Trash2, Package,
@@ -36,51 +37,33 @@ const VendorDashboard = () => {
   const { data: stats } = useQuery({
     queryKey: ["vendor-stats", vendor?.id, productIds.join(",")],
     queryFn: async () => {
-      if (productIds.length === 0) return { views: 0, purchases: 0 };
+      if (productIds.length === 0) return { views: 0, purchases: 0, raw: [] };
       const { data } = await supabase
         .from("product_stats")
-        .select("total_views,total_purchases")
+        .select("product_id,total_views,total_purchases")
         .in("product_id", productIds);
       return {
-        views: (data || []).reduce((s: number, r: { total_views?: number | null }) => s + (r.total_views || 0), 0),
-        purchases: (data || []).reduce((s: number, r: { total_purchases?: number | null }) => s + (r.total_purchases || 0), 0),
+        views: (data || []).reduce((s: number, r: any) => s + (r.total_views || 0), 0),
+        purchases: (data || []).reduce((s: number, r: any) => s + (r.total_purchases || 0), 0),
+        raw: data || []
       };
     },
     enabled: productIds.length > 0,
   });
 
-  // Vendor orders (orders containing one of his products)
-  const { data: orderStats } = useQuery({
-    queryKey: ["vendor-orders", productIds.join(",")],
-    queryFn: async () => {
-      if (productIds.length === 0) return { revenue: 0, customers: 0, last7: 0 };
-      const { data, error } = await supabase
-        .from("orders")
-        .select("total_price,customer_email,items,created_at,status")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-      
-      if (error) {
-        console.error("Error fetching order stats:", error);
-        return { revenue: 0, customers: 0, last7: 0 };
-      }
-
-      const valid = (data || []).filter((o) =>
-        o.status !== "cancelled" &&
-        Array.isArray(o.items) &&
-        o.items.some((i: { product_id: string }) => productIds.includes(i.product_id))
-      );
-      const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
-      return {
-        revenue: valid.reduce((s: number, o) => s + (Number(o.total_price) || 0), 0),
-        customers: new Set(valid.map((o) => o.customer_email)).size,
-        last7: valid
-          .filter((o) => new Date(o.created_at).getTime() > sevenDaysAgo)
-          .reduce((s: number, o) => s + (Number(o.total_price) || 0), 0),
-      };
-    },
-    enabled: productIds.length > 0,
-  });
+  const { data: orders = [], isLoading: ordersLoading } = useVendorOrders(productIds);
+  const orderStats = useMemo(() => {
+    if (orders.length === 0) return { revenue: 0, customers: 0, last7: 0 };
+    const valid = orders.filter((o) => o.status !== "cancelled");
+    const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+    return {
+      revenue: valid.reduce((s, o) => s + o.vendor_revenue, 0),
+      customers: new Set(valid.map((o) => o.customer_email)).size,
+      last7: valid
+        .filter((o) => new Date(o.created_at).getTime() > sevenDaysAgo)
+        .reduce((s, o) => s + o.vendor_revenue, 0),
+    };
+  }, [orders]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer ce produit ?")) return;
@@ -114,7 +97,16 @@ const VendorDashboard = () => {
 
   // Top products by purchases
   const topProducts = [...products]
-    .map((p) => ({ ...p, _purchases: 0 }))
+    .map((p) => {
+      // Find matching stats
+      const pStats = stats?.raw?.find((s: any) => s.product_id === p.id);
+      return { 
+        ...p, 
+        _purchases: pStats?.total_purchases || 0,
+        _views: pStats?.total_views || 0
+      };
+    })
+    .sort((a, b) => b._purchases - a._purchases)
     .slice(0, 5);
 
   return (
