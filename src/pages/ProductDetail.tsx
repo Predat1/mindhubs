@@ -22,6 +22,12 @@ import { useVendorById, useVendorProducts } from "@/hooks/useVendors";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import payMtn from "@/assets/pay-mtn.png";
+import payMoov from "@/assets/pay-moov.png";
+import payOrange from "@/assets/pay-orange.png";
+import payWave from "@/assets/pay-wave.png";
+import payVisa from "@/assets/pay-visa.png";
+import payMastercard from "@/assets/pay-mastercard.png";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -296,13 +302,22 @@ const ProductDetail = () => {
                           </div>
                        </div>
                        <div className="space-y-6">
-                          <h3 className="text-2xl font-black flex items-center gap-3"><Package className="text-primary" /> Inclus dans le Pack</h3>
-                          <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10 space-y-4">
-                             <div className="flex items-center gap-3 text-sm font-bold"><CheckSquare className="text-primary" /> Guide PDF Haute Définition</div>
-                             <div className="flex items-center gap-3 text-sm font-bold"><CheckSquare className="text-primary" /> Accès au Groupe Privé VIP</div>
-                             <div className="flex items-center gap-3 text-sm font-bold"><CheckSquare className="text-primary" /> 5 Prompts IA Exclusifs</div>
-                             <div className="flex items-center gap-3 text-sm font-bold"><CheckSquare className="text-primary" /> Mises à jour à Vie gratuites</div>
-                          </div>
+                           <h3 className="text-2xl font-black flex items-center gap-3"><ShieldCheck className="text-primary" /> Paiement & Sécurité</h3>
+                           <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10 space-y-6">
+                              <div className="flex flex-wrap gap-3 justify-center">
+                                 <img src={payMtn} className="h-8 w-auto rounded shadow-sm" alt="MTN" />
+                                 <img src={payMoov} className="h-8 w-auto rounded shadow-sm" alt="Moov" />
+                                 <img src={payOrange} className="h-8 w-auto rounded shadow-sm" alt="Orange" />
+                                 <img src={payWave} className="h-8 w-auto rounded shadow-sm" alt="Wave" />
+                                 <img src={payVisa} className="h-8 w-auto rounded shadow-sm" alt="Visa" />
+                                 <img src={payMastercard} className="h-8 w-auto rounded shadow-sm" alt="Mastercard" />
+                              </div>
+                              <div className="space-y-3 border-t border-primary/10 pt-4">
+                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><ShieldCheck size={16} className="text-emerald-500" /> Transaction Chiffrée SSL</div>
+                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><Zap size={16} className="text-amber-500" /> Livraison Instantanée par Email</div>
+                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><BadgeCheck size={16} className="text-primary" /> Support Client Réactif 24/7</div>
+                              </div>
+                           </div>
                        </div>
                     </div>
                     
