@@ -33,13 +33,13 @@ export const LiveSalesPopup = () => {
       setTimeout(() => setCurrentSale(null), 5000);
     };
 
-    // Initial delay
-    const timeout = setTimeout(showRandomSale, 3000);
+    // Initial delay (longer to avoid immediate saturation)
+    const timeout = setTimeout(showRandomSale, 8000);
     
-    // Interval between sales (30s to 60s)
+    // Interval between sales (45s to 120s) - less frequent to avoid "saturation"
     const interval = setInterval(() => {
       showRandomSale();
-    }, Math.random() * (60000 - 30000) + 30000);
+    }, Math.random() * (120000 - 45000) + 45000);
 
     return () => {
       clearTimeout(timeout);

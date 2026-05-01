@@ -1,22 +1,27 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X, ArrowRight, Compass } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export const ExplorePopup = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
+    // List of pages where the popup should NOT appear
+    const forbiddenPaths = ["/boutique", "/checkout", "/dashboard", "/mon-compte"];
+    if (forbiddenPaths.includes(location.pathname)) return;
+
     const timer = setTimeout(() => {
       const shown = sessionStorage.getItem("explore_popup_shown");
       if (!shown) {
         setIsVisible(true);
       }
-    }, 5000); // Show after 5 seconds
+    }, 20000); // Show after 20 seconds of browsing to avoid saturation
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [location.pathname]);
 
   const closePopup = () => {
     setIsVisible(false);
