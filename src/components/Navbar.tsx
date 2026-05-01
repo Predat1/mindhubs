@@ -226,7 +226,6 @@ const Navbar = () => {
                     className="flex items-center justify-between p-4 rounded-2xl bg-white/5 text-lg font-black hover:bg-primary/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                       {link.premium && <Sparkles size={18} className="text-primary" />}
                        {link.label}
                     </div>
                     <ChevronRight size={18} className="text-muted-foreground" />
