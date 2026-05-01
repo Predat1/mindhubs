@@ -1054,6 +1054,30 @@ const Inner = ({
                             </button>
                           ))}
                         </div>
+                        <div className="pt-3 space-y-2">
+                          <p className="text-[11px] font-bold text-foreground">Nombre de variantes à générer</p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {[1, 2, 3, 4].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                onClick={() => setVariantCount(n)}
+                                className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                                  variantCount === n
+                                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                                    : "border-border bg-background hover:border-primary/40"
+                                }`}
+                              >
+                                {n} {n === 1 ? "boîte" : "boîtes"}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            {variantCount === 1
+                              ? "Une seule génération personnalisée"
+                              : `Choisissez parmi ${variantCount} propositions IA`}
+                          </p>
+                        </div>
                         <div className="flex flex-wrap gap-2 pt-1">
                           <Button
                             type="button"
@@ -1069,7 +1093,7 @@ const Inner = ({
                             ) : (
                               <Wand2 size={13} />
                             )}
-                            Générer 3 variantes
+                            Générer {variantCount} {variantCount === 1 ? "boîte 3D" : "variantes"}
                           </Button>
                           {form.image_url && (
                             <Button
