@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Trophy, Star, Shield, Zap, Award } from "lucide-react";
-import { Progress } from "./ui/progress";
+import { Progress } from "../ui/progress";
 
 export type LevelTier = "Bronze" | "Argent" | "Or" | "Platine" | "Elite";
 
