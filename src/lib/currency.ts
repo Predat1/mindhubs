@@ -117,6 +117,6 @@ export function formatPriceInput(value: string): string {
 /**
  * Currency symbol component for React
  */
-export const CurrencySymbol = ({ className }: { className?: string }) => (
-  <span className={className}>{CURRENCY_CONFIG.symbol}</span>
-);
+import { createElement } from "react";
+export const CurrencySymbol = ({ className }: { className?: string }) =>
+  createElement("span", { className }, CURRENCY_CONFIG.symbol);
