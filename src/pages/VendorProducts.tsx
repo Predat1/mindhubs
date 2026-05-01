@@ -13,102 +13,139 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy } from "lucide-react";
 
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
-  const { data: products = [], refetch } = useVendorProducts(vendorId);
-  const { data: stats = [] } = useVendorProductStats(products.map((p) => p.id));
+  const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);
+  const { data: stats = [] } = useVendorProductStats(products?.map((p) => p.id) || []);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
   const statsMap = useMemo(() => {
-    const m: Record<string, { views: number; purchases: number }> = {};
-    (stats as unknown as Array<{ product_id: string; total_views: number | null; total_purchases: number | null }>).forEach((s) => {
-      m[s.product_id] = { views: s.total_views ?? 0, purchases: s.total_purchases ?? 0 };
+    const map: Record<string, { views: number; sales: number }> = {};
+    const safeStats = Array.isArray(stats) ? stats : [];
+    
+    safeStats.forEach((s: any) => {
+      if (s && s.product_id) {
+        map[s.product_id] = { 
+          views: s.total_views || 0, 
+          sales: s.total_purchases || 0 
+        };
+      }
     });
-    return m;
+    return map;
   }, [stats]);
 
-  const filtered = useMemo(
-    () => products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase())),
-    [products, search]
-  );
-
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Supprimer "${title}" ?`)) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.")) return;
+    
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Produit supprimé" });
+      toast({ title: "Produit supprimé avec succès" });
       refetch();
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
     }
   };
 
   const copyLink = (id: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/produit/${id}`);
-    toast({ title: "Lien copié ✓" });
+    const url = `${window.location.origin}/produit/${id}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Lien de vente copié ✓", description: "Vous pouvez maintenant le partager." });
   };
 
+  const filtered = (products || []).filter((p) => 
+    p.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <DashboardLayout variant="vendor" title="Produits" shopName={shopName} shopUrl={shopUrl}>
-      <SEO title="Produits — Vendeur" description="Gérez votre catalogue" path="/dashboard/products" keywords="gestion produits, dashboard vendeur, mindhub products, catalogue expert" />
+    <DashboardLayout variant="vendor" title="Gestion des Produits" shopName={shopName} shopUrl={shopUrl}>
+      <SEO title="Mes Produits — MindHubs" description="Gérez votre catalogue de formations et produits digitaux." path="/dashboard/products" />
 
       <div className="mx-auto max-w-6xl space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Mes produits</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{products.length} produit{products.length > 1 ? "s" : ""} dans votre boutique.</p>
+            <h2 className="text-2xl font-black text-foreground sm:text-3xl tracking-tighter">Catalogue Expert</h2>
+            <p className="mt-1 text-sm text-muted-foreground font-medium">
+              {products.length} produit{products.length > 1 ? "s" : ""} disponible{products.length > 1 ? "s" : ""} dans votre boutique.
+            </p>
           </div>
-          <Button asChild className="rounded-full">
-            <Link to="/dashboard/new-product"><Plus size={16} /> Ajouter un produit</Link>
+          <Button asChild className="rounded-2xl h-12 px-6 font-black gap-2 btn-glow">
+            <Link to="/dashboard/new-product">
+              <Plus size={18} /> Ajouter un produit
+            </Link>
           </Button>
         </div>
 
         <div className="relative max-w-md">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un produit…" className="pl-9" />
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            placeholder="Rechercher une formation..." 
+            className="pl-11 h-12 rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm" 
+          />
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card py-16 text-center">
-            <Package className="mx-auto mb-3 text-muted-foreground" size={36} />
-            <p className="text-sm text-muted-foreground">{search ? "Aucun résultat." : "Aucun produit pour l'instant."}</p>
+        {productsLoading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+             {[...Array(3)].map((_, i) => (
+               <div key={i} className="h-64 rounded-3xl bg-muted/20 animate-pulse border border-white/5" />
+             ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-[3rem] border-2 border-dashed border-white/5 bg-card/30 py-24 text-center space-y-6">
+            <div className="h-20 w-20 bg-muted/40 rounded-full flex items-center justify-center mx-auto text-muted-foreground opacity-50">
+              <Package size={40} />
+            </div>
+            <div className="space-y-2">
+               <p className="text-lg font-black">{search ? "Aucun produit correspondant" : "Votre boutique est vide"}</p>
+               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                 {search ? "Essayez de modifier vos mots-clés." : "Commencez par ajouter votre premier produit digital dès maintenant."}
+               </p>
+            </div>
             {!search && (
-              <Button asChild className="mt-4 rounded-full">
-                <Link to="/dashboard/new-product"><Plus size={14} /> Créer mon premier produit</Link>
+              <Button asChild className="rounded-2xl h-12 px-8 font-black">
+                <Link to="/dashboard/new-product"><Plus size={18} /> Créer mon premier produit</Link>
               </Button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-12">
             {filtered.map((p) => {
-              const s = statsMap[p.id] || { views: 0, purchases: 0 };
+              const s = statsMap[p.id] || { views: 0, sales: 0 };
               return (
-                <div key={p.id} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/40">
-                  <div className="aspect-video overflow-hidden bg-muted">
-                    <img src={p.image} alt={p.title} className="h-full w-full object-cover transition group-hover:scale-105" />
+                <div key={p.id} className="group overflow-hidden rounded-[2.5rem] border border-white/5 bg-card/50 backdrop-blur-md transition-all duration-300 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1">
+                  <div className="aspect-video overflow-hidden bg-muted relative">
+                    <img src={p.image} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
                   </div>
-                  <div className="p-4">
-                    <p className="truncate text-sm font-bold text-foreground">{p.title}</p>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="text-base font-bold text-primary">{p.price}</span>
-                      {p.oldPrice && p.oldPrice !== p.price && (
-                        <span className="text-xs text-muted-foreground line-through">{p.oldPrice}</span>
-                      )}
+                  <div className="p-6 space-y-4">
+                    <div>
+                       <p className="truncate text-base font-black text-foreground tracking-tight">{p.title}</p>
+                       <div className="mt-2 flex items-baseline gap-2">
+                         <span className="text-xl font-black text-primary">{p.price}</span>
+                         {p.oldPrice && p.oldPrice !== p.price && (
+                           <span className="text-xs text-muted-foreground line-through opacity-60">{p.oldPrice}</span>
+                         )}
+                       </div>
                     </div>
-                    <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Eye size={12} /> {s.views}</span>
-                      <span className="flex items-center gap-1"><ShoppingCart size={12} /> {s.purchases}</span>
-                    </div>
-                    <div className="mt-4 flex gap-1.5">
-                      <Button asChild variant="outline" size="sm" className="flex-1 rounded-full">
-                        <Link to={`/dashboard/edit-product/${p.id}`}><Pencil size={12} /> Modifier</Link>
-                      </Button>
-                      <Button onClick={() => copyLink(p.id)} variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                        <Copy size={14} />
-                      </Button>
-                      <Button onClick={() => handleDelete(p.id, p.title)} variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive hover:text-destructive">
-                        <Trash2 size={14} />
-                      </Button>
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                       <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                         <span className="flex items-center gap-1.5"><Eye size={14} className="text-primary" /> {s.views}</span>
+                         <span className="flex items-center gap-1.5"><ShoppingCart size={14} className="text-emerald-500" /> {s.sales}</span>
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <Button variant="ghost" size="icon" onClick={() => copyLink(p.id)} title="Copier le lien de vente" className="rounded-xl hover:bg-primary/10 hover:text-primary">
+                           <Copy size={16} />
+                         </Button>
+                         <Button asChild variant="ghost" size="icon" title="Modifier le produit" className="rounded-xl hover:bg-primary/10 hover:text-primary">
+                           <Link to={`/dashboard/edit-product/${p.id}`}><Pencil size={16} /></Link>
+                         </Button>
+                         <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} title="Supprimer" className="rounded-xl hover:bg-destructive/10 hover:text-destructive">
+                           <Trash2 size={16} />
+                         </Button>
+                       </div>
                     </div>
                   </div>
                 </div>

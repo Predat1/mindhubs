@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface VendorOrderItem {
-  product_id: string;
-  title?: string;
-  price?: string;
+  id: string;
+  title: string;
+  price: string;
   quantity?: number;
   image?: string;
 }
@@ -16,50 +16,50 @@ export interface VendorOrder {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
-  payment_method: string;
-  total_price: number;
-  items: VendorOrderItem[];
-  vendor_revenue: number;
   vendor_items: VendorOrderItem[];
+  vendor_revenue: number;
 }
 
-/** Fetch all orders that contain at least one of the vendor's products. */
+/**
+ * Fetches all orders containing any of the vendor's products.
+ * Aggregates revenue and items specifically for that vendor.
+ */
 export const useVendorOrders = (productIds: string[]) => {
-  const key = productIds.slice().sort().join(",");
   return useQuery({
-    queryKey: ["vendor-all-orders", key],
-    queryFn: async (): Promise<VendorOrder[]> => {
-      if (productIds.length === 0) return [];
+    queryKey: ["vendor-all-orders", productIds.join(",")],
+    queryFn: async () => {
+      if (!productIds || productIds.length === 0) return [];
+
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1000); // Prevent crashing if there are tens of thousands of orders
-      if (error) {
-        console.error("Error fetching vendor orders:", error);
-        return [];
-      }
+        .order("created_at", { ascending: false });
 
-      const set = new Set(productIds);
+      if (error) throw error;
+
       return (data || [])
         .map((o: any) => {
+          // If the order stores items as a JSON array
           const items: VendorOrderItem[] = Array.isArray(o.items) ? o.items : [];
-          const vendorItems = items.filter((i) => i.product_id && set.has(i.product_id));
+          
+          // Filter only items belonging to THIS vendor
+          const vendorItems = items.filter((i) => productIds.includes(i.id));
+
           if (vendorItems.length === 0) return null;
+
+          // Calculate revenue for this vendor (e.g., 90% of subtotal)
           const vendorRevenue = vendorItems.reduce((sum, i) => {
-            const priceNum = parseInt(String(i.price ?? "0").replace(/[^\d]/g, ""), 10) || 0;
-            return sum + priceNum * (i.quantity ?? 1);
+            const priceNum = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
+            return sum + (priceNum * (i.quantity || 1)) * 0.9;
           }, 0);
+
           return {
             id: o.id,
             created_at: o.created_at,
             status: o.status,
-            customer_name: o.customer_name,
-            customer_email: o.customer_email,
-            customer_phone: o.customer_phone,
-            payment_method: o.payment_method,
-            total_price: o.total_price,
-            items,
+            customer_name: o.customer_name || "Client Inconnu",
+            customer_email: o.customer_email || "",
+            customer_phone: o.customer_phone || "",
             vendor_items: vendorItems,
             vendor_revenue: vendorRevenue,
           } as VendorOrder;
@@ -67,21 +67,28 @@ export const useVendorOrders = (productIds: string[]) => {
         .filter((o): o is VendorOrder => o !== null);
     },
     enabled: productIds.length > 0,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
-/** Per-product event stats from product_stats view. */
+/**
+ * Hook to get stats (views/sales) for specific products
+ */
 export const useVendorProductStats = (productIds: string[]) => {
-  const key = productIds.slice().sort().join(",");
   return useQuery({
-    queryKey: ["vendor-product-stats", key],
+    queryKey: ["vendor-product-stats", productIds.join(",")],
     queryFn: async () => {
-      if (productIds.length === 0) return [] as any[];
+      if (!productIds || productIds.length === 0) return [];
+
       const { data, error } = await supabase
         .from("product_stats")
-        .select("*")
+        .select("product_id, total_views, total_purchases")
         .in("product_id", productIds);
-      if (error) throw error;
+
+      if (error) {
+        console.error("Error fetching product stats:", error);
+        return [];
+      }
       return data || [];
     },
     enabled: productIds.length > 0,
