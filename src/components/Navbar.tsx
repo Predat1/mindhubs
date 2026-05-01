@@ -98,9 +98,7 @@ const Navbar = () => {
                       : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                   }`}
                 >
-                  {link.premium && <Sparkles size={14} className="text-primary" />}
                   {link.label}
-                  {link.premium && <Badge className="h-4 px-1 text-[8px] bg-primary text-white">PRO</Badge>}
                 </Link>
               ))}
             </div>
