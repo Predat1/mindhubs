@@ -578,7 +578,7 @@ const Inner = ({
         status: finalStatus,
       };
       const { error } = isEdit
-        ? await supabase.from("products").update(productData).eq("id", form.id)
+        ? await supabase.from("products").update(productData).eq("id", form.id).eq("vendor_id", vendorId)
         : await supabase.from("products").insert(productData);
       if (error) throw error;
       const verb = isEdit

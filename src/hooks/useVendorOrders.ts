@@ -21,8 +21,13 @@ export interface VendorOrder {
 }
 
 /**
- * Fetches all orders containing any of the vendor's products.
- * Aggregates revenue and items specifically for that vendor.
+ * [SECURITY FIX] Fetches orders relevant to the vendor.
+ * 
+ * NOTE ON SECURITY: 
+ * This query fetches order metadata to filter by product ID in-memory.
+ * To ensure 100% data privacy between vendors, Row Level Security (RLS) 
+ * MUST be enabled on the 'orders' table with a policy that only allows 
+ * selecting rows where the 'items' JSON array contains one of the vendor's products.
  */
 export const useVendorOrders = (productIds: string[]) => {
   return useQuery({
@@ -30,16 +35,22 @@ export const useVendorOrders = (productIds: string[]) => {
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
 
+      // We only select the necessary columns to minimize data exposure
+      // in case RLS is misconfigured.
+      // We use a server-side filter to only fetch orders containing the vendor's products.
+      // This is much more secure and performant than fetching everything.
+      const orFilter = productIds.map(id => `items.cs.[{"id":"${id}"}]`).join(',');
+      
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("id, created_at, status, customer_name, customer_email, customer_phone, items")
+        .or(orFilter)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       return (data || [])
         .map((o: any) => {
-          // If the order stores items as a JSON array
           const items: VendorOrderItem[] = Array.isArray(o.items) ? o.items : [];
           
           // Filter only items belonging to THIS vendor
@@ -47,7 +58,6 @@ export const useVendorOrders = (productIds: string[]) => {
 
           if (vendorItems.length === 0) return null;
 
-          // Calculate revenue for this vendor (e.g., 90% of subtotal)
           const vendorRevenue = vendorItems.reduce((sum, i) => {
             const priceNum = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
             return sum + (priceNum * (i.quantity || 1)) * 0.9;
@@ -57,7 +67,7 @@ export const useVendorOrders = (productIds: string[]) => {
             id: o.id,
             created_at: o.created_at,
             status: o.status,
-            customer_name: o.customer_name || "Client Inconnu",
+            customer_name: o.customer_name || "Client",
             customer_email: o.customer_email || "",
             customer_phone: o.customer_phone || "",
             vendor_items: vendorItems,
@@ -67,7 +77,7 @@ export const useVendorOrders = (productIds: string[]) => {
         .filter((o): o is VendorOrder => o !== null);
     },
     enabled: productIds.length > 0,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 

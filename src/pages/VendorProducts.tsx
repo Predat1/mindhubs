@@ -36,7 +36,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
   const handleDelete = async (id: string) => {
     if (!confirm("Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.")) return;
     
-    const { error } = await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id).eq("vendor_id", vendorId);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
