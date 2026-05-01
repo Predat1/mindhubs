@@ -306,10 +306,13 @@ export type Database = {
       vendors: {
         Row: {
           avatar_url: string | null
+          banner_url: string | null
           created_at: string
           description: string | null
           id: string
+          primary_color: string | null
           shop_name: string
+          standalone_mode: boolean
           updated_at: string
           user_id: string
           username: string
@@ -317,10 +320,13 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          primary_color?: string | null
           shop_name: string
+          standalone_mode?: boolean
           updated_at?: string
           user_id: string
           username: string
@@ -328,10 +334,13 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          primary_color?: string | null
           shop_name?: string
+          standalone_mode?: boolean
           updated_at?: string
           user_id?: string
           username?: string
