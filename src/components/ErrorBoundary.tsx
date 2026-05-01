@@ -37,17 +37,23 @@ class ErrorBoundary extends Component<Props, State> {
               L'application a rencontré un problème inattendu. Ne vous inquiétez pas, vos données sont en sécurité.
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Button 
-              onClick={() => window.location.reload()} 
-              className="rounded-2xl h-12 px-6 font-bold gap-2 btn-glow"
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.reload();
+              }} 
+              className="rounded-2xl h-12 px-8 font-bold gap-2 btn-glow"
             >
               <RefreshCw size={18} /> Recharger la page
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => window.location.href = "/"}
-              className="rounded-2xl h-12 px-6 font-bold"
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.assign("/");
+              }}
+              className="rounded-2xl h-12 px-8 font-bold"
             >
               Retour à l'accueil
             </Button>

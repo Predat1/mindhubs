@@ -440,18 +440,27 @@ const MonCompte = () => {
                        <div className="space-y-2">
                           <div className="flex justify-between items-center px-1">
                              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mot de Passe</Label>
-                             <button type="button" onClick={() => setMode("forgot")} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Oublié ?</button>
+                              <button type="button" onClick={() => setMode("forgot")} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Oublié ?</button>
                           </div>
                           <div className="relative">
                              <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12 focus:ring-primary/20" />
                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
                           </div>
                        </div>
-                       <Button type="submit" className="w-full h-14 rounded-2xl btn-glow font-black text-lg uppercase tracking-tighter" disabled={submitting}>
-                          {submitting ? <Loader2 className="animate-spin" /> : "Accéder au Portail"}
-                       </Button>
-                    </form>
-                 </TabsContent>
+                       <div className="flex items-center space-x-2 px-1 mb-2">
+                           <input 
+                             type="checkbox" 
+                             id="remember" 
+                             className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary focus:ring-primary/20"
+                             defaultChecked
+                           />
+                           <label htmlFor="remember" className="text-[10px] font-black text-muted-foreground uppercase tracking-widest cursor-pointer select-none">Se souvenir de moi</label>
+                        </div>
+                        <Button type="submit" className="w-full h-14 rounded-2xl btn-glow font-black text-lg uppercase tracking-tighter" disabled={submitting}>
+                           {submitting ? <Loader2 className="animate-spin" /> : "Accéder au Portail"}
+                        </Button>
+                     </form>
+                  </TabsContent>
 
                  <TabsContent value="register" className="mt-0 space-y-6">
                     <form onSubmit={handleSubmit} className="space-y-6">

@@ -13,8 +13,20 @@ const VendorGuard = ({ children }: Props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate("/mon-compte");
-    if (!loading && !vendorLoading && user && !vendor) navigate("/become-a-seller");
+    if (!loading && !user) {
+      navigate("/mon-compte");
+      return;
+    }
+    
+    // If we have a user but no vendor yet, and we aren't loading anything, 
+    // we double check before redirecting to prevent accidental "logouts"
+    if (!loading && !vendorLoading && user && !vendor) {
+      // Small timeout to allow any pending auth state to stabilize
+      const t = setTimeout(() => {
+        if (!vendor) navigate("/become-a-seller");
+      }, 500);
+      return () => clearTimeout(t);
+    }
   }, [loading, user, vendor, vendorLoading, navigate]);
 
   if (loading || vendorLoading || !vendor) {
