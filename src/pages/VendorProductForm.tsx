@@ -571,8 +571,8 @@ const Inner = ({
         status: finalStatus,
       };
       const { error } = isEdit
-        ? await supabase.from("products").update(productData).eq("id", form.id).eq("vendor_id", vendorId)
-        : await supabase.from("products").insert(productData);
+        ? await (supabase as any).from("products").update(productData).eq("id", form.id).eq("vendor_id", vendorId)
+        : await (supabase as any).from("products").insert(productData);
       if (error) throw error;
       const verb = isEdit
         ? "mis à jour"
@@ -631,7 +631,7 @@ const Inner = ({
       category: form.category as Category,
       vendorId: vendorId,
       rating: 5,
-    } as Product),
+    } as any),
     [form, vendorId],
   );
 

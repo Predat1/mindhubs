@@ -207,7 +207,7 @@ const VendorDashboard = () => {
                  <p className="text-4xl font-black text-foreground tracking-tighter">{value}</p>
                  <div className="flex items-center gap-1.5 pt-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{label}</p>
-                    <Info size={10} className="text-muted-foreground cursor-help" title={info} />
+                    <Info size={10} className="text-muted-foreground cursor-help" />
                  </div>
               </div>
             </div>

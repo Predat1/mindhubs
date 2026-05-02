@@ -476,7 +476,7 @@ const DigitalProductFactory = () => {
                              doc.setFontSize(8);
                              doc.setTextColor(150, 150, 150);
                              doc.text(`Mindhubs Factory | ${niche}`, 20, 15);
-                             doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - 40, 15);
+                             doc.text(`Page ${(doc.internal as any).getNumberOfPages()}`, pageWidth - 40, 15);
                              doc.line(20, 18, pageWidth - 20, 18);
                              
                              doc.setTextColor(0, 0, 0);
@@ -496,7 +496,7 @@ const DigitalProductFactory = () => {
                                  doc.setFontSize(8);
                                  doc.setTextColor(150, 150, 150);
                                  doc.text(`Mindhubs Factory | ${niche}`, 20, 15);
-                                 doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - 40, 15);
+                                 doc.text(`Page ${(doc.internal as any).getNumberOfPages()}`, pageWidth - 40, 15);
                                  doc.line(20, 18, pageWidth - 20, 18);
                                  doc.setTextColor(0, 0, 0);
                                  doc.setFontSize(11);
