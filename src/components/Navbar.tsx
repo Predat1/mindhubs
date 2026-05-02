@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 const navLinks = [
   { label: "Explorer", href: "/boutique" },
   { label: "Expertise", href: "/a-propos" },
+  { label: "Tarifs", href: "/pricing" },
   { label: "Support", href: "/contact" },
 ];
 

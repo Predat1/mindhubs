@@ -24,15 +24,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY missing");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Build messages depending on mode
-    // STRICT MOCKUP SPECIFICATION — identical dimensions across all generations
     const MOCKUP_SPEC = `
 STRICT MOCKUP DIMENSIONS (MUST be identical every time):
 - 3D software box mockup (rectangular product box, NOT a book), proportions 3:4 (width:height ratio of the front face)
@@ -51,7 +49,6 @@ STRICT MOCKUP DIMENSIONS (MUST be identical every time):
         role: "user",
         content: [
           { type: "text", text: `Edit this product box mockup. Instruction: ${editPrompt}.
-
 Preserve EXACTLY the same box dimensions, 3:4 front-face proportions, 25% depth, 3/4 perspective angle, centered composition, pure white background and shadow placement as the original.${MOCKUP_SPEC}` },
           { type: "image_url", image_url: { url: editImageUrl } },
         ],
@@ -62,9 +59,7 @@ Preserve EXACTLY the same box dimensions, 3:4 front-face proportions, 25% depth,
       const prompt = `Ultra-premium, highly creative 3D product BOX mockup for a digital product titled "${title}".
 Category: ${category || "digital product"}.
 ${description ? `Theme & visual hints: ${description.slice(0, 250)}` : ""}
-
 Cover design style: ${stylePrompt}
-
 Cover artwork requirements (highly creative & stylish):
 - Bold impactful typography: large primary title at top, accent-colored secondary line, small subtitle band below
 - Rich thematic illustration or photographic scene relevant to the category, integrated cinematically into the lower 60% of the front face
@@ -76,14 +71,17 @@ ${MOCKUP_SPEC}`;
     }
 
     const generateOne = async (): Promise<string> => {
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      // WHY: Basculement vers OpenRouter pour Gemini 2.5 Flash Preview.
+      const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
+          "HTTP-Referer": "https://mindhubs.com",
+          "X-Title": "MindHubs Product Architect"
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
+          model: "google/gemini-2.5-flash-preview-05-20",
           messages,
           modalities: ["image", "text"],
         }),
@@ -92,9 +90,7 @@ ${MOCKUP_SPEC}`;
       if (!resp.ok) {
         const t = await resp.text();
         console.error("AI image error:", resp.status, t);
-        if (resp.status === 429) throw new Error("RATE_LIMIT");
-        if (resp.status === 402) throw new Error("CREDITS_EXHAUSTED");
-        throw new Error("AI gateway error");
+        throw new Error(`AI gateway error: ${resp.status}`);
       }
       const data = await resp.json();
       const dataUrl: string | undefined = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
@@ -116,25 +112,11 @@ ${MOCKUP_SPEC}`;
     };
 
     const wantedCount = Math.min(Math.max(parseInt(String(count), 10) || 1, 1), 4);
-    try {
-      const urls = await Promise.all(Array.from({ length: wantedCount }, () => generateOne()));
-      return new Response(JSON.stringify({ urls }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } catch (e: unknown) {
-      const err = e as Error;
-      if (err.message === "RATE_LIMIT") {
-        return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans un instant." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (err.message === "CREDITS_EXHAUSTED") {
-        return new Response(JSON.stringify({ error: "Crédits IA épuisés. Rechargez votre espace." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw e;
-    }
+    const urls = await Promise.all(Array.from({ length: wantedCount }, () => generateOne()));
+    
+    return new Response(JSON.stringify({ urls }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("generate-product-image error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {

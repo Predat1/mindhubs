@@ -4,34 +4,31 @@
  * WHY: Centralisation des coûts par fonctionnalité pour une gestion cohérente
  * à travers tout l'écosystème MindHubs.
  * 
- * Basé sur une marge cible de >80% par rapport aux coûts OpenRouter/Lovable réels.
+ * Valeurs calibrées pour refléter la valeur ajoutée et couvrir les coûts d'infrastructure.
  */
 export const CREDIT_COSTS: Record<string, number> = {
   // --- Creator Lab ---
-  'spy-research':   10,  // Veille marché (Perplexity deep research)
-  'validate':        5,  // Validation idée (Gemini 2.5 Pro)
-  'plan':           15,  // Plan produit (Claude Sonnet 4.5)
-  'chapter-draft':   8,  // Par chapitre (Claude Opus 4)
-  'marketing':      10,  // Scripts viraux (Mistral Large)
-  'remix':           3,  // Angles différenciation (Gemini Flash)
-  'pivots':          3,  // Pivots d'idée (Gemini Flash)
-
-  // --- Product Architect ---
-  'image-gen':      20,  // Couverture ebook (Flux 1.1 Pro via OpenRouter)
-
+  'spy-research':   25,  // Veille marché profonde (Perplexity)
+  'validate':       10,  // Validation d'idée (Sandbox)
+  'plan':           30,  // Architecture produit (Architect)
+  'chapter-draft':  15,  // Rédaction par chapitre
+  'marketing':      20,  // Scripts Co-Pilot (Co-Pilot)
+  'remix':           5,  // Angles de différenciation
+  'pivots':          5,  // Pivots stratégiques
+  
   // --- Ads Studio ---
-  'product-image-3d': 25, // Boîte 3D (Gemini Flash Image) — par image générée
-  'ad-creative':    25,   // Visuel pub Facebook — par format généré
-  'ad-copy':         5,   // Copywriting Facebook Ads
-  'ad-targeting':    3,   // Ciblage audience africain
-
+  'product-image-3d': 50, // Mockup 3D Premium (Architect / Ads)
+  'ad-creative':      40, // Visuel Pub FB optimisé
+  'ad-copy':          10, // Pack Copywriting Ads
+  'ad-targeting':     10, // Ciblage Audience Expert
+  
   // --- Factory (DigitalProductFactory) ---
-  'factory-niche':   8,  // Analyse de niche
-  'factory-kit':    12,  // Génération kit produit complet
+  'factory-niche':   15, // Analyse de niche
+  'factory-kit':     25, // Génération kit complet
 };
 
 /**
- * Helper: Calcule la valeur équivalente en FCFA
- * (Basé sur le prix de vente moyen du crédit: ~15 FCFA)
+ * creditsToFCFA
+ * Helper pour l'affichage de la valeur monétaire approximative.
  */
-export const creditsToFCFA = (credits: number) => credits * 15;
+export const creditsToFCFA = (credits: number) => credits * 10;

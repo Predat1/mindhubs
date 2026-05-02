@@ -138,7 +138,10 @@ const Inner = () => {
       return;
     }
 
-    const totalCost = totalCreatives * CREDIT_COSTS['ads-creative'];
+    // WHY: Calcul précis incluant le coût des copies/ciblages (par angle) + les visuels (par format)
+    const copyTargetingCost = angles.length * (CREDIT_COSTS['ad-copy'] + CREDIT_COSTS['ad-targeting']);
+    const creativeVisualsCost = totalCreatives * CREDIT_COSTS['ad-creative'];
+    const totalCost = copyTargetingCost + creativeVisualsCost;
     if (credits < totalCost) {
       setShowInsufficient(true);
       return;
@@ -152,7 +155,9 @@ const Inner = () => {
     if (!productId || !vendor || !user || !selectedProduct) return;
     
     const totalCreatives = angles.length * formats.length;
-    const totalCost = totalCreatives * CREDIT_COSTS['ads-creative'];
+    const copyTargetingCost = angles.length * (CREDIT_COSTS['ad-copy'] + CREDIT_COSTS['ad-targeting']);
+    const creativeVisualsCost = totalCreatives * CREDIT_COSTS['ad-creative'];
+    const totalCost = copyTargetingCost + creativeVisualsCost;
 
     const t = toast.loading(`Génération du kit publicitaire en cours… (${totalCreatives} créative${totalCreatives > 1 ? "s" : ""})`, {
       description: "Analyse du produit, copywriting, ciblage et création des images.",

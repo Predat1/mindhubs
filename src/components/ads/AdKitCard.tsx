@@ -13,6 +13,10 @@ import {
   useDeleteAdCreative, useRegenerateImage, useRegenerateCopy, useRegenerateTargeting, useRegenerateVariant,
 } from "@/hooks/useAdCreatives";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Wallet } from "lucide-react";
 
 const FORMAT_RATIO: Record<string, string> = {
   "1:1": "aspect-square",
@@ -47,6 +51,9 @@ const AdKitCard = ({ creative, productLink }: AdKitCardProps) => {
 
   const angle = ANGLE_OPTIONS.find((a) => a.value === creative.angle);
   const { user } = useAuth();
+  const { balance: credits, spend: spendCredits } = useCredits(creative.vendor_id);
+  const [showConfirm, setShowConfirm] = useState<{ type: string; cost: number; action: () => void } | null>(null);
+
   const del = useDeleteAdCreative();
   const regenImage = useRegenerateImage();
   const regenCopy = useRegenerateCopy();
@@ -56,23 +63,50 @@ const AdKitCard = ({ creative, productLink }: AdKitCardProps) => {
   const isRegenerating =
     regenImage.isPending || regenCopy.isPending || regenTargeting.isPending || regenVariant.isPending;
 
-  const runWithToast = async (label: string, fn: () => Promise<unknown>) => {
-    const t = toast.loading(`Régénération : ${label}…`);
-    try {
-      await fn();
-      toast.success(`${label} régénéré ✨`, { id: t });
-    } catch (e: any) {
-      toast.error("Erreur de régénération", { id: t, description: e.message });
+  const runWithCredits = async (label: string, featureType: string, cost: number, fn: () => Promise<unknown>) => {
+    if (credits < cost) {
+      toast.error("Crédits insuffisants", { 
+        description: `Il vous faut ${cost} crédits pour régénérer ${label.toLowerCase()}.` 
+      });
+      return;
     }
+
+    setShowConfirm({
+      type: label,
+      cost,
+      action: async () => {
+        setShowConfirm(null);
+        const t = toast.loading(`Régénération : ${label}…`);
+        try {
+          const res = await spendCredits({ 
+            amount: cost, 
+            description: `Régénération ${label} (Ad: ${creative.id})`, 
+            featureType 
+          }) as any;
+          
+          if (res && !res.success) throw new Error(res.error || "Échec du débit");
+          
+          await fn();
+          toast.success(`${label} régénéré ✨`, { id: t });
+        } catch (e: any) {
+          toast.error("Erreur", { id: t, description: e.message });
+        }
+      }
+    });
   };
 
   const handleRegenImage = () =>
-    user && runWithToast("Image", () => regenImage.mutateAsync({ creative, userId: user.id }));
-  const handleRegenCopy = () => runWithToast("Copywriting", () => regenCopy.mutateAsync({ creative }));
-  const handleRegenTargeting = () => runWithToast("Ciblage", () => regenTargeting.mutateAsync({ creative }));
+    user && runWithCredits("Image", "ad-creative", CREDIT_COSTS['ad-creative'], () => regenImage.mutateAsync({ creative, userId: user.id }));
+  
+  const handleRegenCopy = () => 
+    runWithCredits("Copywriting", "ad-copy", CREDIT_COSTS['ad-copy'], () => regenCopy.mutateAsync({ creative }));
+  
+  const handleRegenTargeting = () => 
+    runWithCredits("Ciblage", "ad-targeting", CREDIT_COSTS['ad-targeting'], () => regenTargeting.mutateAsync({ creative }));
+  
   const handleRegenFullAngle = () =>
     user &&
-    runWithToast("Nouvelle variante", () =>
+    runWithCredits("Variante complète", "ads-creative", (CREDIT_COSTS['ad-creative'] + CREDIT_COSTS['ad-copy'] + CREDIT_COSTS['ad-targeting']), () =>
       regenVariant.mutateAsync({
         vendorId: creative.vendor_id,
         userId: user.id,
@@ -460,6 +494,35 @@ ${targetingText}`;
           </div>
         </div>
       </div>
+      {/* Confirmation de dépense de crédits */}
+      <Dialog open={!!showConfirm} onOpenChange={(open) => !open && setShowConfirm(null)}>
+        <DialogContent className="rounded-[2rem] border-white/10 bg-zinc-950/95 backdrop-blur-3xl max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-fuchsia-500/20 text-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.3)]">
+              <Wallet size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black text-white">Confirmer l'action</DialogTitle>
+            <DialogDescription className="text-zinc-400 font-medium pt-2 leading-relaxed">
+              Voulez-vous utiliser <span className="text-white font-bold">{showConfirm?.cost} crédits</span> pour régénérer la section <span className="text-fuchsia-400 font-bold">{showConfirm?.type}</span> ?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-3 pt-6">
+            <Button 
+              onClick={() => showConfirm?.action()} 
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white font-black shadow-lg shadow-fuchsia-500/20"
+            >
+              Oui, débiter et régénérer
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowConfirm(null)} 
+              className="w-full h-12 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 font-bold"
+            >
+              Annuler
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

@@ -16,13 +16,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY missing");
 
     const systemPrompt = `Tu es un expert Facebook Ads Manager pour le marché africain francophone. Tu recommandes des ciblages précis et réalistes basés sur les options réelles de Facebook Ads. Toujours en français.`;
 
     const userPrompt = `Analyse ce produit digital et propose un ciblage Facebook Ads optimisé conversion pour les marchés africains francophones.
-
 PRODUIT :
 - Titre : ${productTitle}
 - Catégorie : ${productCategory || "Produit digital"}
@@ -31,9 +30,15 @@ PRODUIT :
 
 Recommande un ciblage PRÉCIS basé sur les options Facebook Ads réelles : tranche d'âge, genre, pays africains francophones les plus pertinents pour ce produit (parmi : Côte d'Ivoire, Sénégal, Cameroun, Bénin, Togo, Mali, Burkina Faso, Gabon, Congo, RDC, Niger, Guinée), centres d'intérêts Facebook réels (5 à 8), comportements (acheteurs en ligne, utilisateurs mobile, voyageurs internationaux, etc.), budget journalier suggéré (low/mid/high avec montant XOF), objectif de campagne FB recommandé.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // WHY: Basculement vers OpenRouter.
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { 
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`, 
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://mindhubs.com",
+        "X-Title": "MindHubs Ads Studio"
+      },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -79,17 +84,7 @@ Recommande un ciblage PRÉCIS basé sur les options Facebook Ads réelles : tran
     if (!resp.ok) {
       const t = await resp.text();
       console.error("ad-targeting error:", resp.status, t);
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans un instant." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits IA épuisés. Rechargez votre espace." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error("AI gateway error");
+      throw new Error(`AI gateway error: ${resp.status}`);
     }
 
     const data = await resp.json();

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVendorProducts } from "@/hooks/useVendors";
 import { useVendorProductStats } from "@/hooks/useVendorOrders";
+import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy } from "lucide-react";
@@ -15,6 +16,7 @@ import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy } from "
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);
   const { data: stats = [] } = useVendorProductStats(products?.map((p) => p.id) || []);
+  const { canAddProduct, maxProducts, plan } = useVendorSubscription(vendorId);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
@@ -69,11 +71,19 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
               {products.length} produit{products.length > 1 ? "s" : ""} disponible{products.length > 1 ? "s" : ""} dans votre boutique.
             </p>
           </div>
-          <Button asChild className="rounded-2xl h-12 px-6 font-black gap-2 btn-glow">
-            <Link to="/dashboard/new-product">
-              <Plus size={18} /> Ajouter un produit
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            {!canAddProduct && (
+              <p className="text-[10px] font-black uppercase text-rose-500 bg-rose-500/10 px-3 py-2 rounded-xl border border-rose-500/20">
+                Limite {plan} atteinte ({products.length}/{maxProducts})
+              </p>
+            )}
+            <Button asChild disabled={!canAddProduct} className={`rounded-2xl h-12 px-6 font-black gap-2 ${!canAddProduct ? 'opacity-50 cursor-not-allowed grayscale' : 'btn-glow'}`}>
+              <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
+                {canAddProduct ? <Plus size={18} /> : <Zap size={18} />} 
+                {canAddProduct ? "Ajouter un produit" : "Upgrader pour ajouter"}
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="relative max-w-md">
@@ -104,8 +114,11 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                </p>
             </div>
             {!search && (
-              <Button asChild className="rounded-2xl h-12 px-8 font-black">
-                <Link to="/dashboard/new-product"><Plus size={18} /> Créer mon premier produit</Link>
+              <Button asChild disabled={!canAddProduct} className={`rounded-2xl h-12 px-8 font-black ${!canAddProduct ? 'opacity-50 grayscale' : ''}`}>
+                <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
+                  {canAddProduct ? <Plus size={18} /> : <Zap size={18} />} 
+                  {canAddProduct ? "Créer mon premier produit" : "Upgrader mon plan"}
+                </Link>
               </Button>
             )}
           </div>

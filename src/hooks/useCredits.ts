@@ -12,16 +12,23 @@ export interface CreditTransaction {
   feature_type: string | null;
 }
 
+export interface SpendResult {
+  success: boolean;
+  balance?: number;
+  error?: string;
+  spent?: number;
+}
+
 /**
  * useCredits
  * 
  * WHY: Gère le solde réel des crédits et l'historique des transactions.
- * Fournit la fonction 'spend' qui invoque la procédure stockée atomique RPC.
+ * Empêche toute manipulation locale en passant par une fonction RPC PostgreSQL atomique.
  */
 export const useCredits = (vendorId?: string) => {
   const queryClient = useQueryClient();
 
-  // 1. Récupération du solde et historique
+  // 1. Récupération du solde
   const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['vendor-credits', vendorId],
     enabled: !!vendorId,
@@ -31,11 +38,13 @@ export const useCredits = (vendorId?: string) => {
         .select('balance')
         .eq('vendor_id', vendorId)
         .single();
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found, on retourne 0
+      
+      if (error && error.code !== 'PGRST116') throw error;
       return data?.balance ?? 0;
     }
   });
 
+  // 2. Historique des transactions
   const { data: transactions = [], isLoading: txLoading } = useQuery({
     queryKey: ['vendor-credit-transactions', vendorId],
     enabled: !!vendorId,
@@ -46,12 +55,13 @@ export const useCredits = (vendorId?: string) => {
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false })
         .limit(20);
+      
       if (error) throw error;
       return (data || []) as CreditTransaction[];
     }
   });
 
-  // 2. Mutation pour dépenser des crédits
+  // 3. Mutation pour dépenser des crédits
   const spendMutation = useMutation({
     mutationFn: async ({ 
       amount, 
@@ -61,8 +71,8 @@ export const useCredits = (vendorId?: string) => {
       amount: number; 
       description: string; 
       featureType: string 
-    }) => {
-      if (!vendorId) throw new Error("ID Vendeur manquant");
+    }): Promise<SpendResult> => {
+      if (!vendorId) throw new Error("ID Vendeur requis pour l'action");
       
       const { data, error } = await (supabase as any).rpc('spend_credits', {
         p_vendor_id: vendorId,
@@ -73,18 +83,19 @@ export const useCredits = (vendorId?: string) => {
       });
 
       if (error) throw error;
-      if (!(data as any)?.success) throw new Error((data as any)?.error);
-
-      return data;
+      return data as SpendResult;
     },
-    onSuccess: () => {
-      // Invalidation immédiate pour rafraîchir l'UI partout
-      queryClient.invalidateQueries({ queryKey: ['vendor-credits', vendorId] });
-      queryClient.invalidateQueries({ queryKey: ['vendor-credit-transactions', vendorId] });
-      queryClient.invalidateQueries({ queryKey: ['vendor-subscription', vendorId] });
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['vendor-credits', vendorId] });
+        queryClient.invalidateQueries({ queryKey: ['vendor-credit-transactions', vendorId] });
+        queryClient.invalidateQueries({ queryKey: ['vendor-subscription', vendorId] });
+      } else {
+        toast.error(data.error || "Échec de l'opération");
+      }
     },
     onError: (err: any) => {
-      toast.error(`Erreur crédits : ${err.message}`);
+      toast.error(`Erreur de transaction : ${err.message}`);
     }
   });
 

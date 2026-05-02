@@ -29,8 +29,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useCredits } from "@/hooks/useCredits";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Wallet, AlertCircle } from "lucide-react";
 
 // Types
 type ProductType = "ebook" | "templates" | "course" | "checklist" | "prompts" | "planner" | "report" | "marketing_kit";
@@ -114,26 +117,49 @@ const DigitalProductFactory = () => {
   
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [analyzedCountries, setAnalyzedCountries] = useState<CountryInfo[]>([]);
+  
+  const [showConfirm, setShowConfirm] = useState<{ type: string; cost: number; action: () => void } | null>(null);
+  const { data: vendor } = useCurrentVendor();
+  const { balance: credits, spend: spendCredits } = useCredits(vendor?.id);
 
   const handleNicheSubmit = async () => {
     if (!niche) return toast.error("Veuillez entrer une niche.");
-    setIsProcessing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("factory-analyze-niche", {
-        body: { niche },
+    const cost = CREDIT_COSTS['factory-niche'];
+    
+    if (credits < cost) {
+      toast.error("Crédits insuffisants", { 
+        description: `Il vous faut ${cost} crédits pour analyser cette niche.` 
       });
-      if (error) throw new Error(error.message);
-      const typedData = data as { countries?: CountryInfo[]; error?: string };
-      if (typedData?.error) throw new Error(typedData.error);
-      const countries = typedData.countries as CountryInfo[];
-      if (!countries?.length) throw new Error("Aucun pays recommandé");
-      setAnalyzedCountries(countries);
-      setStep("market_strategy");
-    } catch (e: unknown) {
-      toast.error("Erreur d'analyse", { description: (e as Error).message });
-    } finally {
-      setIsProcessing(false);
+      return;
     }
+
+    setShowConfirm({
+      type: "Analyse de Niche",
+      cost,
+      action: async () => {
+        setShowConfirm(null);
+        setIsProcessing(true);
+        try {
+          const res = await spendCredits({ amount: cost, description: `Analyse niche: ${niche}`, featureType: 'factory-niche' }) as any;
+          if (res && !res.success) throw new Error(res.error);
+
+          const { data, error } = await supabase.functions.invoke("factory-analyze-niche", {
+            body: { niche },
+          });
+          if (error) throw new Error(error.message);
+          const typedData = data as { countries?: CountryInfo[]; error?: string };
+          if (typedData?.error) throw new Error(typedData.error);
+          const countries = typedData.countries as CountryInfo[];
+          if (!countries?.length) throw new Error("Aucun pays recommandé");
+          setAnalyzedCountries(countries);
+          setStep("market_strategy");
+        } catch (e: unknown) {
+          toast.error("Erreur d'analyse", { description: (e as Error).message });
+        } finally {
+          setIsProcessing(false);
+        }
+      }
+    });
   };
 
   const handleCountrySelect = async (code: string) => {
@@ -173,57 +199,75 @@ const DigitalProductFactory = () => {
   };
 
   const startGeneration = async () => {
-    setStep("generate");
-    setGenerationProgress(0);
-
-    // Animate progress while waiting for Claude
-    const progressInterval = setInterval(() => {
-      setGenerationProgress(prev => Math.min(prev + 2, 85));
-    }, 300);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("factory-generate-kit", {
-        body: {
-          niche,
-          countryCode: selectedCountry,
-          countryName: selectedCountryName,
-          painPointTitle: selectedPainPoint?.title,
-          painPointDescription: selectedPainPoint?.description,
-          productType: selectedType,
-          chapterTitles: chapters.map(c => c.title),
-        },
+    const cost = CREDIT_COSTS['factory-kit'];
+    if (credits < cost) {
+      toast.error("Crédits insuffisants", { 
+        description: `Il vous faut ${cost} crédits pour générer ce kit complet.` 
       });
-      clearInterval(progressInterval);
-
-      if (error) throw new Error(error.message);
-      const typedData = data as { chapters?: Chapter[]; adsKit?: AdCopy[]; targeting?: AdsTargeting; error?: string };
-      if (typedData?.error) throw new Error(typedData.error);
-
-      if (typedData.chapters?.length) {
-        setChapters(typedData.chapters.map((ch, i: number) => ({
-          id: String(i + 1),
-          title: ch.title,
-          content: ch.content,
-          isGenerated: true,
-        })));
-      } else {
-        setChapters(prev => prev.map(c => ({ ...c, isGenerated: true })));
-      }
-
-      if (typedData.adsKit) {
-        setAdsKit(typedData.adsKit);
-      }
-      if (typedData.targeting) {
-        setAdsTargeting(typedData.targeting);
-      }
-
-      setGenerationProgress(100);
-      setTimeout(() => setStep("ads_kit"), 600);
-    } catch (e: unknown) {
-      clearInterval(progressInterval);
-      toast.error("Erreur de génération", { description: (e as Error).message });
-      setStep("design");
+      return;
     }
+
+    setShowConfirm({
+      type: "Génération Kit Business",
+      cost,
+      action: async () => {
+        setShowConfirm(null);
+        setStep("generate");
+        setGenerationProgress(0);
+
+        // Animate progress while waiting for Claude
+        const progressInterval = setInterval(() => {
+          setGenerationProgress(prev => Math.min(prev + 2, 85));
+        }, 300);
+
+        try {
+          const res = await spendCredits({ amount: cost, description: `Factory Kit: ${niche}`, featureType: 'factory-kit' }) as any;
+          if (res && !res.success) throw new Error(res.error);
+
+          const { data, error } = await supabase.functions.invoke("factory-generate-kit", {
+            body: {
+              niche,
+              countryCode: selectedCountry,
+              countryName: selectedCountryName,
+              painPointTitle: selectedPainPoint?.title,
+              painPointDescription: selectedPainPoint?.description,
+              productType: selectedType,
+              chapterTitles: chapters.map(c => c.title),
+            },
+          });
+          clearInterval(progressInterval);
+
+          if (error) throw new Error(error.message);
+          const typedData = data as { chapters?: Chapter[]; adsKit?: AdCopy[]; targeting?: AdsTargeting; error?: string };
+          if (typedData?.error) throw new Error(typedData.error);
+
+          if (typedData.chapters?.length) {
+            setChapters(typedData.chapters.map((ch, i: number) => ({
+              id: String(i + 1),
+              title: ch.title,
+              content: ch.content,
+              isGenerated: true,
+            })));
+          } else {
+            setChapters(prev => prev.map(c => ({ ...c, isGenerated: true })));
+          }
+
+          if (typedData.adsKit) {
+            setAdsKit(typedData.adsKit);
+          }
+          if (typedData.targeting) {
+            setAdsTargeting(typedData.targeting);
+          }
+
+          setGenerationProgress(100);
+          setTimeout(() => setStep("ads_kit"), 600);
+        } catch (e: unknown) {
+          clearInterval(progressInterval);
+          toast.error("Erreur de génération", { description: (e as Error).message });
+          setStep("design");
+        }
+      }
+    });
   };
 
   const copyToClipboard = (text: string) => {
@@ -602,6 +646,36 @@ const DigitalProductFactory = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Confirmation de dépense de crédits */}
+            <Dialog open={!!showConfirm} onOpenChange={(open) => !open && setShowConfirm(null)}>
+              <DialogContent className="rounded-[2rem] border-white/10 bg-zinc-950/95 backdrop-blur-3xl max-w-sm text-white">
+                <DialogHeader className="items-center text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 text-primary shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <Wallet size={32} />
+                  </div>
+                  <DialogTitle className="text-2xl font-black">Confirmer l'action</DialogTitle>
+                  <DialogDescription className="text-zinc-400 font-medium pt-2 leading-relaxed">
+                    Voulez-vous utiliser <span className="text-white font-bold">{showConfirm?.cost} crédits</span> pour lancer <span className="text-primary font-bold">{showConfirm?.type}</span> ?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex-col sm:flex-col gap-3 pt-6">
+                  <Button 
+                    onClick={() => showConfirm?.action()} 
+                    className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-black shadow-lg shadow-primary/20"
+                  >
+                    Oui, débiter et continuer
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowConfirm(null)} 
+                    className="w-full h-12 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 font-bold"
+                  >
+                    Annuler
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </DashboardLayout>
       )}

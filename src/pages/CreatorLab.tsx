@@ -146,16 +146,21 @@ const CreatorLabContent = () => {
       </div>
 
       <Dialog open={showCreditDialog} onOpenChange={setShowCreditDialog}>
-        <DialogContent className="rounded-[2rem] border-white/10 bg-zinc-950">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Crédits insuffisants</DialogTitle>
-            <DialogDescription>
-              Cette opération nécessite plus de crédits IA. Votre solde actuel est de {credits} crédits.
+        <DialogContent className="rounded-[2.5rem] border-white/10 bg-zinc-950 p-8">
+          <DialogHeader className="space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2">
+              <Zap size={32} fill="currentColor" />
+            </div>
+            <DialogTitle className="text-3xl font-black uppercase tracking-tighter">Crédits IA insuffisants</DialogTitle>
+            <DialogDescription className="text-zinc-400 font-medium text-base">
+              Votre solde actuel ({credits} crédits) est trop bas pour lancer cette intelligence. Passez au plan supérieur ou achetez un pack de crédits.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowCreditDialog(false)} className="rounded-xl">Plus tard</Button>
-            <Button onClick={() => navigate('/mon-compte?tab=credits')} className="rounded-xl btn-primary-brand font-bold">Recharger mon compte</Button>
+          <DialogFooter className="gap-3 mt-8">
+            <Button variant="ghost" onClick={() => setShowCreditDialog(false)} className="rounded-xl font-black uppercase text-[10px]">Plus tard</Button>
+            <Button onClick={() => navigate('/dashboard/abonnement')} className="rounded-xl bg-primary text-black font-black uppercase tracking-widest text-[10px] px-8 h-12 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+              Recharger maintenant
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -25,16 +25,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY missing");
 
     const angleLabel = ANGLE_LABEL[angle] || angle;
     const features = Array.isArray(productFeatures) ? productFeatures.filter(Boolean).slice(0, 8).join(" • ") : "";
 
-    const systemPrompt = `Tu es un expert copywriter Facebook Ads spécialisé dans la conversion sur les marchés africains francophones (Côte d'Ivoire, Sénégal, Cameroun, Bénin, Togo, Mali, Burkina Faso, Gabon, Congo, RDC). Tu écris en français clair, direct, scroll-stopper, sans jargon. Respecte STRICTEMENT les limites de caractères Facebook Ads.`;
+    const systemPrompt = `Tu es un expert copywriter Facebook Ads spécialisé dans la conversion sur les marchés africains francophones. Tu écris en français clair, direct, scroll-stopper, sans jargon. Respecte STRICTEMENT les limites de caractères Facebook Ads.`;
 
     const userPrompt = `Génère un kit de copywriting Facebook Ads pour ce produit digital, optimisé conversion sous l'angle marketing : "${angleLabel}".
-
 PRODUIT :
 - Titre : ${productTitle}
 - Catégorie : ${productCategory || "Produit digital"}
@@ -49,15 +48,22 @@ CONTRAINTES STRICTES :
 - CTA : 1 valeur parmi : "SHOP_NOW", "LEARN_MORE", "SIGN_UP", "GET_OFFER", "DOWNLOAD", "ORDER_NOW"
 - Tout doit refléter l'angle "${angleLabel}".`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // WHY: Basculement vers OpenRouter pour une unification de l'infrastructure IA.
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { 
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`, 
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://mindhubs.com",
+        "X-Title": "MindHubs Ads Studio"
+      },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        response_format: { type: "json_object" }, // Utilisation du mode JSON natif d'OpenRouter/Gemini
         tools: [{
           type: "function",
           function: {
@@ -83,17 +89,7 @@ CONTRAINTES STRICTES :
     if (!resp.ok) {
       const t = await resp.text();
       console.error("ad-copy error:", resp.status, t);
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans un instant." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits IA épuisés. Rechargez votre espace." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error("AI gateway error");
+      throw new Error(`AI gateway error: ${resp.status}`);
     }
 
     const data = await resp.json();

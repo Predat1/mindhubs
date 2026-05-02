@@ -22,27 +22,21 @@ export interface VendorOrder {
 }
 
 /**
- * [SECURITY FIX] Fetches orders relevant to the vendor.
+ * useVendorOrders
  * 
- * NOTE ON SECURITY: 
- * This query fetches order metadata to filter by product ID in-memory.
- * To ensure 100% data privacy between vendors, Row Level Security (RLS) 
- * MUST be enabled on the 'orders' table with a policy that only allows 
- * selecting rows where the 'items' JSON array contains one of the vendor's products.
+ * WHY: Récupère les commandes pertinentes pour le vendeur et calcule ses revenus réels.
+ * [MODIF] Utilise maintenant le taux de commission dynamique du plan (5%, 7% ou 10%).
  */
 export const useVendorOrders = (vendorId: string | undefined, productIds: string[]) => {
-  const { commission_rate } = useVendorSubscription(vendorId);
-  const vendorShare = 1 - (commission_rate ?? 0.10);
+  // WHY: On récupère le taux de commission dynamique du plan via le hook de souscription
+  const { commissionRate } = useVendorSubscription(vendorId);
+  const vendorShare = 1 - (commissionRate ?? 0.10);
 
   return useQuery({
     queryKey: ["vendor-all-orders", vendorId, productIds.join(",")],
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
 
-      // We only select the necessary columns to minimize data exposure
-      // in case RLS is misconfigured.
-      // We use a server-side filter to only fetch orders containing the vendor's products.
-      // This is much more secure and performant than fetching everything.
       const orFilter = productIds.map(id => `items.cs.[{"id":"${id}"}]`).join(',');
       
       const { data, error } = await supabase
@@ -56,14 +50,13 @@ export const useVendorOrders = (vendorId: string | undefined, productIds: string
       return (data || [])
         .map((o: any) => {
           const items: VendorOrderItem[] = Array.isArray(o.items) ? o.items : [];
-          
-          // Filter only items belonging to THIS vendor
           const vendorItems = items.filter((i) => productIds.includes(i.id));
 
           if (vendorItems.length === 0) return null;
 
           const vendorRevenue = vendorItems.reduce((sum, i) => {
             const priceNum = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
+            // WHY: Application du partage de revenu basé sur le plan (ex: 95% pour Elite)
             return sum + (priceNum * (i.quantity || 1)) * vendorShare;
           }, 0);
 
@@ -99,12 +92,10 @@ export const useVendorProductStats = (productIds: string[]) => {
         .select("product_id, total_views, total_purchases")
         .in("product_id", productIds);
 
-      if (error) {
-        console.error("Error fetching product stats:", error);
-        return [];
-      }
+      if (error) throw error;
       return data || [];
     },
     enabled: productIds.length > 0,
+    staleTime: 1000 * 60 * 15,
   });
 };
