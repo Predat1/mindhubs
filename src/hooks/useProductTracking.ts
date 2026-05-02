@@ -92,6 +92,39 @@ export const trackProductPurchase = async (productId: string) => {
   });
 };
 
+export const trackProductClick = async (productId: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  await (supabase as any).from("product_events").insert({
+    product_id: productId,
+    event_type: "click_buy",
+    user_id: user?.id ?? null,
+    session_id: getSessionId(),
+    source: getTrafficSource()
+  });
+};
+
+export const trackAddToCart = async (productId: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  await (supabase as any).from("product_events").insert({
+    product_id: productId,
+    event_type: "add_to_cart",
+    user_id: user?.id ?? null,
+    session_id: getSessionId(),
+    source: getTrafficSource()
+  });
+};
+
+export const trackCheckoutStart = async (productId: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  await (supabase as any).from("product_events").insert({
+    product_id: productId,
+    event_type: "checkout_started",
+    user_id: user?.id ?? null,
+    session_id: getSessionId(),
+    source: getTrafficSource()
+  });
+};
+
 export const useProductStats = () => {
   return useQuery({
     queryKey: ["product-stats"],

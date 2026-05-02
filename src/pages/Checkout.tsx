@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
+import { trackCheckoutStart, trackProductPurchase } from "@/hooks/useProductTracking";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
@@ -40,6 +41,10 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
+    if (items.length > 0) {
+      items.forEach(item => trackCheckoutStart(item.product.id));
+    }
+    
     if (items.length === 1 && items[0].product.paymentLink) {
       window.open(items[0].product.paymentLink, "_blank", "noopener,noreferrer");
       navigate("/boutique", { replace: true });
@@ -134,6 +139,7 @@ const Checkout = () => {
       if (error) throw error;
       clearCart();
       setConfirmed(true);
+      items.forEach(item => trackProductPurchase(item.product.id));
       fbPixel.purchase({
         content_ids: items.map((i) => i.product.id),
         value: totalPrice,

@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import fbPixel from "@/hooks/useFacebookPixel";
-import { trackProductView, trackProductPurchase } from "@/hooks/useProductTracking";
+import { trackProductView, trackProductPurchase, trackProductClick, trackAddToCart } from "@/hooks/useProductTracking";
 import { useVendorById, useVendorProducts } from "@/hooks/useVendors";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -65,8 +65,9 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (product) {
+      trackProductClick(product.id);
       addToCart(product);
-      trackProductPurchase(product.id);
+      trackAddToCart(product.id);
       const price = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
       fbPixel.initiateCheckout({
         content_ids: [product.id],

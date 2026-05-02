@@ -8,7 +8,7 @@ import { usePrefetchProduct } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
-import { formatCurrency } from "@/lib/currency";
+import { trackProductClick } from "@/hooks/useProductTracking";
 
 const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
 
@@ -36,6 +36,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const handleBuy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    trackProductClick(product.id);
     setPopupOpen(true);
   };
 
