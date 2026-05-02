@@ -28,17 +28,17 @@ const WinningProductSpy = () => {
         const formattedAds = data.data.map((ad: any) => ({
           id: ad.id,
           title: ad.page_name,
-          niche: "Ad Library",
+          niche: ad.digitalScore > 70 ? "Vente Digitale High-Intent" : "Produit Numérique",
           image: ad.ad_snapshot_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800",
-          hotness: Math.floor(Math.random() * 20) + 80, // Simulation based on activity
-          engagement: "Live",
+          hotness: ad.digitalScore, // Use our score as hotness
+          engagement: ad.publisher_platforms?.length > 1 ? "Multi-Plateforme" : "Facebook/IG",
           daysActive: "Actif",
-          countries: ["Global"],
+          countries: ["Ciblage Précis"],
           description: ad.ad_creative_bodies?.[0] || "Aucune description disponible.",
           url: ad.ad_snapshot_url
         }));
         setAds(formattedAds);
-        toast.success(`${formattedAds.length} publicités trouvées !`);
+        toast.success(`${formattedAds.length} publicités de produits digitaux identifiées !`);
       } else {
         toast.error("Aucun résultat trouvé ou erreur API.");
       }
