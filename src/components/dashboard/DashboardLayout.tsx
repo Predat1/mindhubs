@@ -493,7 +493,6 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         </div>
       )}
     </TooltipProvider>
-    </div>
   );
 };
 
