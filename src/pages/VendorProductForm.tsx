@@ -56,6 +56,7 @@ import {
   Trash2,
   Scissors,
   Crop,
+  AlertCircle,
 } from "lucide-react";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import ProductCard from "@/components/ProductCard";
