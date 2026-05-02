@@ -15,17 +15,16 @@ export const ExitIntentPopup = () => {
       return;
     }
 
-    const handleMouseLeave = (e: MouseEvent) => {
-      // Trigger when mouse moves out of the top of the window (exit intent)
-      if (e.clientY <= 0 && !hasShown) {
+    // Trigger after 2 minutes (120000 ms)
+    const timer = setTimeout(() => {
+      if (!hasShown) {
         setIsVisible(true);
         setHasShown(true);
         sessionStorage.setItem("exit_popup_shown", "true");
       }
-    };
+    }, 120000);
 
-    document.addEventListener("mouseleave", handleMouseLeave);
-    return () => document.removeEventListener("mouseleave", handleMouseLeave);
+    return () => clearTimeout(timer);
   }, [hasShown]);
 
   const closePopup = () => setIsVisible(false);
