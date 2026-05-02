@@ -10,6 +10,7 @@ import MarketingCoPilot from "@/components/creator-lab/MarketingCoPilot";
 
 const CreatorLab = () => {
   const [activeTab, setActiveTab] = useState("spy");
+  const [credits, setCredits] = useState(250);
 
   return (
     <DashboardLayout variant="vendor" title="Creator Lab Elite">
@@ -38,11 +39,11 @@ const CreatorLab = () => {
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Crédits IA</span>
                 <Zap size={14} className="text-amber-500 fill-amber-500" />
               </div>
-              <div className="text-3xl font-black">250 / 500</div>
+              <div className="text-3xl font-black">{credits} / 500</div>
               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: "50%" }}
+                  animate={{ width: `${(credits / 500) * 100}%` }}
                   className="h-full bg-gradient-to-r from-primary to-accent" 
                 />
               </div>

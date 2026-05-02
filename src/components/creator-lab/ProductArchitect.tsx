@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 const MOCK_CHAPTERS = [
   { id: 1, title: "Introduction & Fondamentaux", content: "Bienvenue dans ce guide complet. Dans ce premier chapitre, nous allons voir pourquoi la fiscalité est votre meilleure alliée..." },
@@ -28,7 +29,20 @@ const ProductArchitect = () => {
     setTimeout(() => {
       setIsGenerated(true);
       setIsGenerating(false);
+      toast.success("Structure générée !", {
+        description: "Claude 3.5 Sonnet a créé le plan de votre produit.",
+      });
     }, 3000);
+  };
+
+  const handlePublish = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      toast.success("Produit publié avec succès !", {
+        description: "Votre produit est maintenant disponible sur la marketplace MindHubs.",
+      });
+    }, 2000);
   };
 
   return (
@@ -271,8 +285,12 @@ const ProductArchitect = () => {
                <div className="glass-card rounded-[2.5rem] p-8 border-white/5 bg-primary/10 border-primary/20 space-y-6">
                   <h3 className="text-xl font-black">Prêt à encaisser ?</h3>
                   <p className="text-sm text-muted-foreground">Une fois que vous cliquez sur le bouton ci-dessous, votre produit sera généré, sécurisé et publié sur MindHubs en 1 clic.</p>
-                  <Button className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 font-black text-xl gap-4 shadow-[0_10px_40px_rgba(var(--primary-rgb),0.3)]">
-                     Publier sur MindHubs <Rocket size={24} />
+                  <Button 
+                    onClick={handlePublish}
+                    disabled={isGenerating}
+                    className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 font-black text-xl gap-4 shadow-[0_10px_40px_rgba(var(--primary-rgb),0.3)]"
+                  >
+                     {isGenerating ? "Publication..." : "Publier sur MindHubs"} <Rocket size={24} />
                   </Button>
                </div>
             </div>
