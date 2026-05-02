@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { FooterSection } from "@/components/FooterSection";
+import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Zap, Sparkles, Trophy, Star, ArrowRight, Info, HelpCircle } from "lucide-react";
