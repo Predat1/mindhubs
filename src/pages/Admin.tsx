@@ -23,6 +23,7 @@ import { RichDescriptionEditor } from "@/components/products/RichDescriptionEdit
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Types ───
 interface ProductForm {
@@ -579,32 +580,53 @@ const Admin = () => {
                 )}
 
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
-                   <div className="overflow-x-auto">
-                   <table className="w-full text-sm text-left">
-                      <thead className="bg-muted/30 border-b border-border">
-                         <tr><th className="p-4 font-black uppercase text-[10px]">Pépite</th><th className="p-4 font-black uppercase text-[10px]">Prix</th><th className="p-4 font-black uppercase text-[10px] text-right">Actions</th></tr>
-                      </thead>
-                      <tbody>
-                        {(products || []).filter(p => (p?.title || "").toLowerCase().includes(productSearch.toLowerCase())).map(p => (
-                          <tr key={p.id} className="border-b border-border last:border-0 group">
-                             <td className="p-4 flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted flex-shrink-0">
-                                   <img src={p.image || ""} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=100")} />
-                                </div>
-                                <span className="font-black truncate max-w-[200px]">{p.title}</span>
-                             </td>
-                             <td className="p-4 font-black">{p.price}</td>
-                             <td className="p-4 text-right">
-                                <div className="flex items-center justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                   <button onClick={() => setProductEditing(p as any)} className="p-2 rounded-xl hover:bg-primary/10 text-primary"><Edit size={16} /></button>
-                                   <button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
-                                </div>
-                             </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                   </table>
-                   </div>
+                    {productsLoading ? (
+                      <div className="space-y-4 p-4">
+                        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 w-full rounded-2xl bg-muted/50 animate-pulse" />)}
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
+                          <thead>
+                            <tr className="border-b border-white/5 bg-muted/30">
+                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Image</th>
+                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Produit</th>
+                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catégorie</th>
+                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Prix</th>
+                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {products.filter(p => (p?.title || "").toLowerCase().includes(productSearch.toLowerCase())).map((product) => (
+                              <tr key={product.id} className="group hover:bg-white/5 transition-colors">
+                                <td className="py-4 px-4">
+                                  <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/10 bg-muted">
+                                    <img src={product.image || ""} alt={product.title} className="h-full w-full object-cover" onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=100")} />
+                                  </div>
+                                </td>
+                                <td className="py-4 px-4">
+                                  <p className="font-black text-sm">{product.title}</p>
+                                </td>
+                                <td className="py-4 px-4">
+                                  <Badge variant="outline" className="border-white/10 text-[9px] font-bold">{product.category}</Badge>
+                                </td>
+                                <td className="py-4 px-4 font-black text-sm">{product.price}</td>
+                                <td className="py-4 px-4 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setProductEditing(product as any)} aria-label="Modifier le produit">
+                                      <Edit size={14} />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => setDeleteConfirm({ type: "product", id: product.id, label: product.title })} aria-label="Supprimer le produit">
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                 </div>
               </div>
             )}

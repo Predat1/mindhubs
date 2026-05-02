@@ -261,7 +261,7 @@ const ProductDetail = () => {
                              </Link>
                           </div>
                        </div>
-                       <Button variant="outline" className="rounded-xl h-10 px-4 border-white/10 font-bold text-xs">Voir Boutique</Button>
+                       <Button variant="outline" className="rounded-xl h-10 px-4 border-white/10 font-bold text-xs" aria-label={`Voir la boutique de ${vendor.shop_name}`}>Voir Boutique</Button>
                     </div>
                   )}
                </div>

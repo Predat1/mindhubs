@@ -206,16 +206,17 @@ const MonCompte = () => {
                         </Badge>
                      </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="rounded-2xl h-12 px-6 border-white/10 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 font-black text-xs uppercase tracking-widest transition-all"
-                    onClick={async () => {
-                      await signOut();
-                      toast({ title: "Déconnexion", description: "À bientôt sur Mindhubs !" });
-                    }}
-                  >
-                    <LogOut size={16} className="mr-2" /> Déconnexion
-                  </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl h-12 px-6 border-white/10 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 font-black text-xs uppercase tracking-widest transition-all"
+                      onClick={async () => {
+                        await signOut();
+                        toast({ title: "Déconnexion", description: "À bientôt sur Mindhubs !" });
+                      }}
+                      aria-label="Se déconnecter"
+                    >
+                      <LogOut size={16} className="mr-2" /> Déconnexion
+                    </Button>
                </div>
             </motion.div>
 
@@ -258,8 +259,8 @@ const MonCompte = () => {
                            <p className="text-xs font-black text-foreground uppercase tracking-wider">Mot de passe</p>
                            <p className="text-[10px] text-muted-foreground font-bold">Réinitialiser via email</p>
                         </div>
-                        <ArrowRight className="text-muted-foreground group-hover:text-primary transition-all" size={16} />
-                     </button>
+                        <ArrowRight className="text-muted-foreground group-hover:text-primary transition-all" size={16} aria-hidden="true" />
+                      </button>
                   </div>
                </div>
 
@@ -413,6 +414,7 @@ const MonCompte = () => {
                  onClick={toggleTheme}
                  className="h-10 w-10 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-white/5"
                  title={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
+                 aria-label={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
                >
                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                </button>
@@ -444,7 +446,7 @@ const MonCompte = () => {
                           </div>
                           <div className="relative">
                              <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold pr-12 focus:ring-primary/20" />
-                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
+                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}>{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
                           </div>
                        </div>
                        <div className="flex items-center space-x-2 px-1 mb-2">

@@ -7,6 +7,21 @@
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="theme-color" content="#000000" />
     
+    <!-- Theme Script to Prevent FOUC -->
+    <script>
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'dark' || (!theme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    
     <!-- Resource Hints for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,6 +29,7 @@
     <link rel="dns-prefetch" href="https://qgmtkpllzzmbgngwcdjm.supabase.co" />
 
     <title>MindHubs – Formations Digitales Premium | N°1 en Afrique</title>
+    <title>MindHub – Formations Digitales Premium | N°1 en Afrique</title>
     <meta
       name="description"
       content="MindHub : plateforme N°1 de formations digitales premium en Afrique. E-books, kits business, marketing digital. Paiement unique, accès illimité à vie. +500 étudiants formés."

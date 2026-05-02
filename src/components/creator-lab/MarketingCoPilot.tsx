@@ -71,7 +71,7 @@ const MarketingCoPilot = () => {
             <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.1 }} className="stat-card p-6 rounded-[2rem] border-glow space-y-6 flex flex-col h-full">
               <div className="flex justify-between items-start">
                 <Badge className="bg-primary/10 text-primary font-black px-4 py-1">{script.platform}</Badge>
-                <button onClick={() => copyToClipboard(script.script)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-muted-foreground"><Copy size={16} /></button>
+                <button onClick={() => copyToClipboard(script.script)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-muted-foreground" aria-label="Copier le script"><Copy size={16} /></button>
               </div>
 
               <div className="space-y-4 flex-1">
