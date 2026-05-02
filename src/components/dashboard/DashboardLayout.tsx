@@ -58,13 +58,15 @@ export const ADMIN_NAV: SidebarItem[] = [
   { label: "Accueil", href: "/admin", icon: Home, group: "main" },
   { label: "Commandes", href: "/admin?tab=orders", icon: ShoppingBag, group: "main" },
   { label: "Produits", href: "/admin?tab=products", icon: Package, group: "main" },
-  { label: "Témoignages", href: "/admin?tab=testimonials", icon: MessageSquare, group: "main" },
   { label: "Vendeurs", href: "/admin?tab=vendors", icon: Store, group: "main" },
-  { label: "Sécurité & rôles", href: "/admin?tab=security", icon: ShieldCheck, group: "system" },
-  { label: "Paramètres", href: "/admin?tab=settings", icon: Settings, group: "system" },
+  { label: "Utilisateurs", href: "/admin?tab=users", icon: Users, group: "main" },
+  { label: "API Manager", href: "/admin?tab=api-manager", icon: Zap, group: "system", badge: "Power", badgeVariant: "hot" },
+  { label: "Logs d'audit", href: "/admin?tab=logs", icon: Info, group: "system" },
+  { label: "Sécurité", href: "/admin?tab=security", icon: ShieldCheck, group: "system" },
   { label: "Analytiques", href: "/admin?tab=analytics", icon: BarChart3, group: "growth" },
-  { label: "Centre d'aide", href: "/admin?tab=help", icon: HelpCircle, group: "growth" },
+  { label: "Paramètres", href: "/admin?tab=settings", icon: Settings, group: "system" },
 ];
+
 
 
 const GROUP_LABELS: Record<string, string> = {
