@@ -137,6 +137,10 @@ const ProductDetail = () => {
           description: product.description,
           category: product.category,
           sku: product.id,
+          brand: vendor ? {
+            "@type": "Brand",
+            name: vendor.shop_name
+          } : undefined,
           offers: {
             "@type": "Offer",
             url: window.location.href,
@@ -145,11 +149,11 @@ const ProductDetail = () => {
             itemCondition: "https://schema.org/NewCondition",
             availability: "https://schema.org/InStock"
           },
-          aggregateRating: {
+          aggregateRating: reviews.length > 0 ? {
             "@type": "AggregateRating",
-            ratingValue: "4.8",
-            reviewCount: "120"
-          }
+            ratingValue: (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1),
+            reviewCount: reviews.length.toString()
+          } : undefined
         }} 
       />
       <Navbar />

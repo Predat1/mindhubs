@@ -5,9 +5,9 @@ interface SEOProps {
   description: string;
   path?: string;
   image?: string;
-  jsonLd?: Record<string, unknown>;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   keywords?: string;
-  type?: "website" | "article" | "product";
+  type?: "website" | "article" | "product" | "profile";
 }
 
 const SITE_NAME = "MindHub";
@@ -105,14 +105,18 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       },
     };
 
-    const combinedLd = [jsonLd || {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: BASE_URL,
-      description,
-      inLanguage: "fr-FR",
-    }, orgLd, breadcrumbLd];
+    const combinedLd = [
+      ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [{
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: BASE_URL,
+        description,
+        inLanguage: "fr-FR",
+      }]),
+      orgLd,
+      breadcrumbLd
+    ];
 
     const ldId = "seo-json-ld";
     let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;

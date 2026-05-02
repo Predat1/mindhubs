@@ -79,6 +79,19 @@ const VendorStore = () => {
         title={`${vendor.shop_name} — Mindhubs Expert`} 
         description={vendor.description || `Explorez la boutique digitale de ${vendor.shop_name}.`} 
         path={`/store/${vendor.username}`} 
+        type="profile"
+        image={vendor.avatar_url || vendor.banner_url || undefined}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": vendor.shop_name,
+            "description": vendor.description || `Boutique de ${vendor.shop_name}`,
+            "image": vendor.avatar_url || undefined,
+            "url": `https://mindhubs.fun/store/${vendor.username}`
+          }
+        }}
       />
       
       {isStandalone ? (
