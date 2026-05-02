@@ -47,6 +47,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Clients", href: "/dashboard/customers", icon: Users, group: "main" },
   { label: "Revenus", href: "/dashboard/revenue", icon: DollarSign, group: "main" },
   { label: "Analytiques", href: "/dashboard/analytics", icon: BarChart3, group: "growth" },
+  { label: "Creator Lab", href: "/dashboard/creator-lab", icon: Sparkles, group: "growth", badge: "Hot", badgeVariant: "hot", badgeTooltip: "Découvrez, validez et créez vos produits avec l'IA." },
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },

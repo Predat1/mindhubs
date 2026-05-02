@@ -79,7 +79,8 @@ const AppContent = () => {
         <Route path="/dashboard/marketing" element={<VendorMarketing />} />
         <Route path="/dashboard/settings" element={<VendorSettings />} />
         <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
-        <Route path="/dashboard/factory" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard/creator-lab" element={<CreatorLab />} />
+        <Route path="/dashboard/factory" element={<Navigate to="/dashboard/creator-lab" replace />} />
         <Route path="/dashboard/messages" element={<VendorMessages />} />
         <Route path="/login" element={<Navigate to="/mon-compte" replace />} />
         <Route path="*" element={<NotFound />} />
