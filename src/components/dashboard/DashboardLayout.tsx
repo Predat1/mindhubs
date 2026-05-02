@@ -454,7 +454,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
               {variant === "admin" ? (
                 <NotificationBell />
               ) : (
-                vendor && <VendorNotificationBell vendorId={(vendor as any).id} />
+                currentVendor && <VendorNotificationBell vendorId={(currentVendor as any).id} />
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
