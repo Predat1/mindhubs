@@ -68,79 +68,8 @@ export type Database = {
           },
         ]
       }
-      chats: {
-        Row: {
-          created_at: string
-          id: string
-          last_message: string | null
-          updated_at: string
-          user_id: string
-          vendor_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_message?: string | null
-          updated_at?: string
-          user_id: string
-          vendor_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_message?: string | null
-          updated_at?: string
-          user_id?: string
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chats_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "vendors"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      messages: {
-        Row: {
-          chat_id: string
-          content: string
-          created_at: string
-          id: string
-          read_at: string | null
-          sender_id: string
-        }
-        Insert: {
-          chat_id: string
-          content: string
-          created_at?: string
-          id?: string
-          read_at?: string | null
-          sender_id: string
-        }
-        Update: {
-          chat_id?: string
-          content?: string
-          created_at?: string
-          id?: string
-          read_at?: string | null
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       orders: {
         Row: {
-          country: string | null
           created_at: string
           customer_email: string
           customer_name: string
@@ -154,7 +83,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          country?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
@@ -168,7 +96,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          country?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
@@ -190,7 +117,6 @@ export type Database = {
           id: string
           product_id: string
           session_id: string | null
-          source: string | null
           user_id: string | null
         }
         Insert: {
@@ -199,7 +125,6 @@ export type Database = {
           id?: string
           product_id: string
           session_id?: string | null
-          source?: string | null
           user_id?: string | null
         }
         Update: {
@@ -208,7 +133,6 @@ export type Database = {
           id?: string
           product_id?: string
           session_id?: string | null
-          source?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -382,13 +306,10 @@ export type Database = {
       vendors: {
         Row: {
           avatar_url: string | null
-          banner_url: string | null
           created_at: string
           description: string | null
           id: string
-          primary_color: string | null
           shop_name: string
-          standalone_mode: boolean
           updated_at: string
           user_id: string
           username: string
@@ -396,13 +317,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
-          banner_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
-          primary_color?: string | null
           shop_name: string
-          standalone_mode?: boolean
           updated_at?: string
           user_id: string
           username: string
@@ -410,13 +328,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
-          banner_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
-          primary_color?: string | null
           shop_name?: string
-          standalone_mode?: boolean
           updated_at?: string
           user_id?: string
           username?: string
