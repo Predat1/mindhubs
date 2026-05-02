@@ -118,7 +118,7 @@ export const useVendorAnalytics = (vendorId: string | undefined, timeRange: stri
 
       productIds.forEach(id => {
         const p = products.find(x => x.id === id);
-        productStats[id] = { id, title: p?.title || id, views: 0, clicks: 0, cartAdds: 0, purchases: 0, stock: p?.stock || 0 };
+        productStats[id] = { id, title: p?.title || id, views: 0, clicks: 0, cartAdds: 0, purchases: 0, stock: (p as any)?.stock || 0 };
       });
 
       events.forEach(event => {

@@ -111,22 +111,22 @@ export const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({ va
         toast.error("Erreur crédits: " + res.error);
         return;
       }
-    let hint = "";
 
-    if (mode === "generate") {
-      const styleName = AI_STYLES.find(s => s.value === aiStyle)?.label || "Classique";
-      hint = `Rédige une description vendeuse pour ce produit en utilisant le framework / style suivant : ${styleName}. Utilise du formatage Markdown (Gras, listes à puces) pour aérer le texte.`;
-    } else if (mode === "embellish") {
-      hint = `Améliore, corrige les fautes, ajoute des emojis pertinents et aère cette description existante en utilisant du formatage Markdown (Gras, listes). Ne change pas le sens profond. Voici le texte : \n\n${value}`;
-    }
+      let hint = "";
 
-    try {
+      if (mode === "generate") {
+        const styleName = AI_STYLES.find(s => s.value === aiStyle)?.label || "Classique";
+        hint = `Rédige une description vendeuse pour ce produit en utilisant le framework / style suivant : ${styleName}. Utilise du formatage Markdown (Gras, listes à puces) pour aérer le texte.`;
+      } else if (mode === "embellish") {
+        hint = `Améliore, corrige les fautes, ajoute des emojis pertinents et aère cette description existante en utilisant du formatage Markdown (Gras, listes). Ne change pas le sens profond. Voici le texte : \n\n${value}`;
+      }
+
       const { data, error } = await supabase.functions.invoke("generate-product-description", {
         body: { title, category, hint },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      
+
       onChange((data as any).description);
       toast.success(mode === "generate" ? "Description générée ✨" : "Description embellie ✨");
       setView("edit");

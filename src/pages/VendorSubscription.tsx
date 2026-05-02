@@ -27,7 +27,7 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
   const location = useLocation();
   const sub = useVendorSubscription(vendor.id);
   const { balance, transactions, isLoading: creditsLoading } = useCredits(vendor.id);
-  const { data: orders = [] } = useVendorOrders(vendor.id);
+  const { data: orders = [] } = useVendorOrders(vendor.id, []);
   
   const [paymentForm, setPaymentForm] = useState({
     plan: (location.state?.selectedPlan as VendorPlan) || 'pro',
@@ -43,7 +43,7 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
   const revenue30d = orders
     .filter(o => new Date(o.created_at) >= thirtyDaysAgo)
     .reduce((sum, o) => {
-      const items = Array.isArray(o.items) ? o.items : [];
+      const items = Array.isArray((o as any).items) ? (o as any).items : [];
       return sum + items.reduce((s, i) => {
         const price = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
         return s + (price * (i.quantity || 1));
@@ -59,7 +59,7 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
     setIsSubmitting(true);
     try {
       // Simulation d'enregistrement de demande de paiement
-      const { error } = await supabase.from('vendor_subscriptions').upsert({
+      const { error } = await (supabase as any).from('vendor_subscriptions').upsert({
         vendor_id: vendor.id,
         plan: paymentForm.plan as VendorPlan,
         status: 'pending',
@@ -256,7 +256,7 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
                       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type de Recharge</Label>
                       <Select 
                         value={paymentForm.plan} 
-                        onValueChange={(v) => setPaymentForm(p => ({ ...p, plan: v }))}
+                        onValueChange={(v) => setPaymentForm(p => ({ ...p, plan: v as VendorPlan }))}
                       >
                          <SelectTrigger className="h-12 rounded-xl bg-background border-white/10 font-bold">
                             <SelectValue placeholder="Choisir un plan" />
@@ -329,8 +329,8 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
                          {paymentForm.plan === 'starter' ? (paymentForm.period === 'monthly' ? '4 900 FCFA' : '49 000 FCFA') : 
                           paymentForm.plan === 'pro' ? (paymentForm.period === 'monthly' ? '14 900 FCFA' : '149 000 FCFA') : 
                           paymentForm.plan === 'elite' ? (paymentForm.period === 'monthly' ? '29 900 FCFA' : '299 000 FCFA') :
-                          paymentForm.plan === 'credits' ? '3 500 FCFA' :
-                          paymentForm.plan === 'credits_pro' ? '6 000 FCFA' : '15 000 FCFA'}
+                           (paymentForm.plan as string) === 'credits' ? '3 500 FCFA' :
+                           (paymentForm.plan as string) === 'credits_pro' ? '6 000 FCFA' : '15 000 FCFA'}
                       </span>
                    </div>
                    <Button 

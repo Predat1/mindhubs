@@ -171,7 +171,7 @@ const Inner = () => {
         product: {
           id: selectedProduct.id,
           title: selectedProduct.title,
-          description: selectedProduct.description,
+          description: (selectedProduct as any).description,
           image_url: selectedProduct.image_url,
         },
         angles,

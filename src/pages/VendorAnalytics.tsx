@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";

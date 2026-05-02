@@ -83,7 +83,7 @@ const KpiCard = ({ icon: Icon, label, value, accent }: { icon: typeof Clock; lab
 const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [] } = useVendorProducts(vendorId);
   const productIds = products.map((p) => p.id);
-  const { data: orders = [], isLoading } = useVendorOrders(productIds);
+  const { data: orders = [], isLoading } = useVendorOrders(vendorId, productIds);
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");

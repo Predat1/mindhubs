@@ -33,7 +33,7 @@ const AdminAnalyticsTab = () => {
     queryFn: async () => {
       const [orders, subs] = await Promise.all([
         supabase.from('orders').select('total_price,created_at').gte('created_at', cutoff),
-        supabase.from('vendor_subscriptions').select('amount_paid_fcfa,created_at').gte('created_at', cutoff)
+        (supabase as any).from('vendor_subscriptions').select('amount_paid_fcfa,created_at').gte('created_at', cutoff)
       ]);
       
       // Process daily data
@@ -64,7 +64,7 @@ const AdminAnalyticsTab = () => {
   const { data: aiCosts, isLoading: aiLoading } = useQuery({
     queryKey: ["admin-analytics-ai-costs", timeRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_transactions')
         .select('feature_type,cost_usd_cents,amount')
         .eq('type', 'spend')
@@ -86,7 +86,7 @@ const AdminAnalyticsTab = () => {
   const { data: geoData, isLoading: geoLoading } = useQuery({
     queryKey: ["admin-analytics-geo", timeRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('orders')
         .select('country,total_price')
         .gte('created_at', cutoff);
@@ -111,7 +111,7 @@ const AdminAnalyticsTab = () => {
   const { data: funnelData, isLoading: funnelLoading } = useQuery({
     queryKey: ["admin-analytics-funnel", timeRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_transactions')
         .select('feature_type')
         .eq('type', 'spend')
