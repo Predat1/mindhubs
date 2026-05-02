@@ -191,7 +191,8 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
 
   const groupedItems = items.reduce<Record<string, SidebarItem[]>>((acc, item) => {
     const g = item.group ?? "main";
-    (acc[g] ??= []).push(item);
+    if (!acc[g]) acc[g] = [];
+    acc[g].push(item);
     return acc;
   }, {});
 

@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Lightbulb, Zap, ShieldCheck, BarChart3, TrendingUp, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { Badge } from "@/components/ui/badge";
+
 
 const MOCK_ANALYSIS = {
   score: 82,
