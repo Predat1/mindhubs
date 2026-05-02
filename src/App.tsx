@@ -43,6 +43,8 @@ import AdminGuard from "./components/dashboard/AdminGuard.tsx";
 import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 import { ExitIntentPopup } from "./components/ExitIntentPopup.tsx";
 import { ExplorePopup } from "./components/ExplorePopup.tsx";
+import CreatorLab from "./pages/CreatorLab.tsx";
+
 
 const queryClient = new QueryClient();
 
