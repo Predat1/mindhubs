@@ -109,20 +109,22 @@ const renderBadge = (badge: string, variant: BadgeVariant | undefined, tooltip?:
 const useVendorLiveBadges = (enabled: boolean) => {
   const { data: vendor } = useCurrentVendor();
   const { data: products = [] } = useVendorProducts(enabled ? vendor?.id : undefined);
-  const productIds = useMemo(() => products.map((p) => p.id), [products]);
-  const { data: orders = [] } = useVendorOrders(enabled ? productIds : []);
+  const productIds = useMemo(() => (Array.isArray(products) ? products.map((p) => p.id) : []), [products]);
+  const { data: orders = [] } = useVendorOrders(enabled && productIds.length > 0 ? productIds : []);
 
   return useMemo(() => {
+    const map: Record<string, { badge: string; variant: BadgeVariant; tooltip: string }> = {};
+    if (!enabled || !Array.isArray(products) || !Array.isArray(orders)) return map;
+
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const recentProductsCount = (products as any[]).filter(
+    const recentProductsCount = products.filter(
       (p) => p.created_at && new Date(p.created_at).getTime() > sevenDaysAgo,
     ).length;
-    const pendingOrders = orders.filter((o) => o.status === "pending").length;
+    const pendingOrders = orders.filter((o) => o && o.status === "pending").length;
     const recentOrders = orders.filter(
-      (o) => new Date(o.created_at).getTime() > sevenDaysAgo,
+      (o) => o && o.created_at && new Date(o.created_at).getTime() > sevenDaysAgo,
     ).length;
 
-    const map: Record<string, { badge: string; variant: BadgeVariant; tooltip: string }> = {};
     if (pendingOrders > 0) {
       map["/dashboard/sales"] = {
         badge: String(pendingOrders),
@@ -144,13 +146,16 @@ const useVendorLiveBadges = (enabled: boolean) => {
         tooltip: `${recentOrders} ventes ces 7 derniers jours — votre boutique est en feu 🔥`,
       };
     }
+    
+    // Static badge for new sections
     map["/dashboard/marketing"] = map["/dashboard/marketing"] ?? {
       badge: "Nouveau",
       variant: "new",
       tooltip: "Nouvelle section : campagnes, codes promo et automation.",
     };
+    
     return map;
-  }, [products, orders]);
+  }, [enabled, products, orders]);
 };
 
 const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: DashboardLayoutProps) => {
