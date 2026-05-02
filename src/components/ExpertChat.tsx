@@ -37,9 +37,13 @@ const ExpertChat = ({ vendorId, vendorName, vendorUsername, vendorAvatar }: Prop
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
 
   useEffect(() => {
-    // Si le chat est ouvert et qu'on a un utilisateur, on initialise la discussion côté base de données
     if (isOpen && user && !activeChat) {
-      createOrGetChat({ vendorId, userId: user.id })
+      createOrGetChat({ 
+        vendorId, 
+        userId: user.id,
+        customerName: user.user_metadata?.full_name || user.email?.split('@')[0],
+        customerAvatar: user.user_metadata?.avatar_url
+      })
         .then((chat) => setActiveChat(chat))
         .catch((err) => {
           console.error("Impossible d'initialiser le chat :", err);

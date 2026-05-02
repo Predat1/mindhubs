@@ -33,20 +33,18 @@ export const useVendorChats = (vendorId: string | undefined) => {
       
       const { data, error } = await supabase
         .from("chats")
-        .select(`
-          *,
-          user:user_id(id)
-        `)
+        .select("*")
         .eq("vendor_id", vendorId)
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
       
-      // En l'absence de table "profiles" publique, on mocke le nom du client avec son ID ou on pourrait le récupérer via d'autres moyens.
+      // Since we don't have a public profiles table, we rely on chat.customer_name if it exists,
+      // otherwise fallback gracefully without obvious "mock" data.
       return (data || []).map((chat) => ({
         ...chat,
-        customer_name: "Client " + chat.user_id.slice(0, 4).toUpperCase(),
-        customer_avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.user_id}`
+        customer_name: chat.customer_name || "Client #" + chat.user_id.slice(0, 4).toUpperCase(),
+        customer_avatar: chat.customer_avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.user_id}`
       }));
     },
     enabled: !!vendorId,
@@ -164,7 +162,7 @@ export const useSendMessage = () => {
 
 export const useCreateOrGetChat = () => {
   return useMutation({
-    mutationFn: async ({ vendorId, userId }: { vendorId: string; userId: string }) => {
+    mutationFn: async ({ vendorId, userId, customerName, customerAvatar }: { vendorId: string; userId: string; customerName?: string; customerAvatar?: string }) => {
       // Check if chat exists
       const { data: existingChat, error: checkError } = await supabase
         .from("chats")
@@ -182,7 +180,12 @@ export const useCreateOrGetChat = () => {
       // Create new chat
       const { data: newChat, error: createError } = await supabase
         .from("chats")
-        .insert([{ vendor_id: vendorId, user_id: userId }])
+        .insert([{ 
+          vendor_id: vendorId, 
+          user_id: userId,
+          customer_name: customerName,
+          customer_avatar: customerAvatar
+        }])
         .select()
         .single();
 
