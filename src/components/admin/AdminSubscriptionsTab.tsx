@@ -54,7 +54,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-sub-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_subscriptions')
         .select('plan,status,amount_paid_fcfa');
       if (error) throw error;
@@ -74,7 +74,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
   const { data: subscriptions = [], isLoading: subsLoading } = useQuery({
     queryKey: ["admin-subscriptions"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_subscription_view')
         .select('*')
         .order('plan', { ascending: false });
@@ -88,11 +88,11 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
     setIsProcessing(true);
     try {
       // 1. Get plan limits to set correct price
-      const { data: limits } = await supabase.from('plan_limits').select('*').eq('plan', newPlan).single();
+      const { data: limits } = await (supabase as any).from('plan_limits').select('*').eq('plan', newPlan).single();
       if (!limits) throw new Error("Limites du plan introuvables");
 
       // 2. Upsert subscription
-      const { error: subErr } = await supabase.from('vendor_subscriptions').upsert({
+      const { error: subErr } = await (supabase as any).from('vendor_subscriptions').upsert({
         vendor_id: vendorId,
         plan: newPlan,
         status: 'active',
@@ -102,7 +102,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
       if (subErr) throw subErr;
 
       // 3. Grant monthly credits
-      const { error: rpcErr } = await supabase.rpc('grant_monthly_credits', { p_vendor_id: vendorId });
+      const { error: rpcErr } = await (supabase as any).rpc('grant_monthly_credits', { p_vendor_id: vendorId });
       if (rpcErr) console.warn("Could not grant monthly credits automatically:", rpcErr);
 
       await logAction('PLAN_CHANGE', `${shopName} → ${newPlan}`);
@@ -124,7 +124,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
     const { vendorId, shopName, amount, description, type } = grantingCredits;
 
     try {
-      const { data, error } = await supabase.rpc('grant_credits', {
+      const { data, error } = await (supabase as any).rpc('grant_credits', {
         p_vendor_id: vendorId,
         p_amount: parseInt(amount),
         p_description: description,
@@ -147,7 +147,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
     if (!cancellingSub) return;
     setIsProcessing(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_subscriptions')
         .update({ cancel_at_period_end: true })
         .eq('vendor_id', cancellingSub.vendor_id);
@@ -167,7 +167,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
   const handleReactivateSub = async (vendorId: string, shopName: string) => {
     setIsProcessing(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_subscriptions')
         .update({ status: 'active', cancel_at_period_end: false })
         .eq('vendor_id', vendorId);
