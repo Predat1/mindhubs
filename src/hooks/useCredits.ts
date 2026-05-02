@@ -19,7 +19,7 @@ export const useCredits = (vendorId?: string) => {
     queryKey: ['vendor-credits', vendorId],
     queryFn: async (): Promise<number> => {
       if (!vendorId) return 0;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_credits')
         .select('balance')
         .eq('vendor_id', vendorId)
@@ -34,7 +34,7 @@ export const useCredits = (vendorId?: string) => {
     queryKey: ['credit-transactions', vendorId],
     queryFn: async (): Promise<CreditTransaction[]> => {
       if (!vendorId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_transactions')
         .select('*')
         .eq('vendor_id', vendorId)
@@ -49,7 +49,7 @@ export const useCredits = (vendorId?: string) => {
   const spend = async (amount: number, description: string, featureType: string) => {
     if (!vendorId) return { success: false, error: "Non connecté" };
 
-    const { data, error } = await supabase.rpc('spend_credits', {
+    const { data, error } = await (supabase as any).rpc('spend_credits', {
       p_vendor_id: vendorId,
       p_amount: amount,
       p_description: description,

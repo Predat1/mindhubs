@@ -25,7 +25,7 @@ export const useVendorSubscription = (vendorId?: string) => {
     queryFn: async (): Promise<VendorSubscription | null> => {
       if (!vendorId) return null;
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_subscription_view')
         .select('*')
         .eq('vendor_id', vendorId)

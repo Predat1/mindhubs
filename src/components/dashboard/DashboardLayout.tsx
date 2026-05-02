@@ -4,7 +4,7 @@ import {
   Home, ShoppingBag, Package, Users, DollarSign, BarChart3, Megaphone,
   Sparkles, Settings, HelpCircle, LogOut, Search, Bell, Plus, ExternalLink,
   Menu, ChevronDown, Store, MessageSquare, ShieldCheck, Sun, Moon, Zap, Info,
-  Factory,
+  Factory, CreditCard,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import type { LucideIcon } from "lucide-react";

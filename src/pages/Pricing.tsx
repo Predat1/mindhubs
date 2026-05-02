@@ -35,7 +35,7 @@ const Pricing = () => {
 
   useEffect(() => {
     const fetchPlans = async () => {
-      const { data, error } = await supabase.from('plan_limits').select('*');
+      const { data, error } = await (supabase as any).from('plan_limits').select('*');
       if (!error && data) {
         // Sort plans in order: free, starter, pro, elite
         const order = ['free', 'starter', 'pro', 'elite'];
