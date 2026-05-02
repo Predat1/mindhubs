@@ -7,6 +7,7 @@ import {
   Factory, CreditCard,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { VendorNotificationBell } from "@/components/dashboard/VendorNotificationBell";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -449,7 +450,11 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Système Opérationnel</span>
               </div>
               
-              <NotificationBell />
+              {variant === "admin" ? (
+                <NotificationBell />
+              ) : (
+                vendor && <VendorNotificationBell vendorId={vendor.id} />
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground shadow-md ring-2 ring-background hover:ring-primary/30 transition">
@@ -466,6 +471,29 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         </div>
       </div>
     </TooltipProvider>
+      {/* Floating Support Button for Vendors */}
+      {variant === "vendor" && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a 
+                  href="https://wa.me/2250000000000" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-110 active:scale-95 transition-all group"
+                >
+                  <MessageSquare size={24} className="group-hover:animate-pulse" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="bg-zinc-900 border-white/10 text-white font-black uppercase text-[10px] px-4 py-2">
+                Besoin d'aide ? WhatsApp
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
+    </div>
   );
 };
 
