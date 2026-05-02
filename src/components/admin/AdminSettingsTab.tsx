@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { CREDIT_COSTS } from "@/constants/credits";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminSettingsTabProps {
   logAction: (action: string, details: string) => Promise<void>;
