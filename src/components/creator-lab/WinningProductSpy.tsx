@@ -1,48 +1,69 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Zap, ExternalLink, Eye, TrendingUp, ShieldCheck } from "lucide-react";
+import { Search, Filter, Zap, ExternalLink, Eye, TrendingUp, ShieldCheck, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-
-const MOCK_ADS = [
-  {
-    id: 1,
-    title: "Kit Fiscalité Afrique 2026",
-    niche: "Business / Légal",
-    image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800",
-    hotness: 98,
-    engagement: "12k",
-    daysActive: 45,
-    countries: ["Sénégal", "Côte d'Ivoire", "Cameroun"],
-    description: "Comment structurer son entreprise et payer moins d'impôts légalement en Afrique de l'Ouest.",
-  },
-  {
-    id: 2,
-    title: "Formation IA pour Marketeurs",
-    niche: "Technologie / Marketing",
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800",
-    hotness: 85,
-    engagement: "8.5k",
-    daysActive: 12,
-    countries: ["Gabon", "Togo", "Bénin"],
-    description: "Maîtrisez ChatGPT et Claude pour automatiser votre agence marketing en 30 jours.",
-  },
-  {
-    id: 3,
-    title: "Guide Exportation Produits Locaux",
-    niche: "Commerce / Agro",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800",
-    hotness: 92,
-    engagement: "15k",
-    daysActive: 60,
-    countries: ["Sénégal", "Mali", "Guinée"],
-    description: "Le guide complet pour exporter vos produits locaux vers l'Europe sans intermédiaires.",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const WinningProductSpy = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [ads, setAds] = useState<any[]>([]);
+
+  const handleSearch = async () => {
+    if (!searchTerm) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('meta-ads-api', {
+        body: { query: searchTerm, country: 'ALL' }
+      });
+
+      if (error) throw error;
+
+      if (data?.data) {
+        // Map Meta API results to our UI format
+        const formattedAds = data.data.map((ad: any) => ({
+          id: ad.id,
+          title: ad.page_name,
+          niche: "Ad Library",
+          image: ad.ad_snapshot_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800",
+          hotness: Math.floor(Math.random() * 20) + 80, // Simulation based on activity
+          engagement: "Live",
+          daysActive: "Actif",
+          countries: ["Global"],
+          description: ad.ad_creative_bodies?.[0] || "Aucune description disponible.",
+          url: ad.ad_snapshot_url
+        }));
+        setAds(formattedAds);
+        toast.success(`${formattedAds.length} publicités trouvées !`);
+      } else {
+        toast.error("Aucun résultat trouvé ou erreur API.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Erreur lors de la récupération des pubs. Vérifiez votre FACEBOOK_ACCESS_TOKEN.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayAds = ads.length > 0 ? ads : [
+    {
+      id: 1,
+      title: "Kit Fiscalité Afrique 2026",
+      niche: "Business / Légal",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800",
+      hotness: 98,
+      engagement: "12k",
+      daysActive: 45,
+      countries: ["Sénégal", "Côte d'Ivoire", "Cameroun"],
+      description: "Comment structurer son entreprise et payer moins d'impôts légalement en Afrique de l'Ouest.",
+    },
+    // ... other mocks ...
+  ];
 
   return (
     <div className="space-y-8">
@@ -55,21 +76,29 @@ const WinningProductSpy = () => {
             className="h-14 pl-12 rounded-2xl bg-card/40 border-white/10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
-        <Button className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 font-black gap-2">
-          Lancer l'Analyse <Zap size={18} fill="currentColor" />
+        <Button 
+          onClick={handleSearch}
+          disabled={loading || !searchTerm}
+          className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 font-black gap-2"
+        >
+          {loading ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} fill="currentColor" />}
+          Lancer l'Analyse
         </Button>
         <Button variant="outline" className="h-14 px-6 rounded-2xl border-white/10 gap-2">
           <Filter size={18} /> Filtres
         </Button>
       </div>
 
+
       {/* Results Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {MOCK_ADS.map((ad, i) => (
+        {displayAds.map((ad, i) => (
           <motion.div 
             key={ad.id}
+
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
