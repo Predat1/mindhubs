@@ -24,12 +24,23 @@ serve(async (req) => {
     let systemPrompt = "Tu es MindHubs AI, l'assistant ultime des créateurs de business digitaux. Réponds toujours en Français.";
     let userPrompt = "";
 
-    if (type === 'web-analysis') {
+    if (type === 'web-analysis' || type === 'spy-research') {
       // Perplexity is the king of research
       model = model || "perplexity/sonar-deep-research";
-      systemPrompt += " Tu es un expert en analyse de marché temps réel. Utilise tes capacités de recherche web pour trouver des preuves de rentabilité.";
-      userPrompt = `Analyse en profondeur le marché pour cette idée de produit digital : "${idea}". Cherche des publicités Facebook concurrentes, des volumes de recherche et identifie l'angle marketing le plus rentable.`;
+      systemPrompt += " Tu es un expert en veille stratégique et en e-commerce. Ta mission est de scanner le web pour trouver des produits digitaux qui cartonnent actuellement.";
+      
+      if (type === 'spy-research') {
+        userPrompt = `Trouve 5 exemples réels de produits digitaux (ebooks, formations, outils) qui se vendent massivement en ce moment dans la thématique : "${idea}". 
+        Pour chaque produit, donne :
+        1. Le nom du produit
+        2. Pourquoi il cartonne (angle marketing)
+        3. Une estimation de son prix
+        Réponds uniquement en format JSON: { "products": [{ "title": "...", "reason": "...", "price": "..." }] }`;
+      } else {
+        userPrompt = `Analyse en profondeur le marché pour cette idée : "${idea}". Cherche des preuves de rentabilité et l'angle marketing idéal.`;
+      }
     } else if (type === 'plan') {
+
       // Claude 3.5 Sonnet is the king of structure and logic
       model = model || "anthropic/claude-3.5-sonnet";
       systemPrompt += " Tu es un architecte de produits digitaux d'élite. Ton écriture est claire, professionnelle et hautement pédagogique.";
