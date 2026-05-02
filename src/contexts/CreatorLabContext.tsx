@@ -105,6 +105,7 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
+    <CreatorLabContext.Provider value={{
       ...state, 
       setCurrentIdea, 
       setSelectedMarkets, 
