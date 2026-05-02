@@ -266,8 +266,8 @@ const VendorStore = () => {
 
       <FooterSection />
       
-      {/* Expert Chat Widget */}
       <ExpertChat 
+        vendorId={vendor.id}
         vendorName={vendor.shop_name} 
         vendorUsername={vendor.username} 
         vendorAvatar={vendor.avatar_url} 

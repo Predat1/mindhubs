@@ -13,63 +13,54 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-const mockChats = [
-  { 
-    id: "1", 
-    name: "Moussa Diop", 
-    lastMsg: "Bonjour, j'aimerais avoir plus d'infos sur le kit...", 
-    time: "10:45", 
-    unread: 2, 
-    online: true,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Moussa" 
-  },
-  { 
-    id: "2", 
-    name: "Awa Ndiaye", 
-    lastMsg: "Paiement envoyé ! Merci beaucoup.", 
-    time: "Hier", 
-    unread: 0, 
-    online: false,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Awa" 
-  },
-  { 
-    id: "3", 
-    name: "Bakary Sangare", 
-    lastMsg: "Est-ce que la formation est à vie ?", 
-    time: "Hier", 
-    unread: 0, 
-    online: true,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bakary" 
-  },
-  { 
-    id: "4", 
-    name: "Fatou Traore", 
-    lastMsg: "Je n'arrive pas à télécharger le PDF.", 
-    time: "2 j", 
-    unread: 0, 
-    online: false,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fatou" 
-  },
-];
-
-const mockMessages = [
-  { id: "1", sender: "user", text: "Bonjour, j'aimerais avoir plus d'infos sur le kit business immobilier.", time: "10:40" },
-  { id: "2", sender: "me", text: "Bonjour Moussa ! Bien sûr, c'est un kit complet avec contrats types et stratégie de prospection.", time: "10:42" },
-  { id: "3", sender: "user", text: "Génial. Est-ce que les contrats sont valables au Sénégal ?", time: "10:43" },
-  { id: "4", sender: "me", text: "Oui, ils ont été relus par un expert juridique local. Vous avez également une version modifiable.", time: "10:44" },
-  { id: "5", sender: "user", text: "D'accord, je vais passer commande tout de suite. Merci !", time: "10:45" },
-];
+import { useVendorChats, useChatMessages, useSendMessage, Chat } from "@/hooks/useMessages";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 import type { Vendor } from "@/hooks/useVendors";
 
 const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
-  const [selectedChat, setSelectedChat] = useState(mockChats[0]);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [msgInput, setMsgInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: chats = [], isLoading: isLoadingChats } = useVendorChats(vendor.id);
+  const { data: messages = [], isLoading: isLoadingMessages } = useChatMessages(selectedChat?.id);
+  const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+
+  useEffect(() => {
+    if (chats.length > 0 && !selectedChat) {
+      setSelectedChat(chats[0]);
+    }
+  }, [chats, selectedChat]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSend = () => {
-    if (!msgInput.trim()) return;
-    // Mock send logic
-    setMsgInput("");
+    if (!msgInput.trim() || !selectedChat) return;
+    sendMessage({ chatId: selectedChat.id, content: msgInput.trim(), senderId: vendor.user_id }, {
+      onSuccess: () => setMsgInput("")
+    });
+  };
+
+  const formatTime = (dateStr: string) => {
+    try {
+      return format(new Date(dateStr), "HH:mm", { locale: fr });
+    } catch {
+      return "";
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return format(new Date(dateStr), "dd MMM", { locale: fr });
+    } catch {
+      return "";
+    }
   };
 
   return (
@@ -93,35 +84,31 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
           
           <ScrollArea className="flex-1">
             <div className="space-y-1 p-2">
-              {mockChats.map((chat) => (
+              {isLoadingChats ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">Chargement des conversations...</div>
+              ) : chats.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">Aucune conversation pour le moment.</div>
+              ) : chats.map((chat) => (
                 <button
                   key={chat.id}
                   onClick={() => setSelectedChat(chat)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedChat.id === chat.id ? "bg-primary/20 border border-primary/20" : "hover:bg-white/5 border border-transparent"}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedChat?.id === chat.id ? "bg-primary/20 border border-primary/20" : "hover:bg-white/5 border border-transparent"}`}
                 >
                   <div className="relative">
                     <Avatar className="h-12 w-12 border border-white/10">
-                      <AvatarImage src={chat.avatar} />
-                      <AvatarFallback>{chat.name.slice(0, 2)}</AvatarFallback>
+                      <AvatarImage src={chat.customer_avatar || ""} />
+                      <AvatarFallback>{chat.customer_name?.slice(0, 2) || "CL"}</AvatarFallback>
                     </Avatar>
-                    {chat.online && (
-                      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
-                    )}
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-bold truncate">{chat.name}</span>
-                      <span className="text-[10px] text-muted-foreground">{chat.time}</span>
+                      <span className="text-sm font-bold truncate">{chat.customer_name}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatDate(chat.updated_at)}</span>
                     </div>
                     <p className="text-xs text-muted-foreground truncate font-medium">
-                      {chat.lastMsg}
+                      {chat.last_message || "Nouvelle discussion"}
                     </p>
                   </div>
-                  {chat.unread > 0 && (
-                    <Badge className="h-5 w-5 p-0 flex items-center justify-center rounded-full bg-primary text-[10px] font-black">
-                      {chat.unread}
-                    </Badge>
-                  )}
                 </button>
               ))}
             </div>
@@ -131,79 +118,93 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
         {/* Main: Chat View */}
         <div className="flex-1 flex flex-col bg-background/10 relative">
           
-          {/* Chat Header */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-background/40 backdrop-blur-md z-10">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9 border border-white/5">
-                <AvatarImage src={selectedChat.avatar} />
-                <AvatarFallback>{selectedChat.name.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-sm font-bold">{selectedChat.name}</h3>
-                <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> En ligne
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="rounded-xl"><Phone size={18} /></Button>
-              <Button variant="ghost" size="icon" className="rounded-xl"><Info size={18} /></Button>
-              <Button variant="ghost" size="icon" className="rounded-xl"><MoreVertical size={18} /></Button>
-            </div>
-          </div>
-
-          {/* Messages Area */}
-          <ScrollArea className="flex-1 p-6">
-            <div className="space-y-6">
-              <div className="flex justify-center">
-                <span className="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Aujourd'hui</span>
-              </div>
-
-              {mockMessages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] space-y-1`}>
-                    <div className={`p-4 rounded-2xl text-sm font-medium shadow-sm ${msg.sender === "me" ? "bg-primary text-white rounded-tr-none" : "bg-card border border-white/5 rounded-tl-none"}`}>
-                      {msg.text}
-                    </div>
-                    <div className={`flex items-center gap-1.5 px-1 ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
-                      <span className="text-[9px] text-muted-foreground font-bold">{msg.time}</span>
-                      {msg.sender === "me" && <CheckCheck size={12} className="text-primary" />}
-                    </div>
+          {selectedChat ? (
+            <>
+              {/* Chat Header */}
+              <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-background/40 backdrop-blur-md z-10">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9 border border-white/5">
+                    <AvatarImage src={selectedChat.customer_avatar || ""} />
+                    <AvatarFallback>{selectedChat.customer_name?.slice(0, 2) || "CL"}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-sm font-bold">{selectedChat.customer_name}</h3>
+                    <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest flex items-center gap-1">
+                      En ligne
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="rounded-xl"><Phone size={18} /></Button>
+                  <Button variant="ghost" size="icon" className="rounded-xl"><Info size={18} /></Button>
+                  <Button variant="ghost" size="icon" className="rounded-xl"><MoreVertical size={18} /></Button>
+                </div>
+              </div>
 
-          {/* Message Input */}
-          <div className="p-4 bg-background/40 border-t border-white/5 backdrop-blur-md">
-            <div className="max-w-4xl mx-auto flex items-end gap-3 bg-card border border-white/5 rounded-2xl p-2 focus-within:border-primary/50 transition-all">
-              <div className="flex items-center gap-1 pb-1 px-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><Paperclip size={18} /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><ImageIcon size={18} /></Button>
+              {/* Messages Area */}
+              <ScrollArea className="flex-1 p-6" viewportRef={scrollRef}>
+                <div className="space-y-6">
+                  {isLoadingMessages ? (
+                    <div className="text-center text-sm text-muted-foreground py-10">Chargement des messages...</div>
+                  ) : messages.length === 0 ? (
+                    <div className="text-center text-sm text-muted-foreground py-10">Aucun message pour le moment. Envoyez un message pour démarrer la discussion !</div>
+                  ) : (
+                    messages.map((msg) => {
+                      const isMe = msg.sender_id === vendor.user_id;
+                      return (
+                        <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[70%] space-y-1`}>
+                            <div className={`p-4 rounded-2xl text-sm font-medium shadow-sm ${isMe ? "bg-primary text-white rounded-tr-none" : "bg-card border border-white/5 rounded-tl-none"}`}>
+                              {msg.content}
+                            </div>
+                            <div className={`flex items-center gap-1.5 px-1 ${isMe ? "justify-end" : "justify-start"}`}>
+                              <span className="text-[9px] text-muted-foreground font-bold">{formatTime(msg.created_at)}</span>
+                              {isMe && <CheckCheck size={12} className="text-primary" />}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Message Input */}
+              <div className="p-4 bg-background/40 border-t border-white/5 backdrop-blur-md">
+                <div className="max-w-4xl mx-auto flex items-end gap-3 bg-card border border-white/5 rounded-2xl p-2 focus-within:border-primary/50 transition-all">
+                  <div className="flex items-center gap-1 pb-1 px-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><Paperclip size={18} /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><ImageIcon size={18} /></Button>
+                  </div>
+                  <textarea
+                    value={msgInput}
+                    onChange={(e) => setMsgInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
+                    placeholder="Écrivez votre message..."
+                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-1 resize-none min-h-[40px] max-h-[120px] custom-scrollbar outline-none"
+                  />
+                  <div className="flex items-center gap-1 pb-1 px-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><Smile size={18} /></Button>
+                    <Button 
+                      onClick={handleSend}
+                      disabled={!msgInput.trim() || isSending}
+                      className="h-10 w-10 rounded-xl bg-primary text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:scale-100 flex items-center justify-center"
+                    >
+                      {isSending ? <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send size={18} />}
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <textarea
-                value={msgInput}
-                onChange={(e) => setMsgInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
-                placeholder="Écrivez votre message..."
-                className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-1 resize-none min-h-[40px] max-h-[120px] custom-scrollbar outline-none"
-              />
-              <div className="flex items-center gap-1 pb-1 px-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><Smile size={18} /></Button>
-                <Button 
-                  onClick={handleSend}
-                  disabled={!msgInput.trim()}
-                  className="h-10 w-10 rounded-xl bg-primary text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:scale-100"
-                >
-                  <Send size={18} />
-                </Button>
-              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center space-y-4">
+               <div className="h-24 w-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                 <MessageSquare size={48} className="text-white/20" />
+               </div>
+               <h3 className="text-xl font-bold text-white">Vos Messages</h3>
+               <p className="max-w-md">Sélectionnez une conversation sur la gauche pour commencer à discuter avec vos clients ou autres vendeurs.</p>
             </div>
-            <p className="text-center text-[9px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-              Réponse rapide recommandée : les clients convertissent 3x plus s'ils reçoivent une réponse sous 15 min.
-            </p>
-          </div>
+          )}
 
         </div>
       </div>

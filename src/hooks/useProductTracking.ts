@@ -45,6 +45,29 @@ const markViewed = (productId: string) => {
   }
 };
 
+const getTrafficSource = (): string => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sourceParam = params.get("ref") || params.get("source") || params.get("utm_source");
+    if (sourceParam) {
+      if (sourceParam.toLowerCase().includes("fb") || sourceParam.toLowerCase().includes("facebook")) return "Facebook";
+      if (sourceParam.toLowerCase().includes("wa") || sourceParam.toLowerCase().includes("whatsapp")) return "WhatsApp";
+      if (sourceParam.toLowerCase().includes("ig") || sourceParam.toLowerCase().includes("instagram")) return "Instagram";
+      return sourceParam;
+    }
+    
+    const referrer = document.referrer.toLowerCase();
+    if (referrer.includes("facebook.com")) return "Facebook";
+    if (referrer.includes("instagram.com")) return "Instagram";
+    if (referrer.includes("whatsapp.com") || referrer.includes("wa.me")) return "WhatsApp";
+    if (referrer.includes("google.com")) return "Google";
+    
+    return "Direct";
+  } catch {
+    return "Direct";
+  }
+};
+
 export const trackProductView = async (productId: string) => {
   if (getViewedThisSession().has(productId)) return;
   markViewed(productId);
@@ -54,6 +77,7 @@ export const trackProductView = async (productId: string) => {
     event_type: "view",
     user_id: user?.id ?? null,
     session_id: getSessionId(),
+    source: getTrafficSource()
   });
 };
 
@@ -64,6 +88,7 @@ export const trackProductPurchase = async (productId: string) => {
     event_type: "purchase",
     user_id: user?.id ?? null,
     session_id: getSessionId(),
+    source: getTrafficSource()
   });
 };
 

@@ -23,6 +23,20 @@ const Checkout = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", paymentMethod: "mobile_money" });
+  const [country, setCountry] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.country_name) {
+          setCountry(data.country_name);
+        }
+      })
+      .catch(() => {
+        // Fallback silently
+      });
+  }, []);
 
   useEffect(() => {
     if (items.length === 1 && items[0].product.paymentLink) {
@@ -114,6 +128,7 @@ const Checkout = () => {
         total_price: totalPrice,
         items: orderItems,
         status: "pending",
+        country: country
       });
       if (error) throw error;
       clearCart();
