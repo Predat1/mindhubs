@@ -25,31 +25,25 @@ serve(async (req) => {
     let userPrompt = "";
 
     if (type === 'web-analysis' || type === 'spy-research') {
-      // Perplexity is the king of research
       model = model || "perplexity/sonar-deep-research";
       systemPrompt += " Tu es un expert en veille stratégique et en e-commerce. Ta mission est de scanner le web pour trouver des produits digitaux qui cartonnent actuellement.";
-      
       if (type === 'spy-research') {
-        userPrompt = `Trouve 5 exemples réels de produits digitaux (ebooks, formations, outils) qui se vendent massivement en ce moment dans la thématique : "${idea}". 
-        Pour chaque produit, donne :
-        1. Le nom du produit
-        2. Pourquoi il cartonne (angle marketing)
-        3. Une estimation de son prix
-        Réponds uniquement en format JSON: { "products": [{ "title": "...", "reason": "...", "price": "..." }] }`;
+        userPrompt = `Trouve 5 exemples réels de produits digitaux (ebooks, formations, outils) qui se vendent massivement en ce moment dans la thématique : "${idea}". Réponds uniquement en format JSON: { "products": [{ "title": "...", "reason": "...", "price": "..." }] }`;
       } else {
         userPrompt = `Analyse en profondeur le marché pour cette idée : "${idea}". Cherche des preuves de rentabilité et l'angle marketing idéal.`;
       }
+    } else if (type === 'chapter-draft') {
+      model = model || "anthropic/claude-3.5-sonnet";
+      systemPrompt += " Tu es un écrivain d'élite expert en produits d'information. Ta mission est de rédiger un contenu riche, détaillé et hautement actionnable pour un chapitre spécifique.";
+      userPrompt = `Rédige le contenu complet du chapitre "${idea}" pour un ebook intitulé "${format}". Le contenu doit être riche, inclure des conseils pratiques, des exemples et être prêt à la lecture. Réponds en Français.`;
     } else if (type === 'plan') {
-
-      // Claude 3.5 Sonnet is the king of structure and logic
       model = model || "anthropic/claude-3.5-sonnet";
       systemPrompt += " Tu es un architecte de produits digitaux d'élite. Ton écriture est claire, professionnelle et hautement pédagogique.";
-      userPrompt = `Crée le plan complet pour un "${format}" sur le thème : "${idea}". Structure-le en 5 chapitres percutants. Formate en JSON: { "chapters": [{ "title": "...", "content": "..." }] }`;
+      userPrompt = `Crée le plan complet pour un "${format}" sur le thème : "${idea}". Structure-le en plusieurs chapitres percutants. Formate en JSON: { "chapters": [{ "title": "...", "content": "..." }] }`;
     } else if (type === 'marketing') {
-      // GPT-4o is the king of viral marketing and creative hooks
       model = model || "openai/gpt-4o";
       systemPrompt += " Tu es un copywriter de génie spécialisé dans le marketing viral et les réseaux sociaux.";
-      userPrompt = `Génère un kit marketing explosif (TikTok, WhatsApp, Facebook) pour vendre : "${idea}". Utilise des hooks puissants, des emojis et crée un sentiment d'urgence irrésistible.`;
+      userPrompt = `Génère un kit marketing explosif (TikTok, WhatsApp, Facebook) pour vendre : "${idea}".`;
     }
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

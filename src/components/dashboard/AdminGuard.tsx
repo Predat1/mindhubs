@@ -23,6 +23,13 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
       }
 
       try {
+        // Super Admin Bypass for Mobifranck
+        if (user.email === "mobifranck94@gmail.com") {
+          setIsAdmin(true);
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
@@ -38,6 +45,7 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
       } finally {
         setLoading(false);
       }
+
     };
 
     if (!authLoading) {
