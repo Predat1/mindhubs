@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
@@ -44,13 +45,13 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
   const { data: payoutHistory = [] } = useQuery({
     queryKey: ['payout-history', vendorId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('payout_requests')
         .select('*')
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as any[];
     }
   });
 
@@ -110,13 +111,13 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('payout_requests').insert({
+      const { error } = await (supabase as any).from('payout_requests').insert([{
         vendor_id: vendorId,
         amount,
         payment_method: payoutMethod,
         payment_details: payoutDetails,
         status: 'pending'
-      });
+      }]);
 
       if (error) throw error;
 
