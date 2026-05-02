@@ -9,7 +9,6 @@ export interface Chat {
   last_message: string | null;
   created_at: string;
   updated_at: string;
-  // Joins
   customer_name?: string;
   customer_avatar?: string;
   vendor_name?: string;
@@ -25,13 +24,15 @@ export interface Message {
   created_at: string;
 }
 
+const sb = supabase as any;
+
 export const useVendorChats = (vendorId: string | undefined) => {
   return useQuery({
     queryKey: ["vendor-chats", vendorId],
     queryFn: async (): Promise<Chat[]> => {
       if (!vendorId) return [];
       
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("chats")
         .select("*")
         .eq("vendor_id", vendorId)
@@ -39,11 +40,9 @@ export const useVendorChats = (vendorId: string | undefined) => {
 
       if (error) throw error;
       
-      // Since we don't have a public profiles table, we rely on chat.customer_name if it exists,
-      // otherwise fallback gracefully without obvious "mock" data.
-      return (data || []).map((chat) => ({
+      return (data || []).map((chat: any) => ({
         ...chat,
-        customer_name: chat.customer_name || "Client #" + chat.user_id.slice(0, 4).toUpperCase(),
+        customer_name: chat.customer_name || "Client #" + (chat.user_id || "").slice(0, 4).toUpperCase(),
         customer_avatar: chat.customer_avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.user_id}`
       }));
     },
@@ -56,7 +55,7 @@ export const useUserChats = (userId: string | undefined) => {
     queryKey: ["user-chats", userId],
     queryFn: async (): Promise<Chat[]> => {
       if (!userId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("chats")
         .select(`*, vendor:vendor_id(shop_name, avatar_url)`)
         .eq("user_id", userId)
@@ -77,24 +76,22 @@ export const useUserChats = (userId: string | undefined) => {
 export const useChatMessages = (chatId: string | undefined) => {
   const queryClient = useQueryClient();
 
-  // Fetch initial messages
   const query = useQuery({
     queryKey: ["chat-messages", chatId],
     queryFn: async (): Promise<Message[]> => {
       if (!chatId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("messages")
         .select("*")
         .eq("chat_id", chatId)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Message[];
     },
     enabled: !!chatId,
   });
 
-  // Subscribe to real-time changes
   useEffect(() => {
     if (!chatId) return;
 
@@ -106,8 +103,7 @@ export const useChatMessages = (chatId: string | undefined) => {
         (payload) => {
           queryClient.setQueryData(["chat-messages", chatId], (old: Message[] | undefined) => {
             if (!old) return [payload.new as Message];
-            // Éviter les doublons (optimistic UI)
-            if (old.find(m => m.id === payload.new.id)) return old;
+            if (old.find(m => m.id === (payload.new as any).id)) return old;
             return [...old, payload.new as Message];
           });
         }
@@ -127,8 +123,7 @@ export const useSendMessage = () => {
 
   return useMutation({
     mutationFn: async ({ chatId, content, senderId }: { chatId: string; content: string; senderId: string }) => {
-      // 1. Insert message
-      const { data: msgData, error: msgError } = await supabase
+      const { data: msgData, error: msgError } = await sb
         .from("messages")
         .insert([{ chat_id: chatId, content, sender_id: senderId }])
         .select()
@@ -136,8 +131,7 @@ export const useSendMessage = () => {
 
       if (msgError) throw msgError;
 
-      // 2. Update chat's last_message and updated_at
-      const { error: chatError } = await supabase
+      const { error: chatError } = await sb
         .from("chats")
         .update({ last_message: content, updated_at: new Date().toISOString() })
         .eq("id", chatId);
@@ -147,13 +141,11 @@ export const useSendMessage = () => {
       return msgData as Message;
     },
     onSuccess: (newMessage, variables) => {
-      // Mettre à jour le cache local optimiste
       queryClient.setQueryData(["chat-messages", variables.chatId], (old: Message[] | undefined) => {
         if (!old) return [newMessage];
         if (old.find(m => m.id === newMessage.id)) return old;
         return [...old, newMessage];
       });
-      // Invalidate chats to update the last_message in the sidebar
       queryClient.invalidateQueries({ queryKey: ["vendor-chats"] });
       queryClient.invalidateQueries({ queryKey: ["user-chats"] });
     },
@@ -163,8 +155,7 @@ export const useSendMessage = () => {
 export const useCreateOrGetChat = () => {
   return useMutation({
     mutationFn: async ({ vendorId, userId, customerName, customerAvatar }: { vendorId: string; userId: string; customerName?: string; customerAvatar?: string }) => {
-      // Check if chat exists
-      const { data: existingChat, error: checkError } = await supabase
+      const { data: existingChat, error: checkError } = await sb
         .from("chats")
         .select("*")
         .eq("vendor_id", vendorId)
@@ -177,8 +168,7 @@ export const useCreateOrGetChat = () => {
         return existingChat as Chat;
       }
 
-      // Create new chat
-      const { data: newChat, error: createError } = await supabase
+      const { data: newChat, error: createError } = await sb
         .from("chats")
         .insert([{ 
           vendor_id: vendorId, 
