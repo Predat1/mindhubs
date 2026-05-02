@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type VendorPlan = 'free' | 'starter' | 'pro' | 'elite';
 
-export interface VendorSubscription {
+export interface VendorSubscriptionData {
   vendor_id: string;
   user_id: string;
   plan: VendorPlan;
   status: string;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
   credit_balance: number;
   max_products: number;
   monthly_credits: number;
@@ -15,46 +17,45 @@ export interface VendorSubscription {
   price_fcfa_monthly: number;
   ads_studio: boolean;
   creator_lab_full: boolean;
+  priority_placement: boolean;
+  whatsapp_support: boolean;
   badge: string | null;
   product_count: number;
 }
 
+/**
+ * useVendorSubscription
+ * 
+ * WHY: Fournit une source de vérité unique pour les limites et droits du vendeur.
+ * Utilise la vue SQL 'vendor_subscription_view' pour agréger les données.
+ */
 export const useVendorSubscription = (vendorId?: string) => {
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['vendor-subscription', vendorId],
-    queryFn: async (): Promise<VendorSubscription | null> => {
-      if (!vendorId) return null;
-      
-      const { data, error } = await (supabase as any)
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('vendor_subscription_view')
         .select('*')
         .eq('vendor_id', vendorId)
         .single();
-        
-      if (error) {
-        console.error("Error fetching subscription:", error);
-        return null;
-      }
-      
-      return data as unknown as VendorSubscription;
+
+      if (error) throw error;
+      return data as VendorSubscriptionData;
     },
-    enabled: !!vendorId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // Rafraîchir toutes les 5 minutes ou à la demande
+    staleTime: 5 * 60 * 1000,
   });
 
+  const canAddProduct = data ? (data.max_products === -1 || data.product_count < data.max_products) : false;
+
   return {
-    plan: data?.plan || 'free',
-    status: data?.status || 'active',
-    creditBalance: data?.credit_balance || 0,
-    maxProducts: data?.max_products || 1,
-    productCount: data?.product_count || 0,
-    commissionRate: data?.commission_rate || 0.10,
-    adsStudio: data?.ads_studio || false,
-    creatorLabFull: data?.creator_lab_full || false,
-    badge: data?.badge || null,
+    ...data,
     isLoading,
+    error,
+    canAddProduct,
     refetch,
-    canAddProduct: data ? (data.max_products === -1 || data.product_count < data.max_products) : false,
-    canUseFeature: (feature: string, cost: number) => (data?.credit_balance || 0) >= cost,
+    // Helper pour vérifier l'accès à une fonctionnalité spécifique
+    hasAccess: (feature: keyof VendorSubscriptionData) => !!data?.[feature],
   };
 };

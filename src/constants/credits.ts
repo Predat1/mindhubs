@@ -1,5 +1,13 @@
+/**
+ * CREDIT_COSTS
+ * 
+ * WHY: Centralisation des coûts par fonctionnalité pour une gestion cohérente
+ * à travers tout l'écosystème MindHubs.
+ * 
+ * Basé sur une marge cible de >80% par rapport aux coûts OpenRouter/Lovable réels.
+ */
 export const CREDIT_COSTS: Record<string, number> = {
-  // Creator Lab
+  // --- Creator Lab ---
   'spy-research':   10,  // Veille marché (Perplexity deep research)
   'validate':        5,  // Validation idée (Gemini 2.5 Pro)
   'plan':           15,  // Plan produit (Claude Sonnet 4.5)
@@ -8,19 +16,22 @@ export const CREDIT_COSTS: Record<string, number> = {
   'remix':           3,  // Angles différenciation (Gemini Flash)
   'pivots':          3,  // Pivots d'idée (Gemini Flash)
 
-  // ProductArchitect
+  // --- Product Architect ---
   'image-gen':      20,  // Couverture ebook (Flux 1.1 Pro via OpenRouter)
 
-  // Ads Studio
+  // --- Ads Studio ---
   'product-image-3d': 25, // Boîte 3D (Gemini Flash Image) — par image générée
   'ad-creative':    25,   // Visuel pub Facebook — par format généré
   'ad-copy':         5,   // Copywriting Facebook Ads
   'ad-targeting':    3,   // Ciblage audience africain
 
-  // Factory (DigitalProductFactory)
+  // --- Factory (DigitalProductFactory) ---
   'factory-niche':   8,  // Analyse de niche
   'factory-kit':    12,  // Génération kit produit complet
 };
 
-// Coût moyen pondéré : ~2.1 FCFA/crédit (vs prix 15 FCFA/crédit)
-// Marge globale consolidée : 86% sur l'ensemble du catalogue
+/**
+ * Helper: Calcule la valeur équivalente en FCFA
+ * (Basé sur le prix de vente moyen du crédit: ~15 FCFA)
+ */
+export const creditsToFCFA = (credits: number) => credits * 15;

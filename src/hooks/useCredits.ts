@@ -1,79 +1,98 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface CreditTransaction {
   id: string;
-  vendor_id: string;
+  created_at: string;
   type: 'monthly_grant' | 'purchase' | 'spend' | 'bonus' | 'refund' | 'rollover';
   amount: number;
   balance_after: number;
   description: string;
   feature_type: string | null;
-  created_at: string;
 }
 
+/**
+ * useCredits
+ * 
+ * WHY: Gère le solde réel des crédits et l'historique des transactions.
+ * Fournit la fonction 'spend' qui invoque la procédure stockée atomique RPC.
+ */
 export const useCredits = (vendorId?: string) => {
   const queryClient = useQueryClient();
 
-  const { data: balance = 0, isLoading: balanceLoading } = useQuery({
+  // 1. Récupération du solde et historique
+  const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['vendor-credits', vendorId],
-    queryFn: async (): Promise<number> => {
-      if (!vendorId) return 0;
-      const { data, error } = await (supabase as any)
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('vendor_credits')
         .select('balance')
         .eq('vendor_id', vendorId)
         .single();
-      if (error) return 0;
-      return data.balance;
-    },
-    enabled: !!vendorId,
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found, on retourne 0
+      return data?.balance ?? 0;
+    }
   });
 
   const { data: transactions = [], isLoading: txLoading } = useQuery({
-    queryKey: ['credit-transactions', vendorId],
-    queryFn: async (): Promise<CreditTransaction[]> => {
-      if (!vendorId) return [];
-      const { data, error } = await (supabase as any)
+    queryKey: ['vendor-credit-transactions', vendorId],
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('credit_transactions')
         .select('*')
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false })
         .limit(20);
-      if (error) return [];
+      if (error) throw error;
       return data as CreditTransaction[];
-    },
-    enabled: !!vendorId,
+    }
   });
 
-  const spend = async (amount: number, description: string, featureType: string) => {
-    if (!vendorId) return { success: false, error: "Non connecté" };
+  // 2. Mutation pour dépenser des crédits
+  const spendMutation = useMutation({
+    mutationFn: async ({ 
+      amount, 
+      description, 
+      featureType 
+    }: { 
+      amount: number; 
+      description: string; 
+      featureType: string 
+    }) => {
+      if (!vendorId) throw new Error("ID Vendeur manquant");
+      
+      const { data, error } = await supabase.rpc('spend_credits', {
+        p_vendor_id: vendorId,
+        p_amount: amount,
+        p_description: description,
+        p_feature_type: featureType,
+        p_cost_usd_cents: 0 // Optionnel: coût réel IA pour analytiques admin
+      });
 
-    const { data, error } = await (supabase as any).rpc('spend_credits', {
-      p_vendor_id: vendorId,
-      p_amount: amount,
-      p_description: description,
-      p_feature_type: featureType
-    });
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
 
-    if (error) return { success: false, error: error.message };
-    
-    const result = data as { success: boolean; balance?: number; error?: string };
-    
-    if (result.success) {
-      // Invalider les requêtes pour rafraîchir l'UI
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidation immédiate pour rafraîchir l'UI partout
       queryClient.invalidateQueries({ queryKey: ['vendor-credits', vendorId] });
-      queryClient.invalidateQueries({ queryKey: ['credit-transactions', vendorId] });
+      queryClient.invalidateQueries({ queryKey: ['vendor-credit-transactions', vendorId] });
       queryClient.invalidateQueries({ queryKey: ['vendor-subscription', vendorId] });
+    },
+    onError: (err: any) => {
+      toast.error(`Erreur crédits : ${err.message}`);
     }
-
-    return result;
-  };
+  });
 
   return {
-    balance,
+    balance: balanceData ?? 0,
     transactions,
-    spend,
     isLoading: balanceLoading || txLoading,
+    spend: spendMutation.mutateAsync,
+    isSpending: spendMutation.isPending,
   };
 };

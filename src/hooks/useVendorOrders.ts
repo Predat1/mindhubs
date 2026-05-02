@@ -31,8 +31,8 @@ export interface VendorOrder {
  * selecting rows where the 'items' JSON array contains one of the vendor's products.
  */
 export const useVendorOrders = (vendorId: string | undefined, productIds: string[]) => {
-  const { commissionRate } = useVendorSubscription(vendorId);
-  const vendorShare = 1 - commissionRate;
+  const { commission_rate } = useVendorSubscription(vendorId);
+  const vendorShare = 1 - (commission_rate ?? 0.10);
 
   return useQuery({
     queryKey: ["vendor-all-orders", vendorId, productIds.join(",")],
