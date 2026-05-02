@@ -12,34 +12,41 @@ serve(async (req) => {
   }
 
   try {
-    const { idea, format, type, model = "perplexity/sonar-deep-research" } = await req.json()
+    const { idea, format, type, model: userModel } = await req.json()
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY')
 
     if (!OPENROUTER_API_KEY) {
       throw new Error('Missing OPENROUTER_API_KEY')
     }
 
-    // Mapping for specific user requests or defaults
-    let systemPrompt = "Tu es MindHubs AI, un expert en analyse de données web et création de produits digitaux.";
+    // --- Smart Model Routing ---
+    let model = userModel;
+    let systemPrompt = "Tu es MindHubs AI, l'assistant ultime des créateurs de business digitaux. Réponds toujours en Français.";
     let userPrompt = "";
 
     if (type === 'web-analysis') {
-      systemPrompt += " Ta mission est d'analyser les données publicitaires et les tendances web pour identifier la rentabilité.";
-      userPrompt = `Analyse ces données de marché pour l'idée : "${idea}". Identifie les points de douleur et le potentiel de vente directe.`;
+      // Perplexity is the king of research
+      model = model || "perplexity/sonar-deep-research";
+      systemPrompt += " Tu es un expert en analyse de marché temps réel. Utilise tes capacités de recherche web pour trouver des preuves de rentabilité.";
+      userPrompt = `Analyse en profondeur le marché pour cette idée de produit digital : "${idea}". Cherche des publicités Facebook concurrentes, des volumes de recherche et identifie l'angle marketing le plus rentable.`;
     } else if (type === 'plan') {
-      systemPrompt += " Ta mission est de structurer un plan détaillé pour un produit digital. Sois persuasif, structuré et utilise des termes adaptés au marché local.";
-      userPrompt = `Génère un plan de 5 chapitres pour un produit de type "${format}" basé sur cette idée : "${idea}". Pour chaque chapitre, donne un titre accrocheur et un résumé du contenu. Formate la réponse en JSON pour que je puisse l'analyser facilement. Exemple: { "chapters": [{ "title": "...", "content": "..." }] }`;
+      // Claude 3.5 Sonnet is the king of structure and logic
+      model = model || "anthropic/claude-3.5-sonnet";
+      systemPrompt += " Tu es un architecte de produits digitaux d'élite. Ton écriture est claire, professionnelle et hautement pédagogique.";
+      userPrompt = `Crée le plan complet pour un "${format}" sur le thème : "${idea}". Structure-le en 5 chapitres percutants. Formate en JSON: { "chapters": [{ "title": "...", "content": "..." }] }`;
     } else if (type === 'marketing') {
-      systemPrompt += " Ta mission est de générer des scripts publicitaires viraux pour TikTok, WhatsApp et Facebook.";
-      userPrompt = `Génère 1 script TikTok (45s) et 1 post WhatsApp pour vendre ce produit : "${idea}". Utilise des emojis et un ton très engageant.`;
+      // GPT-4o is the king of viral marketing and creative hooks
+      model = model || "openai/gpt-4o";
+      systemPrompt += " Tu es un copywriter de génie spécialisé dans le marketing viral et les réseaux sociaux.";
+      userPrompt = `Génère un kit marketing explosif (TikTok, WhatsApp, Facebook) pour vendre : "${idea}". Utilise des hooks puissants, des emojis et crée un sentiment d'urgence irrésistible.`;
     }
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://mindhubs.com', // Optional, for OpenRouter analytics
-        'X-Title': 'MindHubs Creator Lab', // Optional
+        'HTTP-Referer': 'https://mindhubs.com',
+        'X-Title': 'MindHubs Creator Lab',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -52,11 +59,9 @@ serve(async (req) => {
     })
 
     const data = await response.json()
-    
-    // Extract the content from OpenRouter response
     const aiContent = data.choices?.[0]?.message?.content || "";
     
-    return new Response(JSON.stringify({ result: aiContent, raw: data }), {
+    return new Response(JSON.stringify({ result: aiContent, model: model, raw: data }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
