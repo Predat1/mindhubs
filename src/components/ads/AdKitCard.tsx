@@ -244,31 +244,34 @@ ${targetingText}`;
   );
 
   return (
-    <Card className="card-premium overflow-hidden border border-white/5 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl rounded-2xl">
-      <div className="flex flex-col lg:flex-row h-full">
+    <Card className="group/main relative overflow-hidden border border-white/10 bg-zinc-950/80 backdrop-blur-3xl shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8)] rounded-[2rem] transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(217,70,239,0.15)] hover:border-white/20">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-fuchsia-500/5 opacity-0 group-hover/main:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+      
+      <div className="flex flex-col lg:flex-row h-full relative z-10">
         
         {/* Mockup Preview Area */}
-        <div className="relative lg:w-[45%] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-6 md:p-8 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5">
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
+        <div className="relative lg:w-[40%] xl:w-[35%] bg-black p-8 md:p-10 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-white/10 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-fuchsia-500/10 blur-[100px] pointer-events-none rounded-full" />
           
-          <div className="relative z-10 w-full flex justify-center">
+          <div className="relative z-10 w-full flex justify-center group-hover/main:scale-[1.02] transition-transform duration-500">
              {creative.format === "9:16" ? renderIGStory() : renderFBPost()}
           </div>
           
           {/* Quick Image Editor (Stickers) */}
-          <div className="relative z-10 mt-8 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex flex-wrap items-center justify-center gap-2 w-full max-w-[340px]">
+          <div className="relative z-10 mt-8 p-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex flex-wrap items-center justify-center gap-1 w-full max-w-[340px] shadow-2xl">
             <Button
               variant={showPrice ? "default" : "ghost"}
               size="sm"
-              className={`h-8 text-xs rounded-xl transition-all ${showPrice ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' : 'hover:bg-white/10 text-zinc-300'}`}
+              className={`h-9 text-xs rounded-xl transition-all flex-1 ${showPrice ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'hover:bg-white/10 text-zinc-400'}`}
               onClick={() => setShowPrice(!showPrice)}
             >
-              <Tag size={14} className="mr-1.5" /> Étiquette Prix
+              <Tag size={14} className="mr-1.5" /> Prix
             </Button>
             <Button
               variant={showPromo ? "default" : "ghost"}
               size="sm"
-              className={`h-8 text-xs rounded-xl transition-all ${showPromo ? 'bg-yellow-400 hover:bg-yellow-500 text-black shadow-[0_0_15px_rgba(250,204,21,0.4)]' : 'hover:bg-white/10 text-zinc-300'}`}
+              className={`h-9 text-xs rounded-xl transition-all flex-1 ${showPromo ? 'bg-yellow-400 hover:bg-yellow-500 text-black shadow-[0_0_15px_rgba(250,204,21,0.3)] font-bold' : 'hover:bg-white/10 text-zinc-400'}`}
               onClick={() => setShowPromo(!showPromo)}
             >
               <Percent size={14} className="mr-1.5" /> Promo
@@ -276,117 +279,118 @@ ${targetingText}`;
             <Button
               variant={showUrgency ? "default" : "ghost"}
               size="sm"
-              className={`h-8 text-xs rounded-xl transition-all ${showUrgency ? 'bg-white hover:bg-zinc-200 text-black shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'hover:bg-white/10 text-zinc-300'}`}
+              className={`h-9 text-xs rounded-xl transition-all flex-1 ${showUrgency ? 'bg-white hover:bg-zinc-200 text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] font-bold' : 'hover:bg-white/10 text-zinc-400'}`}
               onClick={() => setShowUrgency(!showUrgency)}
             >
-              <AlertCircle size={14} className="mr-1.5" /> Urgence
+              <AlertCircle size={14} className="mr-1.5" /> Fast
             </Button>
           </div>
         </div>
 
         {/* Content Details */}
-        <div className="flex-1 p-6 md:p-8 flex flex-col gap-6">
+        <div className="flex-1 p-6 md:p-8 flex flex-col gap-8 bg-zinc-950/50">
           {/* Header actions */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-r ${angle?.color} px-4 py-1.5 text-sm font-bold text-white shadow-lg`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className={`inline-flex items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r ${angle?.color} px-4 py-1.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]`}>
                 <span className="text-lg drop-shadow-sm">{angle?.emoji}</span> {angle?.label}
               </div>
-              <p className="text-xs font-medium text-zinc-500 flex items-center gap-1.5">
-                <Sparkles size={12} className="text-primary" />
+              <p className="text-xs font-medium text-zinc-500 flex items-center gap-1.5 pl-1 mt-2">
+                <Sparkles size={12} className="text-fuchsia-400" />
                 Généré le {new Date(creative.created_at).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}
               </p>
             </div>
 
             {/* Premium Action Bar */}
-            <div className="flex gap-1.5 bg-zinc-900/50 backdrop-blur-md rounded-xl p-1.5 border border-white/10 shadow-inner">
-              <Button size="sm" variant="ghost" className="h-9 w-9 p-0 rounded-lg hover:bg-primary/20 hover:text-primary transition-colors" onClick={handleDownload} title="Télécharger l'image" disabled={isRegenerating}>
-                <Download size={16} />
+            <div className="flex gap-1.5 bg-black/60 backdrop-blur-xl rounded-2xl p-1.5 border border-white/10 shadow-inner">
+              <Button size="sm" variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-fuchsia-500/20 hover:text-fuchsia-400 transition-colors" onClick={handleDownload} title="Télécharger l'image" disabled={isRegenerating}>
+                <Download size={18} />
               </Button>
-              <Button size="sm" variant="ghost" className="h-9 w-9 p-0 rounded-lg hover:bg-primary/20 hover:text-primary transition-colors" onClick={() => handleCopy(fullKitText, "kit", "Kit complet")} title="Copier tout le kit">
-                {copiedKey === "kit" ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+              <Button size="sm" variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-fuchsia-500/20 hover:text-fuchsia-400 transition-colors" onClick={() => handleCopy(fullKitText, "kit", "Kit complet")} title="Copier tout le kit">
+                {copiedKey === "kit" ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0 rounded-lg hover:bg-primary/20 hover:text-primary transition-colors" title="Régénérer" disabled={isRegenerating}>
-                    {isRegenerating ? <Loader2 size={16} className="animate-spin text-primary" /> : <RefreshCw size={16} />}
+                  <Button size="sm" variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-fuchsia-500/20 hover:text-fuchsia-400 transition-colors" title="Régénérer" disabled={isRegenerating}>
+                    {isRegenerating ? <Loader2 size={18} className="animate-spin text-fuchsia-400" /> : <RefreshCw size={18} />}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl border-white/10 bg-zinc-950/95 backdrop-blur-xl p-2">
-                  <DropdownMenuLabel className="text-xs uppercase tracking-widest text-zinc-500 mb-1">
+                <DropdownMenuContent align="end" className="w-64 rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-2xl p-2 shadow-2xl">
+                  <DropdownMenuLabel className="text-xs uppercase tracking-widest text-zinc-500 mb-1 px-2">
                     Régénérer partiellement
                   </DropdownMenuLabel>
-                  <DropdownMenuItem onClick={handleRegenImage} className="gap-3 cursor-pointer rounded-lg p-2.5 focus:bg-primary/20">
-                    <div className="bg-primary/20 p-1.5 rounded-md"><ImageIcon size={16} className="text-primary" /></div>
+                  <DropdownMenuItem onClick={handleRegenImage} className="gap-3 cursor-pointer rounded-xl p-2.5 focus:bg-white/5 transition-colors">
+                    <div className="bg-fuchsia-500/10 p-2 rounded-lg border border-fuchsia-500/20"><ImageIcon size={16} className="text-fuchsia-400" /></div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-white">L'image</span>
-                      <span className="text-xs text-zinc-400">Conserver le texte actuel</span>
+                      <span className="text-[10px] text-zinc-400">Conserver le texte actuel</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleRegenCopy} className="gap-3 cursor-pointer rounded-lg p-2.5 focus:bg-primary/20">
-                    <div className="bg-primary/20 p-1.5 rounded-md"><FileText size={16} className="text-primary" /></div>
+                  <DropdownMenuItem onClick={handleRegenCopy} className="gap-3 cursor-pointer rounded-xl p-2.5 focus:bg-white/5 transition-colors">
+                    <div className="bg-fuchsia-500/10 p-2 rounded-lg border border-fuchsia-500/20"><FileText size={16} className="text-fuchsia-400" /></div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-white">Le copywriting</span>
-                      <span className="text-xs text-zinc-400">Réécrire les textes</span>
+                      <span className="text-[10px] text-zinc-400">Réécrire les textes</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleRegenTargeting} className="gap-3 cursor-pointer rounded-lg p-2.5 focus:bg-primary/20">
-                    <div className="bg-primary/20 p-1.5 rounded-md"><Target size={16} className="text-primary" /></div>
+                  <DropdownMenuItem onClick={handleRegenTargeting} className="gap-3 cursor-pointer rounded-xl p-2.5 focus:bg-white/5 transition-colors">
+                    <div className="bg-fuchsia-500/10 p-2 rounded-lg border border-fuchsia-500/20"><Target size={16} className="text-fuchsia-400" /></div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-white">Le ciblage</span>
-                      <span className="text-xs text-zinc-400">Nouvelle audience</span>
+                      <span className="text-[10px] text-zinc-400">Nouvelle audience</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10 my-1" />
-                  <DropdownMenuItem onClick={handleRegenFullAngle} className="gap-3 cursor-pointer rounded-lg p-2.5 focus:bg-primary/20">
-                    <div className="bg-primary/20 p-1.5 rounded-md"><Sparkles size={16} className="text-primary" /></div>
+                  <DropdownMenuSeparator className="bg-white/10 my-2" />
+                  <DropdownMenuItem onClick={handleRegenFullAngle} className="gap-3 cursor-pointer rounded-xl p-2.5 focus:bg-fuchsia-500/20 transition-colors bg-fuchsia-500/5">
+                    <div className="bg-fuchsia-500/20 p-2 rounded-lg border border-fuchsia-500/30"><Sparkles size={16} className="text-fuchsia-400 animate-pulse" /></div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-white">Variante complète</span>
-                      <span className="text-xs text-zinc-400">Tout refaire à neuf</span>
+                      <span className="text-[10px] text-zinc-400">Tout refaire à neuf</span>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <div className="w-px bg-white/10 mx-0.5" />
-              <Button size="sm" variant="ghost" onClick={handleDelete} className="h-9 w-9 p-0 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors" title="Supprimer" disabled={isRegenerating}>
-                <Trash2 size={16} />
+              <div className="w-px bg-white/10 mx-1" />
+              <Button size="sm" variant="ghost" onClick={handleDelete} className="h-10 w-10 p-0 rounded-xl text-red-400 hover:text-white hover:bg-red-500 transition-colors" title="Supprimer" disabled={isRegenerating}>
+                <Trash2 size={18} />
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 h-full">
              {/* Left Column: Copywriting */}
-             <div className="space-y-5 flex flex-col">
+             <div className="space-y-6 flex flex-col">
                 {/* Primary text */}
-                <div className="space-y-2 flex-grow">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                       <FileText size={14} className="text-primary"/> Script Principal
+                <div className="space-y-3 flex-grow flex flex-col">
+                  <div className="flex items-center justify-between bg-zinc-900/50 p-2 rounded-xl border border-white/5">
+                    <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2 pl-2">
+                       <FileText size={14} className="text-fuchsia-400"/> Script Principal
                     </span>
-                    <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-[11px] text-primary hover:text-primary hover:bg-primary/10 rounded-md" onClick={() => handleCopy(copy.primary_text, "primary", "Texte principal")}>
+                    <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-[11px] text-fuchsia-400 hover:text-white hover:bg-fuchsia-500/20 rounded-lg transition-colors" onClick={() => handleCopy(copy.primary_text, "primary", "Texte principal")}>
                       {copiedKey === "primary" ? <Check size={14} /> : <Copy size={14} />} Copier
                     </Button>
                   </div>
-                  <div className="relative group">
-                     <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
-                     <p className="relative rounded-2xl bg-zinc-900/50 border border-white/5 p-4 text-sm leading-relaxed whitespace-pre-wrap text-zinc-300 shadow-inner max-h-[220px] overflow-y-auto custom-scrollbar">
+                  <div className="relative group/text flex-grow flex flex-col">
+                     <p className="flex-1 rounded-2xl bg-black/40 border border-white/5 p-5 text-sm leading-relaxed whitespace-pre-wrap text-zinc-300 shadow-inner max-h-[250px] overflow-y-auto custom-scrollbar group-hover/text:border-white/10 transition-colors">
                         {copy.primary_text}
                      </p>
                   </div>
                 </div>
 
                 {/* Headlines */}
-                <div className="space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Titres Accrocheurs</span>
+                <div className="space-y-3">
+                  <div className="bg-zinc-900/50 p-2 rounded-xl border border-white/5">
+                     <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 pl-2">Titres Accrocheurs</span>
+                  </div>
                   <div className="space-y-2">
                     {copy.headlines?.map((h, i) => (
                       <button
                         key={i}
                         onClick={() => handleCopy(h, `h-${i}`, "Titre")}
-                        className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-zinc-900/50 px-4 py-3 text-left text-sm hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
+                        className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-black/40 px-5 py-3.5 text-left text-sm hover:border-fuchsia-500/30 hover:bg-fuchsia-500/5 transition-all duration-300"
                       >
-                        <span className="truncate pr-4 font-semibold text-zinc-200 group-hover:text-white transition-colors">{h}</span>
-                        {copiedKey === `h-${i}` ? <Check size={16} className="text-emerald-500 shrink-0" /> : <Copy size={16} className="text-zinc-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                        <span className="truncate pr-4 font-semibold text-zinc-300 group-hover:text-white transition-colors">{h}</span>
+                        {copiedKey === `h-${i}` ? <Check size={16} className="text-emerald-400 shrink-0" /> : <Copy size={16} className="text-zinc-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />}
                       </button>
                     ))}
                   </div>
@@ -394,54 +398,60 @@ ${targetingText}`;
 
                 {/* CTA */}
                 <div className="pt-2">
-                   <div className="inline-flex items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-4 py-2">
-                     <Megaphone size={16} className="text-primary" />
-                     <span className="text-xs font-bold text-primary uppercase tracking-widest">CTA:</span>
-                     <span className="text-sm font-bold text-white">{copy.cta}</span>
+                   <div className="inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-fuchsia-500/10 to-indigo-500/10 border border-fuchsia-500/20 px-5 py-3 shadow-inner">
+                     <Megaphone size={18} className="text-fuchsia-400" />
+                     <span className="text-xs font-bold text-fuchsia-400/80 uppercase tracking-widest">Appel à l'action:</span>
+                     <span className="text-sm font-black text-white tracking-wide">{copy.cta}</span>
                    </div>
                 </div>
              </div>
 
              {/* Right Column: Targeting */}
-             <div className="space-y-4 bg-zinc-900/30 rounded-3xl border border-white/5 p-5">
-                <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                  <span className="flex items-center gap-2 text-sm font-bold text-white">
-                    <Target size={18} className="text-primary" /> Ciblage Laser
+             <div className="space-y-5 bg-black/40 rounded-3xl border border-white/5 p-6 shadow-inner">
+                <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                  <span className="flex items-center gap-2.5 text-sm font-bold text-white">
+                    <div className="p-1.5 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/20">
+                      <Target size={16} className="text-fuchsia-400" />
+                    </div>
+                    Ciblage Laser
                   </span>
-                  <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-[11px] text-primary hover:text-primary hover:bg-primary/10 rounded-md" onClick={() => handleCopy(targetingText, "targeting", "Ciblage")}>
+                  <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-[11px] text-fuchsia-400 hover:text-white hover:bg-fuchsia-500/20 rounded-lg transition-colors" onClick={() => handleCopy(targetingText, "targeting", "Ciblage")}>
                     {copiedKey === "targeting" ? <Check size={14} /> : <Copy size={14} />} Copier
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl bg-zinc-900/80 border border-white/5 p-3 flex flex-col justify-center">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1">Âge</p>
-                    <p className="font-bold text-base text-zinc-100">{targeting.age_min}–{targeting.age_max} <span className="text-xs font-normal text-zinc-400">ans</span></p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-zinc-900/50 border border-white/5 p-4 flex flex-col justify-center transition-colors hover:bg-zinc-900/80">
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1.5">Âge cible</p>
+                    <p className="font-bold text-lg text-white">{targeting.age_min} – {targeting.age_max} <span className="text-xs font-normal text-zinc-400">ans</span></p>
                   </div>
-                  <div className="rounded-2xl bg-zinc-900/80 border border-white/5 p-3 flex flex-col justify-center">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1">Genre</p>
-                    <p className="font-bold text-base text-zinc-100">{targeting.gender === "all" ? "Tous" : targeting.gender === "men" ? "Hommes" : "Femmes"}</p>
+                  <div className="rounded-2xl bg-zinc-900/50 border border-white/5 p-4 flex flex-col justify-center transition-colors hover:bg-zinc-900/80">
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1.5">Genre</p>
+                    <p className="font-bold text-lg text-white">{targeting.gender === "all" ? "Tous" : targeting.gender === "men" ? "Hommes" : "Femmes"}</p>
                   </div>
-                  <div className="col-span-2 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 p-4">
-                    <p className="text-primary/80 text-[10px] font-bold uppercase tracking-widest mb-1">Budget Recommandé</p>
-                    <p className="font-black text-2xl text-primary drop-shadow-md">{targeting.daily_budget?.amount_xof?.toLocaleString("fr-FR")} <span className="text-sm font-bold">FCFA / jour</span></p>
+                  <div className="col-span-2 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-fuchsia-500/20 p-5 relative overflow-hidden group/budget">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/budget:animate-[shimmer_1.5s_infinite]" />
+                    <p className="text-fuchsia-400/80 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Budget Recommandé</p>
+                    <p className="font-black text-3xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400 drop-shadow-md relative z-10">
+                      {targeting.daily_budget?.amount_xof?.toLocaleString("fr-FR")} <span className="text-sm font-bold text-zinc-400">FCFA / jour</span>
+                    </p>
                   </div>
-                  <div className="col-span-2 rounded-2xl bg-zinc-900/80 border border-white/5 p-4">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-2">Pays cibles</p>
-                    <p className="font-medium text-sm text-zinc-200">{targeting.countries?.map((c) => `${COUNTRY_FLAGS[c] || "🌍"} ${c}`).join(" • ")}</p>
+                  <div className="col-span-2 rounded-2xl bg-zinc-900/50 border border-white/5 p-5 transition-colors hover:bg-zinc-900/80">
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-3">Pays ciblés</p>
+                    <p className="font-medium text-sm text-zinc-200 leading-relaxed">{targeting.countries?.map((c) => `${COUNTRY_FLAGS[c] || "🌍"} ${c}`).join(" • ")}</p>
                   </div>
-                  <div className="col-span-2 rounded-2xl bg-zinc-900/80 border border-white/5 p-4">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-2">Intérêts ({targeting.interests?.length || 0})</p>
+                  <div className="col-span-2 rounded-2xl bg-zinc-900/50 border border-white/5 p-5 transition-colors hover:bg-zinc-900/80">
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-3">Centres d'intérêt ({targeting.interests?.length || 0})</p>
                     <div className="flex flex-wrap gap-2">
-                      {targeting.interests?.map((i, k) => <span key={k} className="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-xs font-medium text-zinc-300 hover:bg-white/10 transition-colors cursor-default">{i}</span>)}
+                      {targeting.interests?.map((i, k) => <span key={k} className="rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-default">{i}</span>)}
                     </div>
                   </div>
                 </div>
 
                 {targeting.rationale && (
-                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex gap-3 items-start">
-                    <Sparkles size={16} className="text-primary shrink-0 mt-0.5" />
-                    <p className="text-xs text-zinc-400 leading-relaxed font-medium">
+                  <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-5 flex gap-3.5 items-start">
+                    <Sparkles size={18} className="text-indigo-400 shrink-0 mt-0.5" />
+                    <p className="text-[13px] text-zinc-300 leading-relaxed font-medium">
                       {targeting.rationale}
                     </p>
                   </div>

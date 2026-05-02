@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import {
   Sparkles, Loader2, Wand2, Megaphone, ChevronRight, Image as ImageIcon,
-  Filter, Search, History, X, LayoutGrid, Rows3,
+  Filter, Search, History, X, LayoutGrid, Rows3, Activity, Play
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
@@ -167,24 +167,41 @@ const Inner = () => {
       <SEO title="Studio Pub Elite — Générateur de créatives IA" description="Créez des créatives publicitaires Facebook optimisées conversion en 1 clic." />
 
       <div className="space-y-8 max-w-7xl mx-auto pb-12">
-        {/* Hero Section Premium */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 p-8 md:p-12 shadow-2xl">
-          {/* Effets de lumière */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-zinc-950/50 to-primary/5 opacity-80" />
-          <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/20 blur-[100px] pointer-events-none" />
-          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
+        {/* Hero Section Premium Ultra-Creative */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-black p-8 md:p-14 shadow-2xl group">
+          {/* Gradients dynamiques */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-black to-fuchsia-500/10 opacity-80" />
+          <div className="absolute -top-[50%] -right-[20%] h-[150%] w-[70%] rounded-[100%] bg-indigo-500/15 blur-[120px] pointer-events-none group-hover:bg-indigo-500/25 transition-colors duration-1000" />
+          <div className="absolute -bottom-[50%] -left-[20%] h-[150%] w-[70%] rounded-[100%] bg-fuchsia-500/10 blur-[120px] pointer-events-none group-hover:bg-fuchsia-500/20 transition-colors duration-1000" />
           
-          <div className="relative z-10 space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary backdrop-blur-md shadow-[0_0_15px_rgba(var(--primary),0.3)]">
-              <Sparkles size={14} className="animate-pulse" /> Studio Elite IA
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="space-y-5 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-white backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <Activity size={14} className="text-fuchsia-400 animate-pulse" /> IA Créative Engine v2
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.1]">
+                Vos prochaines pubs <br className="hidden md:block"/>
+                <span className="bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">sont déjà prêtes.</span>
+              </h1>
+              <p className="text-base md:text-lg text-zinc-400 max-w-xl leading-relaxed font-medium">
+                Générez des créatives Facebook & Instagram ultra-performantes. 
+                Sélectionnez un produit, notre IA s'occupe du visuel, du copywriting persuasif et du ciblage laser.
+              </p>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              Générez des publicités <br className="hidden md:block"/>
-              <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">qui convertissent.</span>
-            </h1>
-            <p className="text-base md:text-lg text-zinc-400 max-w-2xl leading-relaxed">
-              Sélectionnez un produit, choisissez vos angles d'attaque et laissez notre IA générer les visuels, le copywriting percutant et le ciblage laser pour Facebook & Instagram en quelques secondes.
-            </p>
+            
+            <div className="hidden lg:flex items-center justify-center relative w-64 h-64">
+               <div className="absolute inset-0 border border-white/10 rounded-full animate-[spin_10s_linear_infinite] border-t-fuchsia-500/50" />
+               <div className="absolute inset-4 border border-white/5 rounded-full animate-[spin_15s_linear_infinite_reverse] border-b-indigo-500/50" />
+               <div className="bg-black/50 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3 transform rotate-3 hover:rotate-0 transition-transform cursor-default">
+                 <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(217,70,239,0.3)]">
+                   <Wand2 className="text-white" />
+                 </div>
+                 <div className="text-center">
+                   <p className="text-sm font-bold text-white">Prêt à créer</p>
+                   <p className="text-[10px] text-zinc-500">Zéro compétence requise</p>
+                 </div>
+               </div>
+            </div>
           </div>
         </div>
 
@@ -309,35 +326,37 @@ const Inner = () => {
               </div>
             </div>
 
-            {/* Generate Action Area */}
-            <div className="relative mt-6 rounded-2xl bg-zinc-950/40 border border-white/5 p-6 backdrop-blur-sm overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none" />
-              <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                
-                <div className="space-y-1">
+            {/* Generate Action Area Premium */}
+            <div className="relative mt-8 rounded-2xl bg-black border border-white/10 p-6 md:p-8 overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-fuchsia-500/5 to-indigo-500/5 pointer-events-none" />
+              
+              <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8 z-10">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-primary" />
-                    <span className="font-bold text-sm">Résumé de la génération</span>
+                    <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                      <Wand2 size={14} className="text-fuchsia-400" />
+                    </div>
+                    <span className="font-bold text-sm text-white">Prêt à générer</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Vous allez créer <strong className="text-foreground">{totalToGenerate}</strong> visuel{totalToGenerate > 1 ? "s" : ""} et <strong className="text-foreground">{angles.length}</strong> kit{angles.length > 1 ? "s" : ""} de texte/ciblage.
+                  <p className="text-xs text-zinc-400 ml-10">
+                    <strong className="text-white">{totalToGenerate}</strong> visuel{totalToGenerate > 1 ? "s" : ""} et <strong className="text-white">{angles.length}</strong> kit{angles.length > 1 ? "s" : ""} complet{angles.length > 1 ? "s" : ""} (Copy + Ciblage).
                   </p>
                 </div>
 
                 {generate.isPending ? (
-                  <div className="w-full md:w-auto flex flex-col items-end gap-2">
-                    <div className="flex items-center gap-2 text-sm font-bold text-primary">
-                      <Loader2 size={16} className="animate-spin" />
-                      {generationStep === 0 && "🔍 Analyse des bénéfices du produit..."}
-                      {generationStep === 1 && "✍️ Rédaction des scripts persuasifs..."}
-                      {generationStep === 2 && "🎨 Génération des assets visuels..."}
-                      {generationStep === 3 && "✨ Finalisation du kit Elite..."}
+                  <div className="w-full md:w-[400px] flex flex-col items-end gap-3">
+                    <div className="flex items-center gap-2 text-sm font-bold text-white bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                      <Loader2 size={14} className="animate-spin text-fuchsia-400" />
+                      {generationStep === 0 && "Analyse du produit..."}
+                      {generationStep === 1 && "Rédaction IA des scripts..."}
+                      {generationStep === 2 && "Génération des assets visuels..."}
+                      {generationStep === 3 && "Finalisation du kit Elite..."}
                     </div>
-                    <div className="flex gap-1.5 w-full md:w-64">
+                    <div className="flex gap-1.5 w-full">
                       {[0, 1, 2, 3].map((step) => (
                         <div 
                           key={step} 
-                          className={`h-2 w-full rounded-full transition-all duration-700 ease-out ${step <= generationStep ? "bg-gradient-to-r from-primary to-blue-500 shadow-[0_0_10px_rgba(var(--primary),0.5)]" : "bg-muted/50"}`} 
+                          className={`h-1.5 w-full rounded-full transition-all duration-700 ease-out ${step <= generationStep ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-[0_0_10px_rgba(217,70,239,0.5)]" : "bg-white/5"}`} 
                         />
                       ))}
                     </div>
@@ -345,11 +364,11 @@ const Inner = () => {
                 ) : (
                   <Button
                     size="lg"
-                    className="h-12 w-full md:w-auto rounded-xl btn-glow gap-2 font-bold px-8 shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(var(--primary),0.6)]"
+                    className="h-14 w-full md:w-auto rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white gap-2 font-black px-10 shadow-[0_0_30px_rgba(217,70,239,0.3)] transition-all hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(217,70,239,0.5)] border border-white/20"
                     onClick={handleGenerate}
                     disabled={!productId || totalToGenerate === 0 || totalToGenerate > 8}
                   >
-                    <Wand2 size={18} className="animate-pulse" /> 
+                    <Sparkles size={18} className={(!productId || totalToGenerate === 0 || totalToGenerate > 8) ? "" : "animate-pulse"} /> 
                     Générer la magie
                   </Button>
                 )}
@@ -358,71 +377,44 @@ const Inner = () => {
           </div>
         </Card>
 
-        {/* History + Filters (Sticky Header approach) */}
-        <div className="sticky top-16 z-30 -mx-4 px-4 sm:mx-0 sm:px-0">
-          <Card className="p-4 md:p-5 space-y-4 border-border/40 bg-background/80 backdrop-blur-xl shadow-lg">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-                  <History size={18} className="text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold flex items-center gap-2">
-                    Bibliothèque de Créatives
-                    <Badge variant="secondary" className="text-[10px] font-bold">
-                      {filteredCreatives.length} / {creatives.length}
-                    </Badge>
-                  </h2>
-                  <p className="text-xs text-muted-foreground">Retrouvez et gérez vos assets publicitaires.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Tabs value={historyScope} onValueChange={(v) => setHistoryScope(v as "current" | "all")} className="w-full sm:w-auto">
-                  <TabsList className="h-9 w-full sm:w-auto p-1 bg-muted/50">
-                    <TabsTrigger value="current" className="text-xs px-4" disabled={!productId}>Ce produit</TabsTrigger>
-                    <TabsTrigger value="all" className="text-xs px-4">Tous les produits</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                <div className="hidden md:flex items-center rounded-lg border border-border/50 bg-background p-1 shadow-sm">
-                  <button
-                    onClick={() => setView("list")}
-                    className={`rounded-md p-1.5 transition-all ${view === "list" ? "bg-primary/15 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Vue détaillée"
-                  >
-                    <Rows3 size={14} />
-                  </button>
-                  <button
-                    onClick={() => setView("grid")}
-                    className={`rounded-md p-1.5 transition-all ${view === "grid" ? "bg-primary/15 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Vue grille"
-                  >
-                    <LayoutGrid size={14} />
-                  </button>
-                </div>
+        {/* Dynamic Island - Floating Filter Toolbar */}
+        <div className="sticky top-20 z-40 mx-auto w-full max-w-[1000px] px-4 sm:px-0 transition-all duration-300">
+          <div className="rounded-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] p-2 md:p-3 flex flex-col md:flex-row items-center gap-3">
+            
+            {/* Left: Scope Tabs */}
+            <div className="flex w-full md:w-auto items-center justify-between gap-3 bg-zinc-900/50 p-1.5 rounded-xl border border-white/5">
+              <Tabs value={historyScope} onValueChange={(v) => setHistoryScope(v as "current" | "all")} className="w-full md:w-auto">
+                <TabsList className="h-8 w-full md:w-auto p-0.5 bg-transparent">
+                  <TabsTrigger value="current" className="text-xs px-4 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none" disabled={!productId}>Ce produit</TabsTrigger>
+                  <TabsTrigger value="all" className="text-xs px-4 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none">Tous</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              <div className="flex md:hidden items-center bg-black/40 rounded-lg p-0.5 border border-white/5">
+                <button onClick={() => setView("list")} className={`rounded-md p-1.5 ${view === "list" ? "bg-white/10 text-white" : "text-zinc-500"}`}><Rows3 size={14} /></button>
+                <button onClick={() => setView("grid")} className={`rounded-md p-1.5 ${view === "grid" ? "bg-white/10 text-white" : "text-zinc-500"}`}><LayoutGrid size={14} /></button>
               </div>
             </div>
 
-            {/* Modern Filter Toolbar */}
-            <div className="flex flex-wrap items-center gap-2 md:gap-3">
-              <div className="relative flex-grow md:max-w-xs">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <div className="h-8 w-px bg-white/10 hidden md:block" />
+
+            {/* Middle: Search & Filters (Scrollable on mobile) */}
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto hide-scrollbar w-full md:w-auto pr-2 pb-1 md:pb-0">
+              <div className="relative shrink-0 w-32 md:w-48">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Rechercher par texte..."
-                  className="pl-9 h-9 rounded-full bg-muted/30 border-transparent focus:border-primary/50 text-xs"
+                  placeholder="Rechercher..."
+                  className="pl-8 h-8 rounded-xl bg-black/50 border-white/5 focus:border-fuchsia-500/50 text-xs placeholder:text-zinc-600 text-white shadow-inner"
                 />
               </div>
 
-              <div className="h-6 w-px bg-border/50 hidden md:block" />
-
-              {/* Quick Filter Chips (Horizontal Scroll on Mobile) */}
-              <div className="flex overflow-x-auto pb-1 md:pb-0 hide-scrollbar gap-1.5 flex-nowrap items-center w-full md:w-auto">
+              <div className="flex gap-1.5 items-center shrink-0">
                 <button
                   onClick={() => setFilterAngle("all")}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ${
-                    filterAngle === "all" ? "border-primary bg-primary text-white shadow-md" : "border-border/50 bg-background hover:bg-muted"
+                  className={`rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all ${
+                    filterAngle === "all" ? "bg-white/10 text-white border border-white/20" : "bg-transparent text-zinc-500 border border-transparent hover:bg-white/5 hover:text-zinc-300"
                   }`}
                 >
                   Tous
@@ -435,30 +427,40 @@ const Inner = () => {
                       key={a.value}
                       onClick={() => setFilterAngle(active ? "all" : a.value)}
                       disabled={count === 0 && !active}
-                      className={`shrink-0 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ${
+                      className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap ${
                         active
-                          ? `border-transparent bg-gradient-to-r ${a.color} text-white shadow-md`
+                          ? `bg-gradient-to-r ${a.color} text-white border border-transparent shadow-[0_0_15px_rgba(255,255,255,0.1)]`
                           : count === 0
-                            ? "border-border/20 text-muted-foreground/30 bg-background/20 cursor-not-allowed"
-                            : "border-border/50 bg-background text-foreground hover:bg-muted"
+                            ? "text-zinc-700 bg-transparent border border-transparent cursor-not-allowed"
+                            : "bg-transparent text-zinc-400 border border-white/5 hover:bg-white/5 hover:text-zinc-200"
                       }`}
                     >
-                      <span className="text-[14px]">{a.emoji}</span> {a.label} {count > 0 && <span className="opacity-70 font-medium">({count})</span>}
+                      <span className="text-[13px]">{a.emoji}</span> {a.label} {count > 0 && <span className="opacity-50 font-normal">({count})</span>}
                     </button>
                   );
                 })}
               </div>
+            </div>
 
+            {/* Right: View Toggle & Clear (Desktop) */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               {hasActiveFilters && (
-                <button
-                  onClick={resetFilters}
-                  className="shrink-0 ml-auto flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-[11px] font-bold text-destructive hover:bg-destructive/20 transition-colors"
-                >
+                <button onClick={resetFilters} className="flex items-center gap-1 rounded-xl bg-red-500/10 px-3 py-1.5 text-[11px] font-bold text-red-400 hover:bg-red-500/20 transition-colors">
                   <X size={12} /> Effacer
                 </button>
               )}
+              <div className="h-8 w-px bg-white/10" />
+              <div className="flex items-center bg-zinc-900/50 rounded-xl p-0.5 border border-white/5 shadow-inner">
+                <button onClick={() => setView("list")} className={`rounded-lg p-1.5 transition-all ${view === "list" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"}`} title="Vue liste">
+                  <Rows3 size={14} />
+                </button>
+                <button onClick={() => setView("grid")} className={`rounded-lg p-1.5 transition-all ${view === "grid" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"}`} title="Vue grille">
+                  <LayoutGrid size={14} />
+                </button>
+              </div>
             </div>
-          </Card>
+
+          </div>
         </div>
 
         {/* Results Area */}
@@ -489,23 +491,27 @@ const Inner = () => {
               )}
             </div>
           ) : (
-            <div className={view === "grid" ? "grid grid-cols-1 xl:grid-cols-2 gap-6" : "space-y-6 max-w-4xl mx-auto"}>
+            <div className={view === "grid" ? "grid grid-cols-1 xl:grid-cols-2 gap-8" : "space-y-10 max-w-4xl mx-auto"}>
               {filteredCreatives.map((c) => {
                 const product = productMap[c.product_id];
                 return (
                   <div key={c.id} className="group relative">
-                    {historyScope === "all" && product && (
-                      <div className="absolute -top-3 left-4 z-10">
+                    {historyScope === "all" && (
+                      <div className="absolute -top-4 left-6 z-20">
                         <Link
                           to={`/produit/${c.product_id}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/80 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-md shadow-sm transition hover:bg-background hover:text-primary"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-1.5 text-[11px] font-bold text-zinc-300 backdrop-blur-md shadow-xl transition-all hover:bg-black hover:text-white hover:border-white/30"
                         >
-                          {product.image_url && <img src={product.image_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
-                          {product.title} <ChevronRight size={10} className="opacity-50" />
+                          {product?.image_url ? (
+                             <img src={product.image_url} alt="" className="h-5 w-5 rounded-full object-cover border border-white/10" />
+                          ) : (
+                             <div className="h-5 w-5 rounded-full bg-white/5 flex items-center justify-center border border-white/10"><ImageIcon size={10} className="text-zinc-500" /></div>
+                          )}
+                          {product?.title || "Produit inconnu/supprimé"} <ChevronRight size={12} className="opacity-50 text-fuchsia-400" />
                         </Link>
                       </div>
                     )}
-                    <div className={historyScope === "all" ? "pt-2" : ""}>
+                    <div className={historyScope === "all" ? "pt-3" : ""}>
                       <AdKitCard creative={c} productLink={`${window.location.origin}/produit/${c.product_id}`} />
                     </div>
                   </div>
