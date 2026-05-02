@@ -26,16 +26,47 @@ const MOCK_SCRIPTS = [
   }
 ];
 
+import { supabase } from "@/integrations/supabase/client";
+
 const MarketingCoPilot = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scripts, setScripts] = useState<null | typeof MOCK_SCRIPTS>(null);
+  const [scripts, setScripts] = useState<null | any[]>(null);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      setScripts(MOCK_SCRIPTS);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-creator', {
+        body: { 
+          idea: "Produit Digital MindHubs", // Should come from parent context
+          type: "marketing"
+        }
+      });
+
+      if (error) throw error;
+
+      // Simple parsing (OpenRouter returns text, we might need to parse it if we wanted JSON)
+      // For now let's use a simpler structure if the AI doesn't return JSON
+      const content = data.result;
+      
+      // Mock-like formatting for the demo if AI returns text
+      const newScripts = [
+        {
+          type: "TikTok / Reel",
+          hook: content.split('\n')[0] || "Hook Viral IA",
+          script: content,
+          duration: "45s",
+          music: "Chill Afrobeat / Trending"
+        }
+      ];
+      
+      setScripts(newScripts);
+      toast.success("Scripts marketing générés !");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Erreur IA Marketing. Vérifiez votre clé OpenRouter.");
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const handleCopy = (text: string) => {

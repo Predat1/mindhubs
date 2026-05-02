@@ -10,6 +10,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
 
 const MOCK_CHAPTERS = [
   { id: 1, title: "Introduction & Fondamentaux", content: "Bienvenue dans ce guide complet. Dans ce premier chapitre, nous allons voir pourquoi la fiscalité est votre meilleure alliée..." },
@@ -24,15 +26,43 @@ const ProductArchitect = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerated(true);
-      setIsGenerating(false);
-      toast.success("Structure générée !", {
-        description: "Claude 3.5 Sonnet a créé le plan de votre produit.",
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-creator', {
+        body: { 
+          idea: "Produit Digital MindHubs", // We should get this from an input
+          format: "Guide Pratique",
+          type: "plan"
+        }
       });
-    }, 3000);
+
+      if (error) throw error;
+
+      // Parse the JSON from AI
+      let content = data.result;
+      if (content.includes("```json")) {
+        content = content.split("```json")[1].split("```")[0];
+      }
+      const parsed = JSON.parse(content);
+      
+      if (parsed.chapters) {
+        setChapters(parsed.chapters.map((ch: any, i: number) => ({
+          id: i + 1,
+          title: ch.title,
+          content: ch.content || "Contenu en cours de rédaction..."
+        })));
+        setIsGenerated(true);
+        toast.success("Structure générée par l'IA !");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Erreur de génération IA. Vérifiez votre clé OpenRouter.");
+      // Fallback to mock for demo
+      setIsGenerated(true);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handlePublish = () => {
