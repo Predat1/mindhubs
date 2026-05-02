@@ -23,7 +23,7 @@ const Pricing = () => {
   const { data: dbPlans = [], isLoading: plansLoading } = useQuery({
     queryKey: ['public-plan-limits'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('plan_limits').select('*').order('price_fcfa_monthly');
+      const { data, error } = await (supabase as any).from('plan_limits').select('*').order('price_fcfa_monthly');
       if (error) throw error;
       return data || [];
     }

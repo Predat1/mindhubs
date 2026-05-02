@@ -34,7 +34,7 @@ export const useVendorSubscription = (vendorId?: string) => {
     queryKey: ['vendor-subscription', vendorId],
     enabled: !!vendorId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_subscription_view')
         .select('*')
         .eq('vendor_id', vendorId)
