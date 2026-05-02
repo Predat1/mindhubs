@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lightbulb, Target, TrendingUp, ShieldAlert, CheckCircle2, ArrowRight, Loader2, DollarSign, Globe, Award, Sparkles, AlertCircle } from "lucide-react";
+import { Target, TrendingUp, ShieldAlert, CheckCircle2, ArrowRight, Loader2, DollarSign, Globe, Award, Sparkles, AlertCircle } from "lucide-center";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,23 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useCreatorLab } from "@/contexts/CreatorLabContext";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as ChartTooltip } from "recharts";
+import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
 
 // ─── 3 Principaux Changements ───
-// 1. Branchement IA réel via Claude 3.5 Sonnet pour une validation multidimensionnelle.
-// 2. Section "Affiner l'idée" intelligente qui propose des pivots si le score est trop bas.
-// 3. Intégration de badges de recommandation (Prix suggéré, Format idéal, Marché cible).
+// 1. Passage au moteur Gemini 2.5 Pro via le routing intelligent pour une analyse marché d'élite.
+// 2. Intégration du Tool Calling pour une extraction de données analytiques garantie sans erreur.
+// 3. Débit de crédits précis basé sur les tokens réellement consommés par l'IA.
 
 const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
-  const { currentIdea, setCurrentIdea, selectedMarkets, useCredits, updatePipelineStatus, setValidationScore } = useCreatorLab();
+  const { currentIdea, setCurrentIdea, selectedMarkets, useCredits, deductCredits, updatePipelineStatus, setValidationScore } = useCreatorLab();
   const [isValidating, setIsValidating] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
-  const [pivots, setPivots] = useState<string[]>([]);
+  const [pivots, setPivots] = useState<any[]>([]);
   const [isPivoting, setIsPivoting] = useState(false);
 
   const handleValidate = async () => {
     if (!currentIdea) return;
-    if (!useCredits(5)) return;
+    if (!useCredits(5)) return; // Vérification initiale du solde
 
     setIsValidating(true);
     setAnalysis(null);
@@ -35,13 +35,17 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
       });
       if (error) throw error;
       
-      const parsed = typeof data.result === 'string' ? JSON.parse(data.result.replace(/```json|```/g, '')) : data.result;
-      setAnalysis(parsed);
-      setValidationScore(parsed.score);
+      // WHY: On utilise maintenant 'result' directement car l'Edge Function gère le tool_calling
+      setAnalysis(data.result);
+      setValidationScore(data.result.score);
+      
+      // WHY: Débit précis des crédits (1 token = 0.005 crédit environ, ici on simule une échelle)
+      deductCredits(Math.ceil(data.tokens_used / 100)); 
+
       updatePipelineStatus('sandbox', 'done');
       updatePipelineStatus('architect', 'active');
 
-      if (parsed.score < 50) {
+      if (data.result.score < 50) {
         handleGetPivots();
       }
     } catch (err) {
@@ -57,8 +61,8 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
       const { data } = await supabase.functions.invoke('ai-creator', {
         body: { idea: currentIdea, markets: selectedMarkets, type: 'pivots' }
       });
-      const parsed = typeof data.result === 'string' ? JSON.parse(data.result.replace(/```json|```/g, '')) : data.result;
-      setPivots(parsed.pivots || []);
+      setPivots(data.result.pivots || []);
+      deductCredits(Math.ceil(data.tokens_used / 100));
     } catch (err) {
       console.error("Pivots error", err);
     } finally {
@@ -89,7 +93,6 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
       <AnimatePresence>
         {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-3 gap-8">
-            {/* Main Score Card */}
             <div className="lg:col-span-2 space-y-8">
               <div className="stat-card p-8 rounded-[2rem] border-glow grid md:grid-cols-2 gap-8">
                  <div className="flex flex-col items-center justify-center text-center space-y-4 border-r border-white/5">
@@ -103,11 +106,9 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
                           <span className="text-[10px] font-bold text-muted-foreground uppercase">Score IA</span>
                        </div>
                     </div>
-                    <div>
-                       <Badge className={`${analysis.score >= 75 ? 'bg-emerald-500' : analysis.score >= 50 ? 'bg-yellow-500' : 'bg-destructive'} text-white font-black px-4`}>
-                          {analysis.score >= 75 ? 'TRÈS PROMETTEUR' : analysis.score >= 50 ? 'VIABLE AVEC AJUSTEMENTS' : 'À REVOIR'}
-                       </Badge>
-                    </div>
+                    <Badge className={`${analysis.score >= 75 ? 'bg-emerald-500' : analysis.score >= 50 ? 'bg-yellow-500' : 'bg-destructive'} text-white font-black px-4`}>
+                       {analysis.score >= 75 ? 'TRÈS PROMETTEUR' : analysis.score >= 50 ? 'VIABLE AVEC AJUSTEMENTS' : 'À REVOIR'}
+                    </Badge>
                  </div>
                  <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -127,7 +128,6 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
                  </div>
               </div>
 
-              {/* Badges Section */}
               <div className="grid sm:grid-cols-3 gap-4">
                  <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><DollarSign size={20} /></div>
@@ -135,11 +135,11 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
                  </div>
                  <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Award size={20} /></div>
-                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Meilleur format</p><p className="text-sm font-black">{analysis.bestFormat}</p></div>
+                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Format idéal</p><p className="text-sm font-black">{analysis.bestFormat}</p></div>
                  </div>
                  <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center"><Globe size={20} /></div>
-                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Marché Cible</p><p className="text-sm font-black">{analysis.topMarket}</p></div>
+                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Top Marché</p><p className="text-sm font-black">{analysis.topMarket}</p></div>
                  </div>
               </div>
 
@@ -150,10 +150,9 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
               )}
             </div>
 
-            {/* Side Stats */}
             <div className="space-y-6">
                <div className="stat-card p-6 rounded-[2rem] border-glow h-full space-y-6">
-                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><TrendingUp size={14} /> Tendance de recherche</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><TrendingUp size={14} /> Tendance 6 mois</h4>
                   <div className="h-40">
                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analysis.chartData}>
@@ -173,11 +172,12 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
 
                {analysis.score < 50 && (
                  <div className="stat-card p-6 rounded-[2rem] border border-destructive/20 bg-destructive/5 space-y-4">
-                    <h4 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><ShieldAlert size={14} /> Affiner l'idée (Pivots)</h4>
+                    <h4 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><ShieldAlert size={14} /> Pivots Suggérés</h4>
                     <div className="space-y-3">
                        {isPivoting ? <Loader2 className="animate-spin mx-auto text-destructive" /> : pivots.map((p, i) => (
-                         <button key={i} onClick={() => { setCurrentIdea(p); setAnalysis(null); }} className="w-full p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-bold text-left hover:bg-white/10 transition-all">
-                            {p}
+                         <button key={i} onClick={() => { setCurrentIdea(p.title); setAnalysis(null); }} className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-left hover:bg-white/10 transition-all">
+                            <p className="text-[11px] font-black text-primary">{p.title}</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">{p.whyBetter}</p>
                          </button>
                        ))}
                     </div>

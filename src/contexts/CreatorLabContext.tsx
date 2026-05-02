@@ -33,6 +33,7 @@ interface CreatorLabContextType extends CreatorLabState {
   setChapters: (chapters: Chapter[]) => void;
   updatePipelineStatus: (step: PipelineStepId, status: StepStatus) => void;
   useCredits: (amount: number) => boolean;
+  deductCredits: (amount: number) => void;
   addCredits: (amount: number) => void;
   resetSession: () => void;
 }
@@ -86,9 +87,10 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
 
   const useCredits = (amount: number): boolean => {
     if (state.credits < amount) return false;
-    setState(s => ({ ...s, credits: s.credits - amount }));
     return true;
   };
+
+  const deductCredits = (amount: number) => setState(s => ({ ...s, credits: Math.max(0, s.credits - amount) }));
 
   const addCredits = (amount: number) => setState(s => ({ ...s, credits: s.credits + amount }));
 
@@ -116,6 +118,7 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
       setChapters, 
       updatePipelineStatus, 
       useCredits, 
+      deductCredits,
       addCredits,
       resetSession
     }}>

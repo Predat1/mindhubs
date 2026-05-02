@@ -2,16 +2,16 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PenTool, Zap, FileText, Rocket, Eye, Layout, Sparkles, ShieldCheck, CheckCircle2, Loader2, BookOpen } from "lucide-react";
+import { PenTool, Zap, FileText, Rocket, Layout, Sparkles, CheckCircle2, Loader2, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreatorLab } from "@/contexts/CreatorLabContext";
 
 // ─── 3 Principaux Changements ───
-// 1. Synchronisation avec CreatorLabContext pour hériter de l'idée validée en Sandbox.
-// 2. Gestion des crédits IA (15 pour le plan, 8 par chapitre) via le système central.
-// 3. Mise à jour automatique de l'état du pipeline (Architect -> Done).
+// 1. Implémentation du streaming temps réel pour la rédaction des chapitres avec Claude Opus 4.
+// 2. Intégration de l'Architecte avec le nouveau système de routing intelligent d'AI Creator.
+// 3. Amélioration de l'UX de rédaction : affichage progressif du texte (typewriter effect).
 
 const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
   const { currentIdea, setCurrentIdea, useCredits, updatePipelineStatus, chapters, setChapters, productType, setProductInfo } = useCreatorLab();
@@ -20,7 +20,6 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDraftingAll, setIsDraftingAll] = useState(false);
 
-  // WHY: Transition fluide depuis la Sandbox
   useEffect(() => {
     if (chapters.length > 0 && chapters[0].content !== "En attente de rédaction...") {
       updatePipelineStatus('architect', 'done');
@@ -38,13 +37,13 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
         body: { idea: currentIdea, format: productType, type: "plan" }
       });
       if (error) throw error;
-      const parsed = typeof data.result === 'string' ? JSON.parse(data.result.replace(/```json|```/g, '')) : data.result;
       
-      if (parsed.chapters) {
-        setChapters(parsed.chapters.map((ch: any, i: number) => ({
+      // WHY: Utilisation du résultat structuré via Tool Calling
+      if (data.result?.chapters) {
+        setChapters(data.result.chapters.map((ch: any, i: number) => ({
           id: i + 1, title: ch.title, content: "En attente de rédaction..."
         })));
-        toast.success("Structure générée !");
+        toast.success("Structure générée avec succès !");
       }
     } catch (err) {
       toast.error("Erreur de génération.");
@@ -61,15 +60,51 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
     try {
       for (let i = 0; i < chapters.length; i++) {
         setActiveChapter(i);
-        const { data } = await supabase.functions.invoke('ai-creator', {
-          body: { idea: chapters[i].title, format: currentIdea, type: "chapter-draft" }
-        });
-        updatedChapters[i].content = data.result;
+        updatedChapters[i].content = ""; // Reset pour le streaming
         setChapters([...updatedChapters]);
+
+        // WHY: Utilisation de fetch direct pour supporter le streaming (Edge Function response.body)
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-creator`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify({ 
+            idea: chapters[i].title, 
+            format: currentIdea, 
+            type: "chapter-draft",
+            quick: false // Utilise Claude Opus 4 pour une qualité premium
+          })
+        });
+
+        if (!response.body) throw new Error("No response body");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value);
+          
+          // WHY: OpenRouter envoie des chunks SSE (data: {...})
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                const text = data.choices[0]?.delta?.content || "";
+                updatedChapters[i].content += text;
+                setChapters([...updatedChapters]);
+              } catch (e) { /* skip partial chunks */ }
+            }
+          }
+        }
       }
       toast.success("Ebook rédigé !");
       onRedact();
     } catch (err) {
+      console.error(err);
       toast.error("Interruption de la rédaction.");
     } finally {
       setIsDraftingAll(false);
@@ -125,16 +160,16 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
         {step === 2 && (
           <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid lg:grid-cols-2 gap-8 h-[600px]">
             <div className="glass-card rounded-[2.5rem] flex flex-col border-white/5 overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                <span className="font-black text-[10px] uppercase tracking-widest text-primary">Rédaction Claude 3.5</span>
+              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
+                <span className="font-black text-[10px] uppercase tracking-widest text-primary">Rédaction Claude Opus 4</span>
                 <Button onClick={handleDraftFullEbook} disabled={isDraftingAll} className="rounded-xl font-black text-[10px] h-8">{isDraftingAll ? <Loader2 size={12} className="animate-spin" /> : "RÉDIGER TOUT"}</Button>
               </div>
-              <div className="flex-1 p-8 overflow-y-auto"><Textarea className="w-full h-full bg-transparent border-none focus-visible:ring-0 text-base leading-relaxed resize-none font-medium text-white/80" value={chapters[activeChapter]?.content} readOnly /></div>
+              <div className="flex-1 p-8 overflow-y-auto bg-zinc-950/20"><Textarea className="w-full h-full bg-transparent border-none focus-visible:ring-0 text-base leading-relaxed resize-none font-medium text-white/80" value={chapters[activeChapter]?.content} readOnly /></div>
             </div>
             <div className="glass-card rounded-[2.5rem] bg-white p-12 text-zinc-900 font-serif relative overflow-hidden transition-all duration-700">
                <div className="absolute top-0 left-0 w-2 h-full bg-zinc-100" />
                <h2 className="text-3xl font-black mb-8 leading-tight">{chapters[activeChapter]?.title}</h2>
-               <p className="text-sm leading-relaxed text-zinc-700 text-justify">{chapters[activeChapter]?.content.slice(0, 500)}...</p>
+               <p className="text-sm leading-relaxed text-zinc-700 text-justify whitespace-pre-wrap">{chapters[activeChapter]?.content}</p>
                <div className="absolute bottom-8 right-12 text-[10px] font-black text-zinc-300">PAGE {activeChapter + 1}</div>
             </div>
           </motion.div>
