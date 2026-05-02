@@ -57,7 +57,7 @@ interface Order {
   customer_email: string;
   customer_phone: string;
   total_price: number;
-  status: "pending" | "completed" | "cancelled" | "shipped";
+  status: "pending" | "completed" | "cancelled" | "shipped" | "confirmed" | "delivered";
   payment_method: string;
   items: Array<{ title: string; quantity: number; price: string; image?: string }>;
   created_at: string;
@@ -155,11 +155,12 @@ const Admin = () => {
       if (error) throw error;
       return (data || []).map(o => ({
         ...o,
+        items: o.items as any,
         status: o.status || "pending",
         total_price: o.total_price || 0,
         customer_name: o.customer_name || "Client Inconnu",
         customer_email: o.customer_email || ""
-      })) as Order[];
+      })) as unknown as Order[];
     },
   });
 
@@ -176,9 +177,10 @@ const Admin = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
+        const sb = supabase as any;
         const [apiRes, logsRes] = await Promise.all([
-          supabase.from('api_configs').select('*'),
-          supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
+          sb.from('api_configs').select('*'),
+          sb.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
         ]);
         if (!apiRes.error) setApiConfigs(apiRes.data || []);
         if (!logsRes.error) setAuditLogs(logsRes.data || []);
@@ -195,15 +197,16 @@ const Admin = () => {
     setSaving(true);
     const isNew = !editingApi.id;
     try {
+      const sb = supabase as any;
       const { data, error } = isNew 
-        ? await supabase.from('api_configs').insert([editingApi]).select()
-        : await supabase.from('api_configs').update(editingApi).eq('id', editingApi.id).select();
+        ? await sb.from('api_configs').insert([editingApi]).select()
+        : await sb.from('api_configs').update(editingApi).eq('id', editingApi.id).select();
       
       if (error) throw error;
       toast({ title: "Succès", description: "API configurée." });
       setEditingApi(null);
       if (data) {
-        setApiConfigs(prev => isNew ? [...prev, data[0]] : prev.map(c => c.id === editingApi.id ? data[0] : c));
+        setApiConfigs((prev: any) => isNew ? [...prev, data[0]] : prev.map((c: any) => c.id === editingApi.id ? data[0] : c));
       }
       logAction("API_UPDATE", `API ${editingApi.name} mise à jour`);
     } catch (error: any) {
@@ -238,8 +241,8 @@ const Admin = () => {
   const logAction = async (action: string, details: string) => {
     try {
       const log = { action, details, user_id: user?.id, created_at: new Date().toISOString() };
-      await supabase.from('audit_logs').insert([log]);
-      setAuditLogs(prev => [log, ...prev]);
+      await (supabase as any).from('audit_logs').insert([log]);
+      setAuditLogs((prev: any) => [log, ...prev]);
     } catch (err) {
       console.warn("Could not log action:", err);
     }
@@ -292,7 +295,7 @@ const Admin = () => {
 
   const updateOrderStatus = async (orderId: string, status: Order["status"]) => {
     setUpdatingStatus(orderId);
-    const { error } = await supabase.from("orders").update({ status }).eq("id", orderId);
+    const { error } = await (supabase as any).from("orders").update({ status }).eq("id", orderId);
     setUpdatingStatus(null);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Statut mis à jour" });
@@ -304,7 +307,7 @@ const Admin = () => {
     if (!deleteConfirm) return;
     setDeleting(deleteConfirm.id);
     const table = deleteConfirm.type === "product" ? "products" : deleteConfirm.type === "api" ? "api_configs" : "testimonials";
-    const { error } = await supabase.from(table).delete().eq("id", deleteConfirm.id);
+    const { error } = await (supabase as any).from(table).delete().eq("id", deleteConfirm.id);
     setDeleting(null);
     setDeleteConfirm(null);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
