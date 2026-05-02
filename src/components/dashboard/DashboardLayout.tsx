@@ -168,6 +168,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: currentVendor } = useCurrentVendor();
 
   const baseItems = variant === "vendor" ? VENDOR_NAV : ADMIN_NAV;
   const liveBadges = useVendorLiveBadges(variant === "vendor");
