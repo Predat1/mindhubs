@@ -33,7 +33,7 @@ const AdminAnalyticsTab = () => {
     queryFn: async () => {
       const [orders, subs] = await Promise.all([
         supabase.from('orders').select('total_price,created_at').gte('created_at', cutoff),
-        supabase.from('vendor_subscriptions').select('amount_paid_fcfa,created_at').gte('created_at', cutoff)
+        (supabase as any).from('vendor_subscriptions').select('amount_paid_fcfa,created_at').gte('created_at', cutoff)
       ]);
       
       // Process daily data
