@@ -1,209 +1,192 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Lightbulb, Zap, ShieldCheck, BarChart3, TrendingUp, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
+import { Lightbulb, Target, TrendingUp, ShieldAlert, CheckCircle2, ArrowRight, Loader2, DollarSign, Globe, Award, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useCreatorLab } from "@/contexts/CreatorLabContext";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as ChartTooltip } from "recharts";
 
+// ─── 3 Principaux Changements ───
+// 1. Branchement IA réel via Claude 3.5 Sonnet pour une validation multidimensionnelle.
+// 2. Section "Affiner l'idée" intelligente qui propose des pivots si le score est trop bas.
+// 3. Intégration de badges de recommandation (Prix suggéré, Format idéal, Marché cible).
 
-const MOCK_ANALYSIS = {
-  score: 82,
-  saturation: "Faible",
-  demand: "Élevée",
-  competitors: 4,
-  recommendation: "Opportunité majeure. Le marché africain manque de guides structurés sur ce sujet spécifique. Privilégiez un format 'Kit Prêt-à-l'emploi'.",
-  pros: ["Forte demande saisonnière", "Peu de concurrence directe", "Facile à produire"],
-  cons: ["Niche très technique", "Nécessite des preuves sociales fortes"],
-  chartData: [
-    { name: "Jan", val: 30 },
-    { name: "Féb", val: 45 },
-    { name: "Mar", val: 60 },
-    { name: "Avr", val: 85 },
-    { name: "Mai", val: 92 },
-    { name: "Juin", val: 80 },
-  ]
-};
+const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
+  const { currentIdea, setCurrentIdea, selectedMarkets, useCredits, updatePipelineStatus, setValidationScore } = useCreatorLab();
+  const [isValidating, setIsValidating] = useState(false);
+  const [analysis, setAnalysis] = useState<any | null>(null);
+  const [pivots, setPivots] = useState<string[]>([]);
+  const [isPivoting, setIsPivoting] = useState(false);
 
-const IdeaSandbox = () => {
-  const [idea, setIdea] = useState("");
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<null | typeof MOCK_ANALYSIS>(null);
+  const handleValidate = async () => {
+    if (!currentIdea) return;
+    if (!useCredits(5)) return;
 
-  const handleAnalyze = () => {
-    setAnalyzing(true);
-    setTimeout(() => {
-      setAnalysis(MOCK_ANALYSIS);
-      setAnalyzing(false);
-    }, 2000);
+    setIsValidating(true);
+    setAnalysis(null);
+    setPivots([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-creator', {
+        body: { idea: currentIdea, markets: selectedMarkets, type: 'validate' }
+      });
+      if (error) throw error;
+      
+      const parsed = typeof data.result === 'string' ? JSON.parse(data.result.replace(/```json|```/g, '')) : data.result;
+      setAnalysis(parsed);
+      setValidationScore(parsed.score);
+      updatePipelineStatus('sandbox', 'done');
+      updatePipelineStatus('architect', 'active');
+
+      if (parsed.score < 50) {
+        handleGetPivots();
+      }
+    } catch (err) {
+      toast({ title: "Échec de validation", description: "L'IA n'a pas pu analyser votre idée.", variant: "destructive" });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleGetPivots = async () => {
+    setIsPivoting(true);
+    try {
+      const { data } = await supabase.functions.invoke('ai-creator', {
+        body: { idea: currentIdea, markets: selectedMarkets, type: 'pivots' }
+      });
+      const parsed = typeof data.result === 'string' ? JSON.parse(data.result.replace(/```json|```/g, '')) : data.result;
+      setPivots(parsed.pivots || []);
+    } catch (err) {
+      console.error("Pivots error", err);
+    } finally {
+      setIsPivoting(false);
+    }
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-12">
+    <div className="space-y-8">
       {/* Input Section */}
-      <div className="space-y-8">
-        <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-6">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-black flex items-center gap-3">
-              <Lightbulb className="text-amber-500" /> Testez votre idée
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Décrivez votre projet de produit digital. Notre IA va l'analyser par rapport aux tendances du marché et à la concurrence actuelle.
-            </p>
+      <div className="stat-card p-10 rounded-[2.5rem] border-glow bg-white/5 backdrop-blur-3xl">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-1 space-y-4">
+             <label className="text-xs font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2"><Sparkles size={14} className="text-primary" /> Votre idée de produit digital</label>
+             <Input 
+                value={currentIdea}
+                onChange={e => setCurrentIdea(e.target.value)}
+                placeholder="Ex: Guide PDF sur l'investissement immobilier au Sénégal..."
+                className="h-16 text-lg font-bold bg-white/5 border-white/10 rounded-2xl px-6 focus:ring-primary"
+             />
           </div>
-          
-          <div className="space-y-4">
-            <Textarea 
-              placeholder="Ex: Je veux créer un guide PDF pour aider les restaurateurs au Sénégal à automatiser leurs stocks avec Excel et une app mobile..."
-              className="min-h-[200px] rounded-3xl bg-white/5 border-white/10 p-6 text-lg leading-relaxed focus-visible:ring-primary"
-              value={idea}
-              onChange={(e) => setIdea(e.target.value)}
-            />
-            <Button 
-              onClick={handleAnalyze}
-              disabled={!idea || analyzing}
-              className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 font-black text-lg gap-3 shadow-lg shadow-primary/20"
-            >
-              {analyzing ? (
-                <>Analyse en cours... <Zap className="animate-spin" size={20} /></>
-              ) : (
-                <>Analyser le Potentiel <Zap size={20} fill="currentColor" /></>
+          <Button onClick={handleValidate} disabled={isValidating || !currentIdea} className="h-16 px-12 rounded-2xl btn-primary-brand font-black text-lg gap-2 self-end">
+            {isValidating ? <Loader2 className="animate-spin" /> : <Target size={20} />} Valider l'idée
+          </Button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {analysis && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-3 gap-8">
+            {/* Main Score Card */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="stat-card p-8 rounded-[2rem] border-glow grid md:grid-cols-2 gap-8">
+                 <div className="flex flex-col items-center justify-center text-center space-y-4 border-r border-white/5">
+                    <div className="relative w-40 h-40">
+                       <svg className="w-full h-full" viewBox="0 0 100 100">
+                          <circle className="text-white/5 stroke-current" strokeWidth="8" cx="50" cy="50" r="40" fill="transparent" />
+                          <circle className="text-primary stroke-current" strokeWidth="8" strokeLinecap="round" cx="50" cy="50" r="40" fill="transparent" strokeDasharray={`${analysis.score * 2.51} 251`} transform="rotate(-90 50 50)" />
+                       </svg>
+                       <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-4xl font-black">{analysis.score}</span>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Score IA</span>
+                       </div>
+                    </div>
+                    <div>
+                       <Badge className={`${analysis.score >= 75 ? 'bg-emerald-500' : analysis.score >= 50 ? 'bg-yellow-500' : 'bg-destructive'} text-white font-black px-4`}>
+                          {analysis.score >= 75 ? 'TRÈS PROMETTEUR' : analysis.score >= 50 ? 'VIABLE AVEC AJUSTEMENTS' : 'À REVOIR'}
+                       </Badge>
+                    </div>
+                 </div>
+                 <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase">Demande</p>
+                          <p className="text-lg font-black text-primary">{analysis.demand}</p>
+                       </div>
+                       <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase">Saturation</p>
+                          <p className="text-lg font-black text-accent">{analysis.saturation}</p>
+                       </div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex gap-4">
+                       <CheckCircle2 className="text-primary shrink-0" size={24} />
+                       <p className="text-sm font-medium leading-relaxed italic">"{analysis.recommendation}"</p>
+                    </div>
+                 </div>
+              </div>
+
+              {/* Badges Section */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                 <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><DollarSign size={20} /></div>
+                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Prix suggéré</p><p className="text-sm font-black">{analysis.suggestedPrice}</p></div>
+                 </div>
+                 <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Award size={20} /></div>
+                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Meilleur format</p><p className="text-sm font-black">{analysis.bestFormat}</p></div>
+                 </div>
+                 <div className="stat-card p-5 rounded-2xl border-glow flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center"><Globe size={20} /></div>
+                    <div><p className="text-[9px] font-black text-muted-foreground uppercase">Marché Cible</p><p className="text-sm font-black">{analysis.topMarket}</p></div>
+                 </div>
+              </div>
+
+              {analysis.score >= 75 && (
+                <Button onClick={onValidate} className="w-full h-16 rounded-2xl btn-primary-brand font-black text-xl gap-3 animate-bounce hover:animate-none">
+                  Idée validée → Créer le Produit <ArrowRight size={24} />
+                </Button>
               )}
-            </Button>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-[2.5rem] p-8 border-white/5 bg-primary/5 border-primary/20">
-          <div className="flex gap-4">
-            <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
-              <ShieldCheck size={20} />
             </div>
-            <div className="space-y-1">
-              <h4 className="font-black text-sm uppercase tracking-widest">Confidentialité Totale</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Vos idées sont traitées de manière anonyme et ne sont jamais partagées avec d'autres utilisateurs. Vous gardez 100% de la propriété intellectuelle.
-              </p>
+
+            {/* Side Stats */}
+            <div className="space-y-6">
+               <div className="stat-card p-6 rounded-[2rem] border-glow h-full space-y-6">
+                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><TrendingUp size={14} /> Tendance de recherche</h4>
+                  <div className="h-40">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analysis.chartData}>
+                           <Bar dataKey="val" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                           <XAxis dataKey="name" hide />
+                        </BarChart>
+                     </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-4">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase">Forces & Défis</p>
+                     <div className="space-y-2">
+                        {analysis.pros.map((p: string, i: number) => <div key={i} className="flex items-center gap-2 text-xs font-bold text-emerald-500"><CheckCircle2 size={12} /> {p}</div>)}
+                        {analysis.cons.map((c: string, i: number) => <div key={i} className="flex items-center gap-2 text-xs font-bold text-destructive"><AlertCircle size={12} /> {c}</div>)}
+                     </div>
+                  </div>
+               </div>
+
+               {analysis.score < 50 && (
+                 <div className="stat-card p-6 rounded-[2rem] border border-destructive/20 bg-destructive/5 space-y-4">
+                    <h4 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><ShieldAlert size={14} /> Affiner l'idée (Pivots)</h4>
+                    <div className="space-y-3">
+                       {isPivoting ? <Loader2 className="animate-spin mx-auto text-destructive" /> : pivots.map((p, i) => (
+                         <button key={i} onClick={() => { setCurrentIdea(p); setAnalysis(null); }} className="w-full p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-bold text-left hover:bg-white/10 transition-all">
+                            {p}
+                         </button>
+                       ))}
+                    </div>
+                 </div>
+               )}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Analysis Results Section */}
-      <div className="relative">
-        <AnimatePresence mode="wait">
-          {!analysis && !analyzing ? (
-            <motion.div 
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-12 glass-card rounded-[2.5rem] border-white/5 border-dashed"
-            >
-              <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                <BarChart3 size={32} className="text-muted-foreground/30" />
-              </div>
-              <h3 className="text-xl font-black text-muted-foreground/50 uppercase tracking-widest">En attente d'analyse</h3>
-              <p className="text-sm text-muted-foreground/40 mt-2 max-w-xs">
-                Entrez votre idée à gauche pour voir les graphiques de tendance et les recommandations.
-              </p>
-            </motion.div>
-          ) : analyzing ? (
-            <motion.div 
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="h-full min-h-[400px] flex flex-col items-center justify-center space-y-6 glass-card rounded-[2.5rem] border-white/5"
-            >
-              <div className="relative h-24 w-24">
-                <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-                <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-                <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-black uppercase tracking-widest">Analyse IA</h3>
-                <p className="text-xs text-muted-foreground mt-1">Comparaison avec 50,000+ produits...</p>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="results"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-8"
-            >
-              {/* Score & Main Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="glass-card rounded-3xl p-6 border-white/5 text-center space-y-2">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Score Potentiel</p>
-                  <div className="text-5xl font-black text-primary">{analysis!.score}%</div>
-                </div>
-                <div className="glass-card rounded-3xl p-6 border-white/5 text-center space-y-2">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Saturation</p>
-                  <div className="text-xl font-black text-emerald-500 uppercase tracking-tight">{analysis!.saturation}</div>
-                </div>
-              </div>
-
-              {/* Recommendation */}
-              <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-4">
-                <h4 className="font-black flex items-center gap-2 text-sm uppercase tracking-widest">
-                  <TrendingUp size={16} className="text-primary" /> Verdict de l'IA
-                </h4>
-                <p className="text-sm leading-relaxed font-medium">
-                  {analysis!.recommendation}
-                </p>
-              </div>
-
-              {/* Chart */}
-              <div className="glass-card rounded-[2.5rem] p-8 border-white/5">
-                <div className="flex items-center justify-between mb-6">
-                   <h4 className="font-black text-sm uppercase tracking-widest">Courbe de Demande</h4>
-                   <Badge className="bg-primary/20 text-primary border-none">TRENDING UP</Badge>
-                </div>
-                <div className="h-48 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={analysis!.chartData}>
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--muted-foreground))' }} />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '1rem', border: '1px solid hsl(var(--border))' }}
-                        itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 'bold' }}
-                      />
-                      <Bar dataKey="val" radius={[4, 4, 0, 0]}>
-                        {analysis!.chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 4 ? "hsl(var(--primary))" : "hsl(var(--primary)/0.2)"} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Pros & Cons */}
-              <div className="grid md:grid-cols-2 gap-4">
-                 <div className="p-5 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 space-y-3">
-                    <h5 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
-                       <CheckCircle2 size={14} /> Points Forts
-                    </h5>
-                    <ul className="space-y-2">
-                       {analysis!.pros.map((p, i) => <li key={i} className="text-xs font-medium">• {p}</li>)}
-                    </ul>
-                 </div>
-                 <div className="p-5 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-3">
-                    <h5 className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                       <AlertTriangle size={14} /> Défis à Relever
-                    </h5>
-                    <ul className="space-y-2">
-                       {analysis!.cons.map((c, i) => <li key={i} className="text-xs font-medium">• {c}</li>)}
-                    </ul>
-                 </div>
-              </div>
-
-              <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-accent font-black text-lg gap-3">
-                 Passer à la Conception <ArrowRight size={20} />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

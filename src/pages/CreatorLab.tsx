@@ -1,102 +1,172 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SEO from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Search, Lightbulb, PenTool, Megaphone, Zap, ShieldCheck } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Search, Lightbulb, PenTool, Megaphone, Rocket, CheckCircle2, Lock } from "lucide-react";
+import { motion } from "framer-motion";
 import WinningProductSpy from "@/components/creator-lab/WinningProductSpy";
 import IdeaSandbox from "@/components/creator-lab/IdeaSandbox";
 import ProductArchitect from "@/components/creator-lab/ProductArchitect";
 import MarketingCoPilot from "@/components/creator-lab/MarketingCoPilot";
+import { CreatorLabProvider, useCreatorLab, type PipelineStepId } from "@/contexts/CreatorLabContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-const CreatorLab = () => {
+// ─── 3 Principaux Changements ───
+// 1. Intégration du PipelineTracker visuel pour matérialiser le flux de création.
+// 2. Gestion unifiée des crédits avec Dialog de recharge automatique.
+// 3. Header dynamique avec indicateur de monitoring "Live" des marchés africains.
+
+const PIPELINE_STEPS = [
+  { id: 'spy',       icon: Search,    label: 'Veille',     desc: 'Marchés africains' },
+  { id: 'sandbox',   icon: Lightbulb, label: 'Validation', desc: 'Score de potentiel' },
+  { id: 'architect', icon: PenTool,   label: 'Création',   desc: 'Produit complet IA' },
+  { id: 'marketing', icon: Megaphone, label: 'Marketing',  desc: 'Scripts viraux' },
+  { id: 'publish',   icon: Rocket,    label: 'Publication', desc: 'Mise en vente' },
+];
+
+const PipelineTracker = () => {
+  const { pipelineStatus } = useCreatorLab();
+  
+  return (
+    <div className="relative flex justify-between items-center max-w-4xl mx-auto mb-12 px-4">
+      {/* WHY: Ligne de progression en arrière-plan */}
+      <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/10 -translate-y-1/2 z-0" />
+      
+      {PIPELINE_STEPS.map((step, idx) => {
+        const status = pipelineStatus[step.id as PipelineStepId];
+        const Icon = step.icon;
+        
+        return (
+          <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 group">
+            <motion.div 
+              initial={false}
+              animate={{
+                scale: status === 'active' ? 1.1 : 1,
+                backgroundColor: status === 'done' ? 'rgb(16, 185, 129)' : status === 'active' ? 'hsl(var(--primary))' : 'rgba(255, 255, 255, 0.1)',
+                boxShadow: status === 'active' ? '0 0 20px hsl(var(--primary)/0.5)' : 'none'
+              }}
+              className="w-12 h-12 rounded-full flex items-center justify-center border border-white/10"
+            >
+              {status === 'done' ? <CheckCircle2 className="text-white" size={20} /> : <Icon className={status === 'locked' ? 'text-white/20' : 'text-white'} size={20} />}
+              {status === 'active' && <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute inset-0 rounded-full border-2 border-primary" />}
+            </motion.div>
+            <div className="text-center">
+              <p className={`text-xs font-bold ${status === 'locked' ? 'text-muted-foreground' : 'text-foreground'}`}>{step.label}</p>
+              <p className="text-[10px] text-muted-foreground hidden sm:block">{step.desc}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const CreatorLabContent = () => {
   const [activeTab, setActiveTab] = useState("spy");
-  const [credits, setCredits] = useState(250);
+  const { credits, currentIdea } = useCreatorLab();
+  const [showCreditDialog, setShowCreditDialog] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <DashboardLayout variant="vendor" title="Creator Lab Elite">
-      <div className="max-w-7xl mx-auto space-y-8 pb-20">
-        
+    <DashboardLayout variant="vendor">
+      <SEO title="Creator Lab | MindHubs" description="L'intelligence IA au service des créateurs africains." />
+      
+      <div className="max-w-[1200px] mx-auto space-y-8 pb-20">
         {/* Header Section */}
-        <div className="relative overflow-hidden rounded-[2.5rem] p-8 md:p-12 border border-white/10 bg-card/30 backdrop-blur-xl shadow-2xl">
-          <div className="absolute -top-24 -right-24 h-64 w-64 bg-primary/20 blur-[100px] rounded-full animate-pulse" />
-          <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-accent/20 blur-[100px] rounded-full" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-            <div className="space-y-4 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-                <Sparkles size={12} className="animate-pulse" /> IA Creator Suite
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <Sparkles size={24} />
               </div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
-                De l'idée au <span className="text-primary italic">Produit Gagnant</span> en 24h
-              </h1>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                Utilisez l'intelligence artificielle pour débusquer les tendances mondiales, valider vos concepts et concevoir des produits digitaux de classe mondiale.
-              </p>
+              <h1 className="text-4xl font-black tracking-tighter">Creator Lab</h1>
             </div>
-            
-            <div className="flex flex-col gap-3 p-6 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm min-w-[240px]">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Crédits IA</span>
-                <Zap size={14} className="text-amber-500 fill-amber-500" />
-              </div>
-              <div className="text-3xl font-black">{credits} / 500</div>
-              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(credits / 500) * 100}%` }}
-                  className="h-full bg-gradient-to-r from-primary to-accent" 
-                />
-              </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Renouvellement dans 12 jours</p>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                15 Marchés Africains · Intelligence Temps Réel
+              </span>
             </div>
+          </div>
+
+          {/* Credits Counter */}
+          <div className="stat-card px-6 py-3 rounded-2xl border-glow flex items-center gap-4 bg-white/5 backdrop-blur-xl">
+             <div className="text-right">
+                <p className="text-[10px] font-black text-muted-foreground uppercase">Crédits IA</p>
+                <p className="text-xl font-black text-primary">{credits}</p>
+             </div>
+             <div className="h-8 w-px bg-white/10" />
+             <Button variant="ghost" size="sm" onClick={() => navigate('/mon-compte?tab=credits')} className="text-xs font-bold hover:bg-primary/10">Recharger</Button>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <Tabs defaultValue="spy" onValueChange={setActiveTab} className="space-y-8">
-          <div className="flex justify-center">
-            <TabsList className="h-16 p-2 bg-card/50 backdrop-blur-xl border border-white/10 rounded-2xl gap-2">
-              <TabsTrigger value="spy" className="rounded-xl px-6 font-black text-xs uppercase tracking-widest gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Search size={16} /> <span className="hidden md:inline">Veille (Ads)</span>
-              </TabsTrigger>
-              <TabsTrigger value="sandbox" className="rounded-xl px-6 font-black text-xs uppercase tracking-widest gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Lightbulb size={16} /> <span className="hidden md:inline">Validation</span>
-              </TabsTrigger>
-              <TabsTrigger value="architect" className="rounded-xl px-6 font-black text-xs uppercase tracking-widest gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <PenTool size={16} /> <span className="hidden md:inline">Conception</span>
-              </TabsTrigger>
-              <TabsTrigger value="marketing" className="rounded-xl px-6 font-black text-xs uppercase tracking-widest gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Megaphone size={16} /> <span className="hidden md:inline">Marketing</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <PipelineTracker />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="bg-white/5 p-1.5 rounded-2xl border border-white/10 h-auto grid grid-cols-2 md:grid-cols-4 gap-2">
+            <TabsTrigger value="spy" className="rounded-xl py-3 gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Search size={18} /> Veille
+            </TabsTrigger>
+            <TabsTrigger value="sandbox" className="rounded-xl py-3 gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Lightbulb size={18} /> Sandbox
+            </TabsTrigger>
+            <TabsTrigger value="architect" className="rounded-xl py-3 gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <PenTool size={18} /> Architect
+            </TabsTrigger>
+            <TabsTrigger value="marketing" className="rounded-xl py-3 gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Megaphone size={18} /> Co-Pilot
+            </TabsTrigger>
+          </TabsList>
 
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
-              <TabsContent value="spy" className="mt-0 focus-visible:outline-none">
-                <WinningProductSpy />
+              <TabsContent value="spy" className="mt-0">
+                <WinningProductSpy onRemix={() => setActiveTab("sandbox")} />
               </TabsContent>
-              <TabsContent value="sandbox" className="mt-0 focus-visible:outline-none">
-                <IdeaSandbox />
+              <TabsContent value="sandbox" className="mt-0">
+                <IdeaSandbox onValidate={() => setActiveTab("architect")} />
               </TabsContent>
-              <TabsContent value="architect" className="mt-0 focus-visible:outline-none">
-                <ProductArchitect />
+              <TabsContent value="architect" className="mt-0">
+                <ProductArchitect onRedact={() => setActiveTab("marketing")} />
               </TabsContent>
-              <TabsContent value="marketing" className="mt-0 focus-visible:outline-none">
+              <TabsContent value="marketing" className="mt-0">
                 <MarketingCoPilot />
               </TabsContent>
             </motion.div>
           </AnimatePresence>
         </Tabs>
       </div>
+
+      <Dialog open={showCreditDialog} onOpenChange={setShowCreditDialog}>
+        <DialogContent className="rounded-[2rem] border-white/10 bg-zinc-950">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">Crédits insuffisants</DialogTitle>
+            <DialogDescription>
+              Cette opération nécessite plus de crédits IA. Votre solde actuel est de {credits} crédits.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowCreditDialog(false)} className="rounded-xl">Plus tard</Button>
+            <Button onClick={() => navigate('/mon-compte?tab=credits')} className="rounded-xl btn-primary-brand font-bold">Recharger mon compte</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
 
-export default CreatorLab;
+export default function CreatorLab() {
+  return (
+    <CreatorLabProvider>
+      <CreatorLabContent />
+    </CreatorLabProvider>
+  );
+}
