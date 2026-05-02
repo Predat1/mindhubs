@@ -37,7 +37,7 @@ const VendorSubscription = () => {
   } = useVendorSubscription(vendor?.id);
   
   const { transactions, balance, isLoading: creditsLoading } = useCredits(vendor?.id);
-  const { data: orders = [] } = useVendorOrders(vendor?.id ? [vendor.id] : []);
+  const { data: orders = [] } = useVendorOrders(vendor?.id, vendor?.id ? [vendor.id] : []);
 
   const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -62,10 +62,10 @@ const VendorSubscription = () => {
   const handleRequestUpgrade = async (targetPlan: string) => {
     setIsProcessing(true);
     try {
-      const { error } = await supabase.from('vendor_subscriptions').upsert({
+      const { error } = await (supabase as any).from('vendor_subscriptions').upsert({
         vendor_id: vendor?.id,
         plan: targetPlan as any,
-        status: 'active', // Simulé pour la démo, en réel passe en 'pending'
+        status: 'active',
         payment_method: 'mobile_money'
       });
       if (error) throw error;
