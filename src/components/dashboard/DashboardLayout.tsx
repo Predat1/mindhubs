@@ -120,7 +120,7 @@ const useVendorLiveBadges = (enabled: boolean) => {
 
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const recentProductsCount = products.filter(
-      (p) => p.created_at && new Date(p.created_at).getTime() > sevenDaysAgo,
+      (p) => (p as any).created_at && new Date((p as any).created_at).getTime() > sevenDaysAgo,
     ).length;
     const pendingOrders = orders.filter((o) => o && o.status === "pending").length;
     const recentOrders = orders.filter(
