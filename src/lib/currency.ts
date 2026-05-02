@@ -25,10 +25,10 @@ export function formatCurrency(value: number | string): string {
   // Convert to number
   let num: number;
   if (typeof value === "string") {
-    // Remove any existing currency symbols and spaces
-    const cleaned = value.replace(/[^\d,.-]/g, "").replace(/\s/g, "");
-    // Handle both comma and dot as decimal separators
-    num = parseFloat(cleaned.replace(/,/g, "."));
+    // In West Africa/XOF context, dots and commas are almost always thousands separators
+    // because XOF has no decimals. We should remove them to get the full numeric value.
+    const cleaned = value.replace(/[^\d]/g, ""); 
+    num = parseInt(cleaned, 10);
   } else {
     num = value;
   }
@@ -54,7 +54,7 @@ export function formatCurrency(value: number | string): string {
  */
 export function formatPriceShort(price: number | string): string {
   const num = typeof price === "string" 
-    ? parseFloat(price.replace(/[^\d,.-]/g, "").replace(/,/g, "."))
+    ? parseInt(price.replace(/[^\d]/g, ""), 10)
     : price;
 
   if (isNaN(num)) return `0 ${CURRENCY_CONFIG.symbol}`;
@@ -76,8 +76,9 @@ export function formatPriceShort(price: number | string): string {
  */
 export function parseCurrency(value: string): number {
   if (!value) return 0;
-  const cleaned = value.replace(/[^\d,.-]/g, "").replace(/,/g, ".");
-  return parseFloat(cleaned) || 0;
+  // Remove all non-numeric characters for XOF
+  const cleaned = value.replace(/[^\d]/g, "");
+  return parseInt(cleaned, 10) || 0;
 }
 
 /**
