@@ -87,8 +87,13 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
   const updatePipelineStatus = (step: PipelineStepId, status: StepStatus) => 
     setState(s => ({ ...s, pipelineStatus: { ...s.pipelineStatus, [step]: status } }));
 
-  const spend = async (amount: number, description: string, featureType: string) => {
-    return await spendCredits(amount, description, featureType);
+  const spend = async (amount: number, description: string, featureType: string): Promise<{ success: boolean; balance?: number; error?: string }> => {
+    try {
+      await spendCredits({ amount, description, featureType });
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
   };
 
   const resetSession = () => {

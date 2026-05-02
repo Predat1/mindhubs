@@ -4,7 +4,7 @@ import { Check, Zap, Star, Trophy, ShieldCheck, HelpCircle, ArrowRight, MessageC
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Footer from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ const Pricing = () => {
   const { data: dbPlans = [], isLoading: plansLoading } = useQuery({
     queryKey: ['public-plan-limits'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('plan_limits').select('*').order('price_fcfa_monthly');
+      const { data, error } = await (supabase as any).from('plan_limits').select('*').order('price_fcfa_monthly');
       if (error) throw error;
       return data || [];
     }

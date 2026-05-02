@@ -106,9 +106,9 @@ export const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({ va
     const cost = CREDIT_COSTS['description'];
 
     try {
-      const res = await spend(cost, `Génération description IA (${mode}): ${title}`, 'description');
-      if (!res.success) {
-        toast.error("Erreur crédits: " + res.error);
+      const res = await spend({ amount: cost, description: `Génération description IA (${mode}): ${title}`, featureType: 'description' }) as any;
+      if (res && !res.success) {
+        toast.error("Erreur crédits: " + (res.error || 'Erreur inconnue'));
         return;
       }
 

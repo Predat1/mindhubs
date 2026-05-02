@@ -159,9 +159,9 @@ const Inner = () => {
     });
 
     try {
-      const res = await spend(totalCost, `Génération Kit Ad: ${selectedProduct.title} (${totalCreatives} variantes)`, 'ads-creative');
-      if (!res.success) {
-        toast.error("Erreur crédits: " + res.error, { id: t });
+      const res = await spend({ amount: totalCost, description: `Génération Kit Ad: ${selectedProduct.title} (${totalCreatives} variantes)`, featureType: 'ads-creative' }) as any;
+      if (res && !res.success) {
+        toast.error("Erreur crédits: " + (res.error || 'Erreur inconnue'), { id: t });
         return;
       }
 
