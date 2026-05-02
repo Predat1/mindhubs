@@ -119,7 +119,7 @@ const Checkout = () => {
         quantity: item.quantity,
         image: item.product.image,
       }));
-      const { error } = await supabase.from("orders").insert({
+      const { error } = await (supabase as any).from("orders").insert({
         user_id: user?.id ?? null,
         customer_name: form.name.trim(),
         customer_email: form.email.trim(),

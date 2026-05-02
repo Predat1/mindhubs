@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
@@ -142,7 +142,7 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
               </div>
 
               {/* Messages Area */}
-              <ScrollArea className="flex-1 p-6" viewportRef={scrollRef}>
+              <ScrollArea className="flex-1 p-6" ref={scrollRef}>
                 <div className="space-y-6">
                   {isLoadingMessages ? (
                     <div className="text-center text-sm text-muted-foreground py-10">Chargement des messages...</div>

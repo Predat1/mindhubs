@@ -29,7 +29,7 @@ export const useVendor = (username: string | undefined) => {
         .eq("username", username)
         .maybeSingle();
       if (error) throw error;
-      return data as Vendor | null;
+      return data as unknown as Vendor | null;
     },
     enabled: !!username,
   });
@@ -46,7 +46,7 @@ export const useVendorById = (id: string | undefined) => {
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
-      return data as Vendor | null;
+      return data as unknown as Vendor | null;
     },
     enabled: !!id,
   });
@@ -96,7 +96,7 @@ export const useCurrentVendor = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
-      return data as Vendor | null;
+      return data as unknown as Vendor | null;
     },
     enabled: !!user,
   });

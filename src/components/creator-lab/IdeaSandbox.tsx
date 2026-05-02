@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, TrendingUp, ShieldAlert, CheckCircle2, ArrowRight, Loader2, DollarSign, Globe, Award, Sparkles, AlertCircle } from "lucide-center";
+import { Target, TrendingUp, ShieldAlert, CheckCircle2, ArrowRight, Loader2, DollarSign, Globe, Award, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

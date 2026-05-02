@@ -33,15 +33,15 @@ export const NotificationBell = () => {
   useEffect(() => {
     // Fetch initial notifications
     const fetchNotifications = async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("global_notifications")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(20);
       
       if (data) {
-        setNotifications(data);
-        calculateUnread(data);
+        setNotifications(data as GlobalNotification[]);
+        calculateUnread(data as GlobalNotification[]);
       }
     };
 

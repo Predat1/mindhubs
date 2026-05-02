@@ -10,7 +10,7 @@ export interface GamificationStats {
   badges: BadgeType[];
 }
 
-const DEFAULT_BADGES: BadgeType[] = ["Newcomer", "Fast Seller"];
+const DEFAULT_BADGES: BadgeType[] = [];
 
 export const useGamification = () => {
   const [stats, setStats] = useState<GamificationStats | null>(null);
@@ -25,14 +25,13 @@ export const useGamification = () => {
           return;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("profiles")
           .select("xp, level")
           .eq("id", user.id)
           .single();
 
         if (error) {
-          // If profile doesn't exist yet, we use defaults
           setStats({
             xp: 0,
             level: 1,
@@ -40,8 +39,8 @@ export const useGamification = () => {
             badges: DEFAULT_BADGES
           });
         } else {
-          const xp = data.xp || 0;
-          const level = data.level || 1;
+          const xp = data?.xp || 0;
+          const level = data?.level || 1;
           
           let tier: LevelTier = "Bronze";
           if (level >= 50) tier = "Diamond";
@@ -53,7 +52,7 @@ export const useGamification = () => {
             xp,
             level,
             tier,
-            badges: level > 1 ? [...DEFAULT_BADGES, "Elite Contributor"] : DEFAULT_BADGES
+            badges: DEFAULT_BADGES
           });
         }
       } catch (err) {
@@ -69,7 +68,6 @@ export const useGamification = () => {
   const nextLevelXp = stats ? (stats.level || 1) * 500 : 500;
 
   const addXp = async (amount: number) => {
-    // Logic to update XP in Supabase
     console.log(`Adding ${amount} XP`);
   };
 

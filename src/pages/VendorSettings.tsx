@@ -95,7 +95,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
     setSaving(true);
     try {
       const username = form.username.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9-]/g, "");
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("vendors")
         .update({
           shop_name: form.shop_name.trim(),

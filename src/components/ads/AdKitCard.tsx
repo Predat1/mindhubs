@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Download, Check, Trash2, ExternalLink, Target, Megaphone, RefreshCw, Image as ImageIcon, FileText, Loader2, Sparkles, Tag, AlertCircle, Percent } from "lucide-react";
+import { Copy, Download, Check, Trash2, ExternalLink, Target, Megaphone, RefreshCw, Image as ImageIcon, FileText, Loader2, Sparkles, Tag, AlertCircle, Percent, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
