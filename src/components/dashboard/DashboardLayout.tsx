@@ -470,7 +470,6 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
         </div>
       </div>
-    </TooltipProvider>
       {/* Floating Support Button for Vendors */}
       {variant === "vendor" && (
         <div className="fixed bottom-6 right-6 z-50">
@@ -493,6 +492,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
           </TooltipProvider>
         </div>
       )}
+    </TooltipProvider>
     </div>
   );
 };
