@@ -4,7 +4,8 @@ import {
   ExternalLink, Clock, CheckCircle2, XCircle, 
   Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
   ShieldAlert, Bell, HelpCircle, Sparkles, Edit, Globe, Activity,
-  Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon, Sun as SunIcon, Moon as MoonIcon
+  Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon, Sun as SunIcon, Moon as MoonIcon,
+  Store
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -47,18 +48,6 @@ const DEFAULT_PRODUCT: ProductForm = {
   payment_link: "", image_urls: [], key_features: [], sort_order: 0,
   featured: false,
 };
-
-interface TestimonialForm {
-  id: string;
-  name: string;
-  handle: string;
-  avatar_initials: string;
-  content: string;
-  likes: string;
-  retweets: string;
-  replies: string;
-  verified: boolean;
-}
 
 type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | "security" | "analytics" | "settings" | "help" | "api-manager" | "logs" | "users";
 
@@ -126,7 +115,6 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [productSearch, setProductSearch] = useState("");
-  const [orderFilter, setOrderFilter] = useState<string>("all");
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "api"; id: string; label: string } | null>(null);
   const [apiConfigs, setApiConfigs] = useState<ApiConfig[]>([]);
   const [editingApi, setEditingApi] = useState<ApiConfig | null>(null);
@@ -147,8 +135,15 @@ const Admin = () => {
       const { data, error } = await supabase.from("products").select("*").order("sort_order", { ascending: true });
       if (error) throw error;
       return (data || []).map(db => ({
-        ...db, id: db.id, title: db.title, image: db.image_url, oldPrice: db.old_price, 
-        paymentLink: db.payment_link, imageUrls: db.image_urls || [], keyFeatures: db.key_features || []
+        ...db,
+        id: db.id,
+        title: db.title || "Sans titre",
+        image: db.image_url || "",
+        oldPrice: db.old_price || "0",
+        price: db.price || "0",
+        paymentLink: db.payment_link || "",
+        imageUrls: db.image_urls || [],
+        keyFeatures: db.key_features || []
       })) as any[];
     },
   });
@@ -158,7 +153,13 @@ const Admin = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Order[];
+      return (data || []).map(o => ({
+        ...o,
+        status: o.status || "pending",
+        total_price: o.total_price || 0,
+        customer_name: o.customer_name || "Client Inconnu",
+        customer_email: o.customer_email || ""
+      })) as Order[];
     },
   });
 
@@ -174,12 +175,16 @@ const Admin = () => {
   // ─── Universal API Manager Logic ───
   useEffect(() => {
     const fetchAdminData = async () => {
-      const [apiRes, logsRes] = await Promise.all([
-        supabase.from('api_configs').select('*'),
-        supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
-      ]);
-      if (!apiRes.error) setApiConfigs(apiRes.data || []);
-      if (!logsRes.error) setAuditLogs(logsRes.data || []);
+      try {
+        const [apiRes, logsRes] = await Promise.all([
+          supabase.from('api_configs').select('*'),
+          supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
+        ]);
+        if (!apiRes.error) setApiConfigs(apiRes.data || []);
+        if (!logsRes.error) setAuditLogs(logsRes.data || []);
+      } catch (err) {
+        console.error("Failed to fetch admin data (likely tables missing):", err);
+      }
     };
     fetchAdminData();
   }, [currentTab]);
@@ -189,16 +194,23 @@ const Admin = () => {
     if (!editingApi) return;
     setSaving(true);
     const isNew = !editingApi.id;
-    const { data, error } = isNew 
-      ? await supabase.from('api_configs').insert([editingApi]).select()
-      : await supabase.from('api_configs').update(editingApi).eq('id', editingApi.id).select();
-    
-    setSaving(false);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Succès", description: "API configurée." });
-    setEditingApi(null);
-    setApiConfigs(prev => isNew ? [...prev, data[0]] : prev.map(c => c.id === editingApi.id ? data[0] : c));
-    logAction("API_UPDATE", `API ${editingApi.name} mise à jour`);
+    try {
+      const { data, error } = isNew 
+        ? await supabase.from('api_configs').insert([editingApi]).select()
+        : await supabase.from('api_configs').update(editingApi).eq('id', editingApi.id).select();
+      
+      if (error) throw error;
+      toast({ title: "Succès", description: "API configurée." });
+      setEditingApi(null);
+      if (data) {
+        setApiConfigs(prev => isNew ? [...prev, data[0]] : prev.map(c => c.id === editingApi.id ? data[0] : c));
+      }
+      logAction("API_UPDATE", `API ${editingApi.name} mise à jour`);
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleTestApi = async (config: ApiConfig) => {
@@ -224,22 +236,38 @@ const Admin = () => {
   };
 
   const logAction = async (action: string, details: string) => {
-    const log = { action, details, user_id: user?.id, created_at: new Date().toISOString() };
-    await supabase.from('audit_logs').insert([log]);
-    setAuditLogs(prev => [log, ...prev]);
+    try {
+      const log = { action, details, user_id: user?.id, created_at: new Date().toISOString() };
+      await supabase.from('audit_logs').insert([log]);
+      setAuditLogs(prev => [log, ...prev]);
+    } catch (err) {
+      console.warn("Could not log action:", err);
+    }
   };
 
   const exportData = (type: 'csv' | 'json') => {
     setIsExporting(true);
-    const data = products; // Example
-    const blob = new Blob([type === 'csv' ? "id,title,price\n" + data.map(p => `${p.id},${p.title},${p.price}`).join("\n") : JSON.stringify(data)], { type: type === 'csv' ? 'text/csv' : 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `mindhubs-export-${Date.now()}.${type}`;
-    a.click();
-    setIsExporting(false);
-    toast({ title: "Export réussi" });
+    try {
+      const data = products || [];
+      const blob = new Blob([type === 'csv' ? "id,title,price\n" + data.map(p => `${p.id},${p.title},${p.price}`).join("\n") : JSON.stringify(data)], { type: type === 'csv' ? 'text/csv' : 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mindhubs-export-${Date.now()}.${type}`;
+      a.click();
+      toast({ title: "Export réussi" });
+    } catch (err) {
+      toast({ title: "Erreur export", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const toggleVendorVerification = async (vendorId: string, currentStatus: boolean) => {
+    const { error } = await supabase.from("vendors").update({ verified: !currentStatus }).eq("id", vendorId);
+    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Statut mis à jour", description: `Le vendeur est désormais ${!currentStatus ? "vérifié" : "standard"}.` });
+    refetchVendors();
   };
 
   // ─── Handlers ───
@@ -297,6 +325,11 @@ const Admin = () => {
     setUploading(false);
   };
 
+  // ─── Render Helpers ───
+  const revenueTotal = useMemo(() => 
+    (orders || []).reduce((s, o) => s + (o && o.status !== 'cancelled' ? (o.total_price || 0) : 0), 0)
+  , [orders]);
+
   // ─── Render ───
   return (
     <DashboardLayout variant="admin">
@@ -313,13 +346,13 @@ const Admin = () => {
                   <div className="lg:col-span-2 space-y-6">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[
-                        { label: "Ventes Total", value: orders.length, icon: ShoppingBag, color: "primary" },
-                        { label: "Revenu Total", value: `${(orders.reduce((s, o) => s + (o.status !== 'cancelled' ? o.total_price : 0), 0) / 1000).toFixed(1)}k`, icon: DollarSign, color: "accent" },
-                        { label: "Vendeurs Actifs", value: allVendors.length, icon: Store, color: "primary" },
-                        { label: "APIs Connectées", value: apiConfigs.length, icon: Zap, color: "yellow-500" },
+                        { label: "Ventes Total", value: (orders || []).length, icon: ShoppingBag, color: "primary" },
+                        { label: "Revenu Total", value: `${(revenueTotal / 1000).toFixed(1)}k`, icon: DollarSign, color: "accent" },
+                        { label: "Vendeurs Actifs", value: (allVendors || []).length, icon: Store, color: "primary" },
+                        { label: "APIs Connectées", value: (apiConfigs || []).length, icon: Zap, color: "yellow-500" },
                       ].map((s, i) => (
                         <div key={i} className="stat-card rounded-2xl p-5 border-glow">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${s.color}/10 text-${s.color} mb-3`}><s.icon size={18} /></div>
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary mb-3"><s.icon size={18} /></div>
                           <p className="text-2xl font-bold">{s.value}</p>
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{s.label}</p>
                         </div>
@@ -341,18 +374,19 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="stat-card rounded-2xl p-6 border-glow flex flex-col h-full">
+                  <div className="stat-card rounded-2xl p-6 border-glow flex flex-col h-full overflow-hidden">
                     <h3 className="text-sm font-bold mb-6 flex items-center gap-2"><History size={16} /> Audit Temps Réel</h3>
-                    <div className="space-y-4 overflow-y-auto max-h-[500px]">
-                      {auditLogs.map((log, i) => (
+                    <div className="space-y-4 overflow-y-auto pr-2 [scrollbar-width:thin]">
+                      {(auditLogs || []).map((log, i) => (
                         <div key={i} className="flex gap-3 border-l-2 border-primary/20 pl-3 py-1">
-                          <div className="flex-1">
-                            <p className="text-[10px] font-black uppercase text-primary">{log.action}</p>
-                            <p className="text-[11px] font-medium leading-tight">{log.details}</p>
-                            <p className="text-[9px] text-muted-foreground">{new Date(log.created_at).toLocaleTimeString()}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black uppercase text-primary truncate">{log?.action || "ACTION"}</p>
+                            <p className="text-[11px] font-medium leading-tight line-clamp-2">{log?.details || "Aucun détail"}</p>
+                            <p className="text-[9px] text-muted-foreground">{log?.created_at ? new Date(log.created_at).toLocaleTimeString() : ""}</p>
                           </div>
                         </div>
                       ))}
+                      {(!auditLogs || auditLogs.length === 0) && <p className="text-center text-[10px] text-muted-foreground py-10 uppercase font-black">Aucun log disponible</p>}
                     </div>
                   </div>
                 </div>
@@ -412,12 +446,12 @@ const Admin = () => {
                 )}
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {apiConfigs.map(api => (
+                  {(apiConfigs || []).map(api => (
                     <div key={api.id} className="stat-card rounded-2xl p-6 border-glow flex flex-col group">
                        <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
                              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Server size={20} /></div>
-                             <div><p className="font-black text-sm">{api.name}</p><Badge variant="outline" className="text-[9px] font-black uppercase">{api.method}</Badge></div>
+                             <div><p className="font-black text-sm">{api.name || "API Sans Nom"}</p><Badge variant="outline" className="text-[9px] font-black uppercase">{api.method}</Badge></div>
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                              <button onClick={() => setEditingApi(api)} className="p-2 rounded-lg hover:bg-primary/10 text-primary"><Edit size={16} /></button>
@@ -433,6 +467,7 @@ const Admin = () => {
                        </div>
                     </div>
                   ))}
+                  {(apiConfigs || []).length === 0 && <p className="col-span-full text-center py-20 text-muted-foreground font-black uppercase text-xs tracking-widest opacity-40">Aucune API configurée pour le moment</p>}
                 </div>
 
                 {testResult && (
@@ -451,7 +486,7 @@ const Admin = () => {
                            <p className="text-xl font-black text-primary">{testResult.time}ms</p>
                         </div>
                      </div>
-                     <pre className="p-4 rounded-xl bg-black border border-white/10 text-[10px] text-emerald-500/80 overflow-x-auto [scrollbar-width:thin]">
+                     <pre className="p-4 rounded-xl bg-black border border-white/10 text-[10px] text-emerald-500/80 overflow-auto max-h-60 [scrollbar-width:thin]">
                         {JSON.stringify(testResult.data, null, 2)}
                      </pre>
                   </motion.div>
@@ -467,20 +502,22 @@ const Admin = () => {
                    <Button variant="outline" onClick={() => exportData('csv')} className="rounded-xl gap-2 font-black"><Download size={18} /> Export CSV</Button>
                 </div>
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
+                   <div className="overflow-x-auto">
                    <table className="w-full text-sm text-left">
                       <thead className="bg-muted/30 border-b border-border">
                          <tr><th className="p-4 font-black text-[10px] uppercase tracking-widest">Date</th><th className="p-4 font-black text-[10px] uppercase tracking-widest">Action</th><th className="p-4 font-black text-[10px] uppercase tracking-widest">Détails</th></tr>
                       </thead>
                       <tbody>
-                         {auditLogs.map((log, i) => (
+                         {(auditLogs || []).map((log, i) => (
                             <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors">
-                               <td className="p-4 text-[11px] text-muted-foreground font-mono">{new Date(log.created_at).toLocaleString()}</td>
-                               <td className="p-4"><Badge className="bg-primary/10 text-primary font-black text-[9px] uppercase">{log.action}</Badge></td>
-                               <td className="p-4 font-medium text-xs">{log.details}</td>
+                               <td className="p-4 text-[11px] text-muted-foreground font-mono">{log?.created_at ? new Date(log.created_at).toLocaleString() : ""}</td>
+                               <td className="p-4"><Badge className="bg-primary/10 text-primary font-black text-[9px] uppercase">{log?.action || "ACTION"}</Badge></td>
+                               <td className="p-4 font-medium text-xs">{log?.details || ""}</td>
                             </tr>
                          ))}
                       </tbody>
                    </table>
+                   </div>
                 </div>
               </div>
             )}
@@ -539,17 +576,23 @@ const Admin = () => {
                 )}
 
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
+                   <div className="overflow-x-auto">
                    <table className="w-full text-sm text-left">
                       <thead className="bg-muted/30 border-b border-border">
                          <tr><th className="p-4 font-black uppercase text-[10px]">Pépite</th><th className="p-4 font-black uppercase text-[10px]">Prix</th><th className="p-4 font-black uppercase text-[10px] text-right">Actions</th></tr>
                       </thead>
                       <tbody>
-                        {products.filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
+                        {(products || []).filter(p => (p?.title || "").toLowerCase().includes(productSearch.toLowerCase())).map(p => (
                           <tr key={p.id} className="border-b border-border last:border-0 group">
-                             <td className="p-4 flex items-center gap-3"><img src={p.image} className="w-12 h-12 rounded-xl object-cover" /><span className="font-black truncate max-w-[200px]">{p.title}</span></td>
+                             <td className="p-4 flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+                                   <img src={p.image || ""} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=100")} />
+                                </div>
+                                <span className="font-black truncate max-w-[200px]">{p.title}</span>
+                             </td>
                              <td className="p-4 font-black">{p.price}</td>
                              <td className="p-4 text-right">
-                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                    <button onClick={() => setProductEditing(p as any)} className="p-2 rounded-xl hover:bg-primary/10 text-primary"><Edit size={16} /></button>
                                    <button onClick={() => setDeleteConfirm({ type: "product", id: p.id, label: p.title })} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
                                 </div>
@@ -558,51 +601,53 @@ const Admin = () => {
                         ))}
                       </tbody>
                    </table>
+                   </div>
                 </div>
               </div>
             )}
 
-            {/* ─── TAB: ORDERS ─── */}
-            {currentTab === "orders" && (
+            {/* ─── TAB: VENDORS ─── */}
+            {currentTab === "vendors" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                   <h2 className="text-3xl font-black">Gestion des Ventes</h2>
-                   <div className="flex gap-2">
-                      <Button variant="outline" onClick={() => exportData('csv')} className="rounded-xl font-black text-xs uppercase tracking-widest"><Download size={14} className="mr-2" /> Export</Button>
-                   </div>
+                   <h2 className="text-3xl font-black">Vendeurs & Boutiques</h2>
                 </div>
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-muted/30 border-b border-border">
-                      <tr><th className="p-4 font-black text-[10px] uppercase">Client</th><th className="p-4 font-black text-[10px] uppercase">Montant</th><th className="p-4 font-black text-[10px] uppercase">Statut</th><th className="p-4 font-black text-[10px] uppercase text-right">Détails</th></tr>
-                    </thead>
-                    <tbody>
-                      {orders.map(o => (
-                        <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/5">
-                          <td className="p-4"><p className="font-bold">{o.customer_name}</p><p className="text-[10px] text-muted-foreground">{o.customer_email}</p></td>
-                          <td className="p-4 font-black">{o.total_price.toLocaleString()} FCFA</td>
-                          <td className="p-4"><Badge className={`${statusConfig[o.status].color} font-black text-[9px] uppercase tracking-widest`}>{statusConfig[o.status].label}</Badge></td>
-                          <td className="p-4 text-right"><button onClick={() => setViewingOrder(o)} className="p-2 rounded-xl hover:bg-muted"><Eye size={18} /></button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                   <div className="overflow-x-auto">
+                   <table className="w-full text-sm text-left">
+                      <thead className="bg-muted/30 border-b border-border">
+                         <tr><th className="p-4 font-black text-[10px] uppercase">Boutique</th><th className="p-4 font-black text-[10px] uppercase">Lien</th><th className="p-4 font-black text-[10px] uppercase">Vérifié</th><th className="p-4 font-black text-[10px] uppercase text-right">Actions</th></tr>
+                      </thead>
+                      <tbody>
+                         {(allVendors || []).map(v => (
+                            <tr key={v.id} className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors">
+                               <td className="p-4"><p className="font-bold">{v.shop_name || "Boutique"}</p><p className="text-[10px] text-muted-foreground">@{v.username}</p></td>
+                               <td className="p-4"><Badge variant="outline" className="text-[9px] font-mono">/{v.username}</Badge></td>
+                               <td className="p-4">
+                                  <button onClick={() => toggleVendorVerification(v.id, v.verified)} className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${v.verified ? "bg-emerald-500/10 text-emerald-500" : "bg-muted"}`}>
+                                     {v.verified ? "VÉRIFIÉ ✓" : "EN ATTENTE"}
+                                  </button>
+                               </td>
+                               <td className="p-4 text-right"><button className="p-2 rounded-xl hover:bg-muted"><ExternalLink size={16} /></button></td>
+                            </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                   </div>
                 </div>
               </div>
             )}
 
             {/* ─── OTHER TABS: Placeholder logic for brevity but functional structure ─── */}
-            {(currentTab === "vendors" || currentTab === "users") && (
+            {(currentTab === "users" || currentTab === "security" || currentTab === "analytics" || currentTab === "settings" || currentTab === "help") && (
                <div className="stat-card rounded-3xl p-20 flex flex-col items-center justify-center text-center space-y-6 border-glow">
-                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary"><Users size={40} /></div>
+                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary"><Database size={40} /></div>
                   <div>
-                     <h3 className="text-2xl font-black uppercase tracking-tighter">Gestion des {currentTab === 'vendors' ? 'Vendeurs' : 'Utilisateurs'}</h3>
-                     <p className="text-muted-foreground max-w-sm font-medium">Contrôlez les accès et les privilèges des membres de la communauté.</p>
+                     <h3 className="text-2xl font-black uppercase tracking-tighter">Module en cours de synchronisation</h3>
+                     <p className="text-muted-foreground max-w-sm font-medium">L'accès à la section "{currentTab}" est en cours de validation par le système central.</p>
                   </div>
-                  <div className="w-full max-w-4xl pt-10">
-                     <div className="p-6 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-xs tracking-widest opacity-40">
-                        {currentTab === 'vendors' ? `${allVendors.length} Vendeurs actifs identifiés` : "Chargement de l'annuaire utilisateurs..."}
-                     </div>
+                  <div className="flex gap-4">
+                     <Button onClick={() => setTab("overview")} className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8">Retour Accueil</Button>
                   </div>
                </div>
             )}
@@ -640,7 +685,7 @@ const Admin = () => {
                 </div>
                 <div className="pt-6 border-t border-border flex justify-between items-end">
                    <p className="text-[10px] font-black uppercase text-muted-foreground">Total à régler</p>
-                   <p className="text-3xl font-black text-primary">{viewingOrder.total_price.toLocaleString()} FCFA</p>
+                   <p className="text-3xl font-black text-primary">{(viewingOrder.total_price || 0).toLocaleString()} FCFA</p>
                 </div>
                 <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest gap-2" onClick={() => setViewingOrder(null)}>Fermer l'aperçu</Button>
              </div>
