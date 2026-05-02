@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/currency";
 
 // ─── Types ───
 interface ProductForm {
@@ -610,7 +611,7 @@ const Admin = () => {
                                 <td className="py-4 px-4">
                                   <Badge variant="outline" className="border-white/10 text-[9px] font-bold">{product.category}</Badge>
                                 </td>
-                                <td className="py-4 px-4 font-black text-sm">{product.price}</td>
+                                <td className="py-4 px-4 font-black text-sm">{formatCurrency(product.price)}</td>
                                 <td className="py-4 px-4 text-right">
                                   <div className="flex items-center justify-end gap-2">
                                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setProductEditing(product as any)} aria-label="Modifier le produit">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 interface Props {
   productTitle: string;
@@ -48,7 +49,7 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
           <div className="flex-1 min-w-0">
             <p className="text-xs text-muted-foreground truncate">{productTitle}</p>
             <div className="flex items-center gap-2">
-              <p className="text-accent font-bold text-sm">{price}</p>
+              <p className="text-accent font-bold text-sm">{formatCurrency(price)}</p>
               {discountPct > 0 && (
                 <span className="text-[9px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">-{discountPct}%</span>
               )}
@@ -76,7 +77,7 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
         <div className="pointer-events-auto bg-background/90 backdrop-blur-xl border border-border rounded-2xl p-4 shadow-xl space-y-3 w-52">
           <p className="text-xs text-muted-foreground truncate">{productTitle}</p>
           <div className="flex items-center gap-2">
-            <span className="text-accent font-bold text-lg">{price}</span>
+            <span className="text-accent font-bold text-lg">{formatCurrency(price)}</span>
             {discountPct > 0 && (
               <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">-{discountPct}%</span>
             )}

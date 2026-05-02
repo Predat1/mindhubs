@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Sun, Moon } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 interface OrderItem {
   product_id: string;
@@ -324,7 +325,7 @@ const MonCompte = () => {
                                                 {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                                              </span>
                                           </div>
-                                          <span className="text-lg font-black text-foreground">{order.total_price.toLocaleString()} FCFA</span>
+                                          <span className="text-lg font-black text-foreground">{formatCurrency(order.total_price)}</span>
                                        </div>
                                        <div className="space-y-3">
                                           {order.items.map((item, idx) => (
@@ -334,7 +335,7 @@ const MonCompte = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                    <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{item.title}</p>
-                                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quantité: {item.quantity} · {item.price}</p>
+                                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quantité: {item.quantity} · {formatCurrency(item.price)}</p>
                                                 </div>
                                                 <Button asChild size="sm" variant="ghost" className="rounded-lg h-8 px-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary">
                                                    <Link to={`/produit/${item.product_id}`}>Revoir</Link>

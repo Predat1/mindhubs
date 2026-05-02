@@ -28,6 +28,7 @@ import payOrange from "@/assets/pay-orange.png";
 import payWave from "@/assets/pay-wave.png";
 import payVisa from "@/assets/pay-visa.png";
 import payMastercard from "@/assets/pay-mastercard.png";
+import { formatCurrency } from "@/lib/currency";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -223,8 +224,8 @@ const ProductDetail = () => {
                <div className="glass-card rounded-[2.5rem] p-8 space-y-8 border-white/5">
                   <div className="flex items-end gap-4">
                      <div className="space-y-1">
-                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{product.oldPrice}</p>
-                        <p className="text-5xl font-black text-foreground tracking-tighter">{product.price}</p>
+                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{formatCurrency(product.oldPrice)}</p>
+                        <p className="text-5xl font-black text-foreground tracking-tighter">{formatCurrency(product.price)}</p>
                      </div>
                      {discountPct > 0 && (
                        <Badge className="mb-2 bg-emerald-500 text-white border-none px-3 py-1 font-black text-[10px]">ÉCONOMIE {discountPct}%</Badge>

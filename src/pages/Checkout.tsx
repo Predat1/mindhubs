@@ -15,6 +15,7 @@ import { ShieldCheck, ArrowLeft, CheckCircle2, Trash2, Loader2, Zap, Lock, Credi
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/currency";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
@@ -256,7 +257,7 @@ const Checkout = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{item.product.category}</p>
                         <p className="text-xs font-black text-foreground truncate">{item.product.title}</p>
-                        <p className="text-[10px] font-bold text-primary mt-1">{item.product.price} (x{item.quantity})</p>
+                        <p className="text-[10px] font-bold text-primary mt-1">{formatCurrency(item.product.price)} (x{item.quantity})</p>
                       </div>
                       <button 
                         type="button" 
@@ -272,7 +273,7 @@ const Checkout = () => {
                 <div className="space-y-4 pt-6 border-t border-white/5">
                   <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-muted-foreground">
                     <span>Total à Payer</span>
-                    <span className="text-2xl text-foreground">{totalPrice.toLocaleString()} FCFA</span>
+                    <span className="text-2xl text-foreground">{formatCurrency(totalPrice)}</span>
                   </div>
                   
                   <Button 

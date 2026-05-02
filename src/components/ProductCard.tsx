@@ -7,6 +7,8 @@ import { useVendorById } from "@/hooks/useVendors";
 import { usePrefetchProduct } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/lib/currency";
 
 const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
 
@@ -100,8 +102,8 @@ const ProductCard = ({ product }: { product: Product }) => {
 
               <div className="flex items-center justify-between pt-4 border-t border-glass">
                  <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground line-through font-bold">{product.oldPrice}</span>
-                    <span className="text-lg font-black text-foreground">{product.price}</span>
+                    <span className="text-[10px] text-muted-foreground line-through font-bold">{formatCurrency(product.oldPrice)}</span>
+                    <span className="text-lg font-black text-foreground">{formatCurrency(product.price)}</span>
                  </div>
                  <button
                    onClick={handleBuy}

@@ -10,6 +10,7 @@ import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/currency";
 
 const CartPage = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
@@ -93,8 +94,8 @@ const CartPage = () => {
                         <h3 className="text-foreground font-black text-sm leading-tight line-clamp-1 hover:text-primary transition-colors">{item.product.title}</h3>
                       </Link>
                       <div className="flex items-center gap-3">
-                        <span className="text-muted-foreground line-through text-[10px] font-bold">{item.product.oldPrice}</span>
-                        <span className="text-foreground font-black text-lg">{item.product.price}</span>
+                        <span className="text-muted-foreground line-through text-[10px] font-bold">{formatCurrency(item.product.oldPrice)}</span>
+                        <span className="text-foreground font-black text-lg">{formatCurrency(item.product.price)}</span>
                       </div>
                       
                       <div className="flex items-center gap-4 pt-1">
@@ -142,11 +143,11 @@ const CartPage = () => {
               <div className="space-y-2">
                  <div className="flex justify-between items-center text-xs text-muted-foreground font-bold uppercase tracking-widest">
                     <span>Sous-total</span>
-                    <span>{totalPrice.toLocaleString()} FCFA</span>
+                    <span>{formatCurrency(totalPrice)}</span>
                  </div>
                  <div className="flex justify-between items-center">
                     <span className="text-lg font-black">Total</span>
-                    <span className="text-2xl font-black text-primary">{totalPrice.toLocaleString()} FCFA</span>
+                    <span className="text-2xl font-black text-primary">{formatCurrency(totalPrice)}</span>
                  </div>
               </div>
 
