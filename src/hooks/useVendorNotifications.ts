@@ -24,7 +24,7 @@ export const useVendorNotifications = (vendorId?: string) => {
     queryKey: ['vendor-notifications', vendorId],
     enabled: !!vendorId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_notifications')
         .select('*')
         .eq('vendor_id', vendorId)
@@ -41,7 +41,7 @@ export const useVendorNotifications = (vendorId?: string) => {
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_notifications')
         .update({ read: true })
         .eq('id', id);
@@ -54,7 +54,7 @@ export const useVendorNotifications = (vendorId?: string) => {
 
   const markAllAsRead = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_notifications')
         .update({ read: true })
         .eq('vendor_id', vendorId)
