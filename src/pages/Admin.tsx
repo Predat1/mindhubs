@@ -5,7 +5,7 @@ import {
   Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
   ShieldAlert, Bell, HelpCircle, Sparkles, Edit, Globe, Activity,
   Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon, Sun as SunIcon, Moon as MoonIcon,
-  Store
+  Store, Zap, Search
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
