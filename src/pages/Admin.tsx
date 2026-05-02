@@ -4,20 +4,18 @@ import {
   ExternalLink, Clock, CheckCircle2, XCircle, 
   Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
   ShieldAlert, Bell, HelpCircle, Sparkles, Edit, Globe, Activity,
-  Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon, Sun as SunIcon, Moon as MoonIcon,
-  Store, Zap, Search
+  Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon,
+  Store, Zap, Search, CreditCard
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SEO from "@/components/SEO";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area } from "recharts";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "@/contexts/ThemeContext";
-import type { Vendor } from "@/hooks/useVendors";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import { Button } from "@/components/ui/button";
@@ -26,22 +24,22 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/currency";
 
+// ─── NEW COMPONENTS ───
+import AdminSubscriptionsTab from "@/components/admin/AdminSubscriptionsTab";
+import AdminAnalyticsTab from "@/components/admin/AdminAnalyticsTab";
+import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
+import AdminVendorsTab from "@/components/admin/AdminVendorsTab";
+
 // ─── Types ───
+type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | 
+           "subscriptions" | "security" | "analytics" | "settings" | "help" | 
+           "api-manager" | "logs" | "users";
+
 interface ProductForm {
-  id: string;
-  title: string;
-  image_url: string;
-  old_price: string;
-  price: string;
-  category: string;
-  rating: string;
-  tag: string;
-  description: string;
-  payment_link: string;
-  image_urls: string[];
-  key_features: string[];
-  sort_order: number;
-  featured: boolean;
+  id: string; title: string; image_url: string; old_price: string; price: string;
+  category: string; rating: string; tag: string; description: string;
+  payment_link: string; image_urls: string[]; key_features: string[];
+  sort_order: number; featured: boolean;
 }
 
 const DEFAULT_PRODUCT: ProductForm = {
@@ -51,49 +49,16 @@ const DEFAULT_PRODUCT: ProductForm = {
   featured: false,
 };
 
-type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | "security" | "analytics" | "settings" | "help" | "api-manager" | "logs" | "users";
-
 interface Order {
-  id: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
-  total_price: number;
-  status: "pending" | "completed" | "cancelled" | "shipped" | "confirmed" | "delivered";
-  payment_method: string;
-  items: Array<{ title: string; quantity: number; price: string; image?: string }>;
-  created_at: string;
-}
-
-interface AdminProduct {
-  id: string;
-  title: string;
-  image: string;
-  oldPrice: string;
-  price: string;
-  category: string;
-  rating: string;
-  tag: string;
-  description: string;
-  paymentLink: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  sort_order: number;
-  featured: boolean;
-  image_url: string;
+  id: string; customer_name: string; customer_email: string; customer_phone: string;
+  total_price: number; status: "pending" | "completed" | "cancelled" | "shipped" | "confirmed" | "delivered";
+  payment_method: string; items: any[]; created_at: string;
 }
 
 interface ApiConfig {
-  id?: string;
-  name: string;
-  base_url: string;
-  method: string;
-  auth_type: "none" | "Bearer" | "Key";
-  auth_token?: string;
-  headers?: any;
-  test_endpoint?: string;
-  is_active: boolean;
-  created_at?: string;
+  id?: string; name: string; base_url: string; method: string;
+  auth_type: "none" | "Bearer" | "Key"; auth_token?: string;
+  headers?: any; test_endpoint?: string; is_active: boolean; created_at?: string;
 }
 
 const statusConfig = {
@@ -105,8 +70,8 @@ const statusConfig = {
 
 const Admin = () => {
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const currentTab = (searchParams.get("tab") as Tab) || "overview";
 
@@ -123,30 +88,29 @@ const Admin = () => {
   const [testResult, setTestResult] = useState<any | null>(null);
   const [testingApi, setTestingApi] = useState(false);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
-  const [isExporting, setIsExporting] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
 
   const setTab = (newTab: Tab) => navigate(`/admin?tab=${newTab}`);
+
+  // ─── Shared Logic ───
+  const logAction = async (action: string, details: string) => {
+    try {
+      const log = { action, details, user_id: user?.id, created_at: new Date().toISOString() };
+      await (supabase as any).from('audit_logs').insert([log]);
+      setAuditLogs((prev: any) => [log, ...prev]);
+    } catch (err) {
+      console.warn("Could not log action:", err);
+    }
+  };
 
   // ─── Queries ───
   const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ["admin-products"],
-    queryFn: async (): Promise<AdminProduct[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase.from("products").select("*").order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data || []).map(db => ({
-        ...db,
-        id: db.id,
-        title: db.title || "Sans titre",
-        image: db.image_url || "",
-        oldPrice: db.old_price || "0",
-        price: db.price || "0",
-        paymentLink: db.payment_link || "",
-        imageUrls: db.image_urls || [],
-        keyFeatures: db.key_features || []
-      })) as any[];
+      return (data || []).map(db => ({ ...db, image: db.image_url || "" }));
     },
   });
 
@@ -155,23 +119,16 @@ const Admin = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []).map(o => ({
-        ...o,
-        items: o.items as any,
-        status: o.status || "pending",
-        total_price: o.total_price || 0,
-        customer_name: o.customer_name || "Client Inconnu",
-        customer_email: o.customer_email || ""
-      })) as unknown as Order[];
+      return data || [];
     },
   });
 
-  const { data: allVendors = [], refetch: refetchVendors } = useQuery({
-    queryKey: ["admin-vendors"],
+  const { data: allVendors = [] } = useQuery({
+    queryKey: ["admin-vendors-basic"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("vendors").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("vendors").select("*");
       if (error) throw error;
-      return data ?? [];
+      return data || [];
     },
   });
 
@@ -187,7 +144,7 @@ const Admin = () => {
         if (!apiRes.error) setApiConfigs(apiRes.data || []);
         if (!logsRes.error) setAuditLogs(logsRes.data || []);
       } catch (err) {
-        console.error("Failed to fetch admin data (likely tables missing):", err);
+        console.error("Failed to fetch admin data:", err);
       }
     };
     fetchAdminData();
@@ -205,14 +162,14 @@ const Admin = () => {
         : await sb.from('api_configs').update(editingApi).eq('id', editingApi.id).select();
       
       if (error) throw error;
-      toast({ title: "Succès", description: "API configurée." });
+      toast.success("API configurée.");
       setEditingApi(null);
       if (data) {
         setApiConfigs((prev: any) => isNew ? [...prev, data[0]] : prev.map((c: any) => c.id === editingApi.id ? data[0] : c));
       }
       logAction("API_UPDATE", `API ${editingApi.name} mise à jour`);
     } catch (error: any) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast.error(error.message);
     } finally {
       setSaving(false);
     }
@@ -240,56 +197,21 @@ const Admin = () => {
     }
   };
 
-  const logAction = async (action: string, details: string) => {
-    try {
-      const log = { action, details, user_id: user?.id, created_at: new Date().toISOString() };
-      await (supabase as any).from('audit_logs').insert([log]);
-      setAuditLogs((prev: any) => [log, ...prev]);
-    } catch (err) {
-      console.warn("Could not log action:", err);
-    }
-  };
-
-  const exportData = (type: 'csv' | 'json') => {
-    setIsExporting(true);
-    try {
-      const data = products || [];
-      const blob = new Blob([type === 'csv' ? "id,title,price\n" + data.map(p => `${p.id},${p.title},${p.price}`).join("\n") : JSON.stringify(data)], { type: type === 'csv' ? 'text/csv' : 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `mindhubs-export-${Date.now()}.${type}`;
-      a.click();
-      toast({ title: "Export réussi" });
-    } catch (err) {
-      toast({ title: "Erreur export", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const toggleVendorVerification = async (vendorId: string, currentStatus: boolean) => {
-    const { error } = await supabase.from("vendors").update({ verified: !currentStatus }).eq("id", vendorId);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Statut mis à jour", description: `Le vendeur est désormais ${!currentStatus ? "vérifié" : "standard"}.` });
-    refetchVendors();
-  };
-
-  // ─── Handlers ───
+  // ─── Products Handlers ───
   const saveProduct = async () => {
     if (!productEditing) return;
     setSaving(true);
-    const isNew = !products.find(p => p.id === productEditing.id);
+    const isNew = !products.find((p: any) => p.id === productEditing.id);
     const productData = { ...productEditing, rating: parseFloat(productEditing.rating) || 5, sort_order: parseInt(productEditing.sort_order.toString()) || 0 };
     try {
       const { error } = isNew ? await supabase.from("products").insert([productData]) : await supabase.from("products").update(productData).eq("id", productEditing.id);
       if (error) throw error;
-      toast({ title: isNew ? "Produit ajouté" : "Produit mis à jour" });
+      toast.success(isNew ? "Produit ajouté" : "Produit mis à jour");
       setProductEditing(null);
       refetchProducts();
       logAction(isNew ? "PRODUCT_ADD" : "PRODUCT_UPDATE", `Produit ${productEditing.title}`);
     } catch (error: any) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast.error(error.message);
     } finally {
       setSaving(false);
     }
@@ -299,8 +221,8 @@ const Admin = () => {
     setUpdatingStatus(orderId);
     const { error } = await (supabase as any).from("orders").update({ status }).eq("id", orderId);
     setUpdatingStatus(null);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Statut mis à jour" });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Statut mis à jour");
     refetchOrders();
     logAction("ORDER_STATUS", `Commande ${orderId} -> ${status}`);
   };
@@ -312,8 +234,8 @@ const Admin = () => {
     const { error } = await (supabase as any).from(table).delete().eq("id", deleteConfirm.id);
     setDeleting(null);
     setDeleteConfirm(null);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Supprimé" });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Supprimé");
     if (deleteConfirm.type === "product") refetchProducts();
     else if (deleteConfirm.type === "api") setApiConfigs(prev => prev.filter(a => a.id !== deleteConfirm.id));
     logAction("DELETE", `Suppression ${deleteConfirm.type} : ${deleteConfirm.label}`);
@@ -324,7 +246,7 @@ const Admin = () => {
     setUploading(true);
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
     const { error } = await supabase.storage.from("product-images").upload(fileName, file);
-    if (error) { toast({ title: "Erreur upload", description: error.message, variant: "destructive" }); setUploading(false); return; }
+    if (error) { toast.error(error.message); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
     setProductEditing({ ...productEditing, image_url: urlData.publicUrl });
     setUploading(false);
@@ -344,7 +266,7 @@ const Admin = () => {
         <AnimatePresence mode="wait">
           <motion.div key={currentTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-8">
             
-            {/* ─── TAB: OVERVIEW ─── */}
+            {/* ─── TAB: OVERVIEW (MODERNIZED WITH REAL DATA) ─── */}
             {currentTab === "overview" && (
               <div className="space-y-8">
                 <div className="grid lg:grid-cols-3 gap-8">
@@ -352,26 +274,26 @@ const Admin = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[
                         { label: "Ventes Total", value: (orders || []).length, icon: ShoppingBag, color: "primary" },
-                        { label: "Revenu Total", value: `${(revenueTotal / 1000).toFixed(1)}k`, icon: DollarSign, color: "accent" },
-                        { label: "Vendeurs Actifs", value: (allVendors || []).length, icon: Store, color: "primary" },
-                        { label: "APIs Connectées", value: (apiConfigs || []).length, icon: Zap, color: "yellow-500" },
+                        { label: "Revenu Marketplace", value: formatCurrency(revenueTotal), icon: DollarSign, color: "accent" },
+                        { label: "Vendeurs", value: (allVendors || []).length, icon: Store, color: "primary" },
+                        { label: "APIs IA", value: (apiConfigs || []).length, icon: Zap, color: "yellow-500" },
                       ].map((s, i) => (
                         <div key={i} className="stat-card rounded-2xl p-5 border-glow">
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary mb-3"><s.icon size={18} /></div>
-                          <p className="text-2xl font-bold">{s.value}</p>
+                          <p className="text-xl font-black tracking-tighter">{s.value}</p>
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{s.label}</p>
                         </div>
                       ))}
                     </div>
                     
                     <div className="stat-card rounded-2xl p-6 border-glow h-80">
-                       <h3 className="text-sm font-bold mb-6">Activité Financière</h3>
+                       <h3 className="text-sm font-black uppercase mb-6">Activité Marketplace (Dernières transactions)</h3>
                        <ResponsiveContainer width="100%" height="100%">
-                         <AreaChart data={[{d: 'Lun', v: 400}, {d: 'Mar', v: 700}, {d: 'Mer', v: 500}, {d: 'Jeu', v: 900}, {d: 'Ven', v: 1100}]}>
+                         <AreaChart data={orders.slice(0, 10).reverse().map(o => ({d: new Date(o.created_at).toLocaleDateString(), v: o.total_price}))}>
                            <defs>
                              <linearGradient id="colorV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient>
                            </defs>
-                           <XAxis dataKey="d" axisLine={false} tickLine={false} tick={{fontSize: 10}} />
+                           <XAxis dataKey="d" axisLine={false} tickLine={false} tick={{fontSize: 8}} />
                            <Tooltip />
                            <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" fill="url(#colorV)" strokeWidth={3} />
                          </AreaChart>
@@ -380,23 +302,34 @@ const Admin = () => {
                   </div>
 
                   <div className="stat-card rounded-2xl p-6 border-glow flex flex-col h-full overflow-hidden">
-                    <h3 className="text-sm font-bold mb-6 flex items-center gap-2"><History size={16} /> Audit Temps Réel</h3>
+                    <h3 className="text-sm font-black uppercase mb-6 flex items-center gap-2"><History size={16} /> Flux d'Audit</h3>
                     <div className="space-y-4 overflow-y-auto pr-2 [scrollbar-width:thin]">
                       {(auditLogs || []).map((log, i) => (
                         <div key={i} className="flex gap-3 border-l-2 border-primary/20 pl-3 py-1">
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-black uppercase text-primary truncate">{log?.action || "ACTION"}</p>
                             <p className="text-[11px] font-medium leading-tight line-clamp-2">{log?.details || "Aucun détail"}</p>
-                            <p className="text-[9px] text-muted-foreground">{log?.created_at ? new Date(log.created_at).toLocaleTimeString() : ""}</p>
+                            <p className="text-[9px] text-muted-foreground font-bold">{log?.created_at ? new Date(log.created_at).toLocaleTimeString() : ""}</p>
                           </div>
                         </div>
                       ))}
-                      {(!auditLogs || auditLogs.length === 0) && <p className="text-center text-[10px] text-muted-foreground py-10 uppercase font-black">Aucun log disponible</p>}
                     </div>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* ─── TAB: SUBSCRIPTIONS (NEW) ─── */}
+            {currentTab === "subscriptions" && <AdminSubscriptionsTab logAction={logAction} />}
+
+            {/* ─── TAB: ANALYTICS (NEW) ─── */}
+            {currentTab === "analytics" && <AdminAnalyticsTab />}
+
+            {/* ─── TAB: SETTINGS (NEW) ─── */}
+            {currentTab === "settings" && <AdminSettingsTab logAction={logAction} />}
+
+            {/* ─── TAB: VENDORS (EXTENDED) ─── */}
+            {currentTab === "vendors" && <AdminVendorsTab logAction={logAction} />}
 
             {/* ─── TAB: API MANAGER ─── */}
             {currentTab === "api-manager" && (
@@ -404,7 +337,7 @@ const Admin = () => {
                 <div className="flex items-center justify-between">
                    <div>
                      <h2 className="text-3xl font-black">Universal API Manager</h2>
-                     <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Contrôlez vos moteurs IA et Data en temps réel</p>
+                     <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Moteurs IA & Connecteurs</p>
                    </div>
                    <Button onClick={() => setEditingApi({ name: "", base_url: "", method: "GET", auth_type: "none", is_active: true })} className="rounded-2xl gap-2 font-black">
                      <Plus size={18} /> Nouvelle API
@@ -414,37 +347,17 @@ const Admin = () => {
                 {editingApi && (
                   <motion.form onSubmit={handleSaveApi} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="stat-card rounded-3xl p-8 border-glow space-y-6">
                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2"><label className="text-[10px] font-black uppercase">Nom</label><Input value={editingApi.name} onChange={e => setEditingApi({...editingApi, name: e.target.value})} /></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black uppercase">Base URL</label><Input value={editingApi.base_url} onChange={e => setEditingApi({...editingApi, base_url: e.target.value})} /></div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black uppercase">Nom de l'API</label>
-                           <Input value={editingApi.name} onChange={e => setEditingApi({...editingApi, name: e.target.value})} placeholder="Ex: Meta Ads Library" required />
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-black uppercase">Base URL</label>
-                           <Input value={editingApi.base_url} onChange={e => setEditingApi({...editingApi, base_url: e.target.value})} placeholder="https://api.facebook.com/..." required />
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-black uppercase">Méthode HTTP</label>
-                           <select value={editingApi.method} onChange={e => setEditingApi({...editingApi, method: e.target.value})} className="w-full h-10 rounded-xl bg-muted/20 border border-border px-3 font-bold">
+                           <label className="text-[10px] font-black uppercase">Méthode</label>
+                           <select value={editingApi.method} onChange={e => setEditingApi({...editingApi, method: e.target.value})} className="w-full h-10 rounded-xl bg-muted/20 border border-border px-3 font-bold text-sm">
                               {["GET", "POST", "PUT", "DELETE"].map(m => <option key={m} value={m}>{m}</option>)}
                            </select>
                         </div>
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-black uppercase">Auth Type</label>
-                           <select value={editingApi.auth_type} onChange={e => setEditingApi({...editingApi, auth_type: e.target.value as any})} className="w-full h-10 rounded-xl bg-muted/20 border border-border px-3 font-bold">
-                              <option value="none">Aucune</option>
-                              <option value="Bearer">Bearer Token</option>
-                              <option value="Key">API Key (Header)</option>
-                           </select>
-                        </div>
-                        {editingApi.auth_type !== 'none' && (
-                          <div className="md:col-span-2 space-y-2">
-                            <label className="text-[10px] font-black uppercase">Token / Clé</label>
-                            <Input value={editingApi.auth_token} onChange={e => setEditingApi({...editingApi, auth_token: e.target.value})} type="password" placeholder="sk-..." />
-                          </div>
-                        )}
                      </div>
                      <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                        <Button type="button" variant="ghost" onClick={() => setEditingApi(null)} className="rounded-xl">Annuler</Button>
+                        <Button type="button" variant="ghost" onClick={() => setEditingApi(null)}>Annuler</Button>
                         <Button type="submit" disabled={saving} className="rounded-xl font-black">{saving ? <Loader2 className="animate-spin" /> : <Save size={18} className="mr-2" />} Enregistrer</Button>
                      </div>
                   </motion.form>
@@ -456,73 +369,21 @@ const Admin = () => {
                        <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
                              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Server size={20} /></div>
-                             <div><p className="font-black text-sm">{api.name || "API Sans Nom"}</p><Badge variant="outline" className="text-[9px] font-black uppercase">{api.method}</Badge></div>
+                             <p className="font-black text-sm">{api.name}</p>
                           </div>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-1">
                              <button onClick={() => setEditingApi(api)} className="p-2 rounded-lg hover:bg-primary/10 text-primary"><Edit size={16} /></button>
                              <button onClick={() => setDeleteConfirm({ type: "api", id: api.id!, label: api.name })} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
                           </div>
                        </div>
-                       <p className="text-[10px] text-muted-foreground truncate mb-4 font-mono">{api.base_url}</p>
                        <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
                           <Badge className={api.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-muted"}>{api.is_active ? "ACTIF" : "INACTIF"}</Badge>
-                          <Button size="sm" onClick={() => handleTestApi(api)} disabled={testingApi} className="rounded-xl h-8 text-[10px] font-black uppercase gap-2">
+                          <Button size="sm" onClick={() => handleTestApi(api)} disabled={testingApi} className="rounded-xl h-8 text-[10px] font-black gap-2">
                              {testingApi ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} fill="currentColor" />} Tester
                           </Button>
                        </div>
                     </div>
                   ))}
-                  {(apiConfigs || []).length === 0 && <p className="col-span-full text-center py-20 text-muted-foreground font-black uppercase text-xs tracking-widest opacity-40">Aucune API configurée pour le moment</p>}
-                </div>
-
-                {testResult && (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="stat-card rounded-2xl p-6 border-glow bg-zinc-950">
-                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-xs font-black uppercase tracking-widest text-emerald-500 flex items-center gap-2"><Activity size={14} /> Résultat du test live</h4>
-                        <button onClick={() => setTestResult(null)}><X size={14} /></button>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                           <p className="text-[9px] text-muted-foreground uppercase font-black">Status Code</p>
-                           <p className="text-xl font-black text-emerald-400">{testResult.status}</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                           <p className="text-[9px] text-muted-foreground uppercase font-black">Latence</p>
-                           <p className="text-xl font-black text-primary">{testResult.time}ms</p>
-                        </div>
-                     </div>
-                     <pre className="p-4 rounded-xl bg-black border border-white/10 text-[10px] text-emerald-500/80 overflow-auto max-h-60 [scrollbar-width:thin]">
-                        {JSON.stringify(testResult.data, null, 2)}
-                     </pre>
-                  </motion.div>
-                )}
-              </div>
-            )}
-
-            {/* ─── TAB: LOGS ─── */}
-            {currentTab === "logs" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                   <h2 className="text-3xl font-black">Journaux d'Audit</h2>
-                   <Button variant="outline" onClick={() => exportData('csv')} className="rounded-xl gap-2 font-black"><Download size={18} /> Export CSV</Button>
-                </div>
-                <div className="stat-card rounded-2xl overflow-hidden border-glow">
-                   <div className="overflow-x-auto">
-                   <table className="w-full text-sm text-left">
-                      <thead className="bg-muted/30 border-b border-border">
-                         <tr><th className="p-4 font-black text-[10px] uppercase tracking-widest">Date</th><th className="p-4 font-black text-[10px] uppercase tracking-widest">Action</th><th className="p-4 font-black text-[10px] uppercase tracking-widest">Détails</th></tr>
-                      </thead>
-                      <tbody>
-                         {(auditLogs || []).map((log, i) => (
-                            <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors">
-                               <td className="p-4 text-[11px] text-muted-foreground font-mono">{log?.created_at ? new Date(log.created_at).toLocaleString() : ""}</td>
-                               <td className="p-4"><Badge className="bg-primary/10 text-primary font-black text-[9px] uppercase">{log?.action || "ACTION"}</Badge></td>
-                               <td className="p-4 font-medium text-xs">{log?.details || ""}</td>
-                            </tr>
-                         ))}
-                      </tbody>
-                   </table>
-                   </div>
                 </div>
               </div>
             )}
@@ -531,11 +392,8 @@ const Admin = () => {
             {currentTab === "products" && (
                <div className="space-y-6">
                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-black">Catalogue Elite</h2>
-                      <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Gérez les pépites de la marketplace</p>
-                    </div>
-                    <Button onClick={() => setProductEditing(DEFAULT_PRODUCT)} className="rounded-2xl flex items-center gap-2 font-black px-8">
+                    <h2 className="text-3xl font-black">Catalogue Elite</h2>
+                    <Button onClick={() => setProductEditing(DEFAULT_PRODUCT)} className="rounded-2xl gap-2 font-black">
                       <Plus size={18} /> Ajouter une pépite
                     </Button>
                  </div>
@@ -546,115 +404,81 @@ const Admin = () => {
                  </div>
 
                 {productEditing && (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="stat-card rounded-3xl p-8 border-glow space-y-8">
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="stat-card rounded-3xl p-8 border-glow space-y-8 bg-zinc-950">
                     <div className="flex items-center justify-between border-b border-border pb-6">
                       <h2 className="text-2xl font-black">{productEditing.id ? "Modifier" : "Nouvelle"} Pépite</h2>
                       <button onClick={() => setProductEditing(null)}><X /></button>
                     </div>
                     <div className="grid lg:grid-cols-3 gap-10">
-                       <div className="space-y-6">
-                          <label className="text-[10px] font-black uppercase tracking-widest">Image de couverture</label>
-                          <div onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-3xl border-2 border-dashed border-border bg-muted/20 flex items-center justify-center cursor-pointer hover:border-primary transition-all overflow-hidden relative">
-                             {productEditing.image_url ? <img src={productEditing.image_url} className="w-full h-full object-cover" /> : <Upload size={32} className="text-muted-foreground" />}
-                             {uploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>}
-                             <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
-                          </div>
-                       </div>
-                       <div className="lg:col-span-2 space-y-6">
-                          <div className="grid md:grid-cols-2 gap-6">
-                             <div className="space-y-2"><label className="text-[10px] font-black uppercase">Titre</label><Input value={productEditing.title} onChange={e => setProductEditing({...productEditing, title: e.target.value})} /></div>
-                             <div className="space-y-2"><label className="text-[10px] font-black uppercase">Catégorie</label><Input value={productEditing.category} onChange={e => setProductEditing({...productEditing, category: e.target.value})} /></div>
-                             <div className="space-y-2"><label className="text-[10px] font-black uppercase">Prix</label><Input value={productEditing.price} onChange={e => setProductEditing({...productEditing, price: e.target.value})} /></div>
-                             <div className="space-y-2"><label className="text-[10px] font-black uppercase">Lien Paiement</label><Input value={productEditing.payment_link} onChange={e => setProductEditing({...productEditing, payment_link: e.target.value})} /></div>
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black uppercase">Description Marketing</label>
-                             <RichDescriptionEditor value={productEditing.description} onChange={val => setProductEditing({...productEditing, description: val})} title={productEditing.title} category={productEditing.category} />
-                          </div>
-                       </div>
+                        <div className="space-y-6">
+                           <div onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-3xl border-2 border-dashed border-border bg-muted/20 flex items-center justify-center cursor-pointer hover:border-primary overflow-hidden relative">
+                              {productEditing.image_url ? <img src={productEditing.image_url} className="w-full h-full object-cover" /> : <Upload size={32} />}
+                              {uploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="animate-spin" /></div>}
+                              <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
+                           </div>
+                        </div>
+                        <div className="lg:col-span-2 space-y-4">
+                           <div className="grid md:grid-cols-2 gap-4">
+                              <Input value={productEditing.title} onChange={e => setProductEditing({...productEditing, title: e.target.value})} placeholder="Titre" />
+                              <Input value={productEditing.price} onChange={e => setProductEditing({...productEditing, price: e.target.value})} placeholder="Prix" />
+                           </div>
+                           <RichDescriptionEditor value={productEditing.description} onChange={val => setProductEditing({...productEditing, description: val})} title={productEditing.title} category={productEditing.category} />
+                        </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-6 border-t border-border">
                        <Button variant="ghost" onClick={() => setProductEditing(null)}>Annuler</Button>
-                       <Button onClick={saveProduct} disabled={saving} className="rounded-xl px-10 font-black">{saving ? <Loader2 className="animate-spin" /> : "Enregistrer"}</Button>
+                       <Button onClick={saveProduct} disabled={saving} className="rounded-xl px-10 font-black">Enregistrer</Button>
                     </div>
                   </motion.div>
                 )}
 
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
-                    {productsLoading ? (
-                      <div className="space-y-4 p-4">
-                        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 w-full rounded-2xl bg-muted/50 animate-pulse" />)}
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
-                          <thead>
-                            <tr className="border-b border-white/5 bg-muted/30">
-                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Image</th>
-                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Produit</th>
-                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catégorie</th>
-                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Prix</th>
-                              <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-white/5 bg-muted/30">
+                            <th className="py-4 px-4 text-[10px] font-black uppercase">Produit</th>
+                            <th className="py-4 px-4 text-[10px] font-black uppercase">Prix</th>
+                            <th className="py-4 px-4 text-[10px] font-black uppercase text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {products.filter((p:any) => p.title.toLowerCase().includes(productSearch.toLowerCase())).map((product: any) => (
+                            <tr key={product.id} className="group hover:bg-white/5">
+                              <td className="py-4 px-4"><p className="font-black text-sm">{product.title}</p></td>
+                              <td className="py-4 px-4 font-black text-sm">{formatCurrency(product.price)}</td>
+                              <td className="py-4 px-4 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button variant="ghost" size="icon" onClick={() => setProductEditing(product)}><Edit size={14} /></Button>
+                                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteConfirm({ type: "product", id: product.id, label: product.title })}><Trash2 size={14} /></Button>
+                                </div>
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/5">
-                            {products.filter(p => (p?.title || "").toLowerCase().includes(productSearch.toLowerCase())).map((product) => (
-                              <tr key={product.id} className="group hover:bg-white/5 transition-colors">
-                                <td className="py-4 px-4">
-                                  <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/10 bg-muted">
-                                    <img src={product.image || ""} alt={product.title} className="h-full w-full object-cover" onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=100")} />
-                                  </div>
-                                </td>
-                                <td className="py-4 px-4">
-                                  <p className="font-black text-sm">{product.title}</p>
-                                </td>
-                                <td className="py-4 px-4">
-                                  <Badge variant="outline" className="border-white/10 text-[9px] font-bold">{product.category}</Badge>
-                                </td>
-                                <td className="py-4 px-4 font-black text-sm">{formatCurrency(product.price)}</td>
-                                <td className="py-4 px-4 text-right">
-                                  <div className="flex items-center justify-end gap-2">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setProductEditing(product as any)} aria-label="Modifier le produit">
-                                      <Edit size={14} />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => setDeleteConfirm({ type: "product", id: product.id, label: product.title })} aria-label="Supprimer le produit">
-                                      <Trash2 size={14} />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                 </div>
-              </div>
+               </div>
             )}
 
-            {/* ─── TAB: VENDORS ─── */}
-            {currentTab === "vendors" && (
+            {/* ─── TAB: ORDERS ─── */}
+            {currentTab === "orders" && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                   <h2 className="text-3xl font-black">Vendeurs & Boutiques</h2>
-                </div>
+                <h2 className="text-3xl font-black">Commandes Globales</h2>
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
                    <div className="overflow-x-auto">
                    <table className="w-full text-sm text-left">
                       <thead className="bg-muted/30 border-b border-border">
-                         <tr><th className="p-4 font-black text-[10px] uppercase">Boutique</th><th className="p-4 font-black text-[10px] uppercase">Lien</th><th className="p-4 font-black text-[10px] uppercase">Vérifié</th><th className="p-4 font-black text-[10px] uppercase text-right">Actions</th></tr>
+                         <tr><th className="p-4 font-black text-[10px] uppercase">Client</th><th className="p-4 font-black text-[10px] uppercase">Total</th><th className="p-4 font-black text-[10px] uppercase">Statut</th><th className="p-4 font-black text-[10px] uppercase text-right">Actions</th></tr>
                       </thead>
                       <tbody>
-                         {(allVendors || []).map(v => (
-                            <tr key={v.id} className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors">
-                               <td className="p-4"><p className="font-bold">{v.shop_name || "Boutique"}</p><p className="text-[10px] text-muted-foreground">@{v.username}</p></td>
-                               <td className="p-4"><Badge variant="outline" className="text-[9px] font-mono">/{v.username}</Badge></td>
-                               <td className="p-4">
-                                  <button onClick={() => toggleVendorVerification(v.id, v.verified)} className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${v.verified ? "bg-emerald-500/10 text-emerald-500" : "bg-muted"}`}>
-                                     {v.verified ? "VÉRIFIÉ ✓" : "EN ATTENTE"}
-                                  </button>
-                               </td>
-                               <td className="p-4 text-right"><button className="p-2 rounded-xl hover:bg-muted"><ExternalLink size={16} /></button></td>
+                         {orders.map((o:any) => (
+                            <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/5">
+                               <td className="p-4"><p className="font-bold">{o.customer_name}</p><p className="text-[10px] text-muted-foreground">{o.customer_email}</p></td>
+                               <td className="p-4 font-black">{formatCurrency(o.total_price)}</td>
+                               <td className="p-4"><Badge className={statusConfig[o.status as keyof typeof statusConfig]?.color}>{o.status}</Badge></td>
+                               <td className="p-4 text-right"><Button variant="ghost" size="sm" onClick={() => setViewingOrder(o)} className="rounded-xl"><Eye size={16} /></Button></td>
                             </tr>
                          ))}
                       </tbody>
@@ -664,17 +488,38 @@ const Admin = () => {
               </div>
             )}
 
-            {/* ─── OTHER TABS: Placeholder logic for brevity but functional structure ─── */}
-            {(currentTab === "users" || currentTab === "security" || currentTab === "analytics" || currentTab === "settings" || currentTab === "help") && (
+            {/* ─── TAB: LOGS ─── */}
+            {currentTab === "logs" && (
+              <div className="space-y-6">
+                <h2 className="text-3xl font-black">Audit Système</h2>
+                <div className="stat-card rounded-2xl overflow-hidden border-glow">
+                   <table className="w-full text-sm text-left">
+                      <thead className="bg-muted/30 border-b border-border">
+                         <tr><th className="p-4 font-black text-[10px] uppercase">Date</th><th className="p-4 font-black text-[10px] uppercase">Action</th><th className="p-4 font-black text-[10px] uppercase">Détails</th></tr>
+                      </thead>
+                      <tbody>
+                         {auditLogs.map((log, i) => (
+                            <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/5">
+                               <td className="p-4 text-[10px] font-mono">{new Date(log.created_at).toLocaleString()}</td>
+                               <td className="p-4"><Badge className="bg-primary/10 text-primary font-black text-[9px] uppercase">{log.action}</Badge></td>
+                               <td className="p-4 text-xs font-medium">{log.details}</td>
+                            </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* ─── TAB: PLACEHOLDERS (SECURITY, HELP, USERS) ─── */}
+            {(currentTab === "users" || currentTab === "security" || currentTab === "help") && (
                <div className="stat-card rounded-3xl p-20 flex flex-col items-center justify-center text-center space-y-6 border-glow">
                   <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary"><Database size={40} /></div>
                   <div>
                      <h3 className="text-2xl font-black uppercase tracking-tighter">Module en cours de synchronisation</h3>
                      <p className="text-muted-foreground max-w-sm font-medium">L'accès à la section "{currentTab}" est en cours de validation par le système central.</p>
                   </div>
-                  <div className="flex gap-4">
-                     <Button onClick={() => setTab("overview")} className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8">Retour Accueil</Button>
-                  </div>
+                  <Button onClick={() => setTab("overview")} className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8">Retour Accueil</Button>
                </div>
             )}
 
@@ -682,7 +527,7 @@ const Admin = () => {
         </AnimatePresence>
       </div>
 
-      {/* Viewing Order Modal */}
+      {/* ─── OVERLAYS ─── */}
       {viewingOrder && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setViewingOrder(null)} />
@@ -710,10 +555,8 @@ const Admin = () => {
                    </div>
                 </div>
                 <div className="pt-6 border-t border-border flex justify-between items-end">
-                   <p className="text-[10px] font-black uppercase text-muted-foreground">Total à régler</p>
-                   <p className="text-3xl font-black text-primary">{(viewingOrder.total_price || 0).toLocaleString()} FCFA</p>
+                   <p className="text-3xl font-black text-primary">{viewingOrder.total_price.toLocaleString()} FCFA</p>
                 </div>
-                <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest gap-2" onClick={() => setViewingOrder(null)}>Fermer l'aperçu</Button>
              </div>
           </div>
         </div>

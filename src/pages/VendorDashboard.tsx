@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
 import { useVendorOrders } from "@/hooks/useVendorOrders";
+import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, ShoppingBag, Users, DollarSign, Pencil, Trash2, Package,
@@ -24,6 +25,7 @@ const VendorDashboard = () => {
   const navigate = useNavigate();
   const { data: vendor, isLoading: vendorLoading } = useCurrentVendor();
   const { data: products = [], refetch } = useVendorProducts(vendor?.id);
+  const { plan, commissionRate, canAddProduct, productCount, maxProducts } = useVendorSubscription(vendor?.id);
   const { stats: gameStats, nextLevelXp } = useGamification();
   const queryClient = useQueryClient();
 
@@ -52,7 +54,7 @@ const VendorDashboard = () => {
     enabled: productIds.length > 0,
   });
 
-  const { data: orders = [] } = useVendorOrders(productIds);
+  const { data: orders = [] } = useVendorOrders(vendor?.id, productIds);
   
   const orderStats = useMemo(() => {
     if (!orders || orders.length === 0) return { revenue: 0, customers: 0, last7: 0 };
@@ -193,23 +195,41 @@ const VendorDashboard = () => {
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: DollarSign, label: "Revenu total", value: `${revenue.toLocaleString()} FCFA`, info: "Total des ventes confirmées", color: "text-emerald-500 bg-emerald-500/10" },
+            { 
+              icon: DollarSign, 
+              label: "Revenu total (Net)", 
+              value: `${revenue.toLocaleString()} FCFA`, 
+              info: `Ventes confirmées. Commission MindHubs: ${(commissionRate * 100).toFixed(0)}%`, 
+              color: "text-emerald-500 bg-emerald-500/10",
+              extra: plan !== 'elite' ? <Link to="/pricing" className="text-[9px] font-black text-primary hover:underline mt-2 inline-block">Réduire avec Elite</Link> : null
+            },
+            { 
+              icon: Package, 
+              label: "Produits Actifs", 
+              value: `${productCount} / ${maxProducts === -1 ? '∞' : maxProducts}`, 
+              info: "Produits en ligne dans votre boutique", 
+              color: "text-blue-500 bg-blue-500/10",
+              extra: !canAddProduct ? <Link to="/pricing" className="text-[9px] font-black text-destructive hover:underline mt-2 inline-block">Limite atteinte. Upgrader ?</Link> : null
+            },
             { icon: ShoppingBag, label: "7 derniers jours", value: `${last7.toLocaleString()} FCFA`, info: "Revenus cumulés cette semaine", color: "text-primary bg-primary/10" },
-            { icon: Users, label: "Nombre total de clients", value: customers.toLocaleString(), info: "Clients uniques ayant commandé", color: "text-blue-500 bg-blue-500/10" },
-          ].map(({ icon: Icon, label, value, info, color }) => (
-            <div key={label} className="group rounded-[2.5rem] border border-white/5 bg-card/50 backdrop-blur-md p-8 transition-all hover:border-primary/20 hover:shadow-2xl">
-              <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl transition-transform group-hover:scale-110 ${color}`}>
-                <Icon size={22} />
-              </div>
-              <div className="space-y-1">
-                 <p className="text-4xl font-black text-foreground tracking-tighter">{value}</p>
-                 <div className="flex items-center gap-1.5 pt-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{label}</p>
+            { icon: Users, label: "Clients totaux", value: customers.toLocaleString(), info: "Clients ayant commandé", color: "text-amber-500 bg-amber-500/10" },
+          ].map(({ icon: Icon, label, value, info, color, extra }) => (
+            <div key={label} className="group rounded-[2.5rem] border border-white/5 bg-card/50 backdrop-blur-md p-6 transition-all hover:border-primary/20 hover:shadow-2xl flex flex-col justify-between">
+              <div>
+                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${color}`}>
+                  <Icon size={18} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-2xl font-black text-foreground tracking-tighter">{value}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{label}</p>
                     <Info size={10} className="text-muted-foreground cursor-help" />
-                 </div>
+                  </div>
+                </div>
               </div>
+              {extra}
             </div>
           ))}
         </div>

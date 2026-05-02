@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useVendorSubscription } from "./useSubscription";
 
 export interface VendorOrderItem {
   id: string;
@@ -29,9 +30,12 @@ export interface VendorOrder {
  * MUST be enabled on the 'orders' table with a policy that only allows 
  * selecting rows where the 'items' JSON array contains one of the vendor's products.
  */
-export const useVendorOrders = (productIds: string[]) => {
+export const useVendorOrders = (vendorId: string | undefined, productIds: string[]) => {
+  const { commissionRate } = useVendorSubscription(vendorId);
+  const vendorShare = 1 - commissionRate;
+
   return useQuery({
-    queryKey: ["vendor-all-orders", productIds.join(",")],
+    queryKey: ["vendor-all-orders", vendorId, productIds.join(",")],
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
 
@@ -60,7 +64,7 @@ export const useVendorOrders = (productIds: string[]) => {
 
           const vendorRevenue = vendorItems.reduce((sum, i) => {
             const priceNum = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
-            return sum + (priceNum * (i.quantity || 1)) * 0.9;
+            return sum + (priceNum * (i.quantity || 1)) * vendorShare;
           }, 0);
 
           return {

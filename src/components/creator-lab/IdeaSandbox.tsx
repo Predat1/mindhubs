@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useCreatorLab } from "@/contexts/CreatorLabContext";
 import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Wallet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // ─── 3 Principaux Changements ───
 // 1. Passage au moteur Gemini 2.5 Pro via le routing intelligent pour une analyse marché d'élite.
@@ -15,33 +19,49 @@ import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
 // 3. Débit de crédits précis basé sur les tokens réellement consommés par l'IA.
 
 const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
-  const { currentIdea, setCurrentIdea, selectedMarkets, useCredits, deductCredits, updatePipelineStatus, setValidationScore } = useCreatorLab();
+  const navigate = useNavigate();
+  const { currentIdea, setCurrentIdea, selectedMarkets, credits, spend, updatePipelineStatus, setValidationScore } = useCreatorLab();
   const [isValidating, setIsValidating] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [pivots, setPivots] = useState<any[]>([]);
   const [isPivoting, setIsPivoting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showInsufficient, setShowInsufficient] = useState(false);
 
   const handleValidate = async () => {
     if (!currentIdea) return;
-    if (!useCredits(5)) return; // Vérification initiale du solde
+    const cost = CREDIT_COSTS['validate'];
+    
+    if (credits < cost) {
+      setShowInsufficient(true);
+      return;
+    }
+    
+    setShowConfirm(true);
+  };
 
+  const confirmValidate = async () => {
+    setShowConfirm(false);
     setIsValidating(true);
     setAnalysis(null);
     setPivots([]);
+    const cost = CREDIT_COSTS['validate'];
 
     try {
+      const result = await spend(cost, `Validation idée: ${currentIdea}`, 'validate');
+      if (!result.success) {
+        toast({ title: "Erreur crédits", description: result.error, variant: "destructive" });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('ai-creator', {
         body: { idea: currentIdea, markets: selectedMarkets, type: 'validate' }
       });
       if (error) throw error;
       
-      // WHY: On utilise maintenant 'result' directement car l'Edge Function gère le tool_calling
       setAnalysis(data.result);
       setValidationScore(data.result.score);
       
-      // WHY: Débit précis des crédits (1 token = 0.005 crédit environ, ici on simule une échelle)
-      deductCredits(Math.ceil(data.tokens_used / 100)); 
-
       updatePipelineStatus('sandbox', 'done');
       updatePipelineStatus('architect', 'active');
 
@@ -57,12 +77,15 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
 
   const handleGetPivots = async () => {
     setIsPivoting(true);
+    const cost = CREDIT_COSTS['pivots'];
     try {
+      if (credits < cost) return;
+      await spend(cost, `Recherche pivots: ${currentIdea}`, 'pivots');
+
       const { data } = await supabase.functions.invoke('ai-creator', {
         body: { idea: currentIdea, markets: selectedMarkets, type: 'pivots' }
       });
       setPivots(data.result.pivots || []);
-      deductCredits(Math.ceil(data.tokens_used / 100));
     } catch (err) {
       console.error("Pivots error", err);
     } finally {
@@ -187,6 +210,55 @@ const IdeaSandbox = ({ onValidate }: { onValidate: () => void }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Target size={32} className="text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Confirmation</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              L'analyse approfondie de votre idée va consommer <span className="text-white font-black">{CREDIT_COSTS['validate']} crédits</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-white/5 p-4 rounded-2xl space-y-3">
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde actuel</span>
+                <span className="font-bold">{credits} crédits</span>
+             </div>
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde après</span>
+                <span className="font-bold text-primary">{credits - CREDIT_COSTS['validate']} crédits</span>
+             </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button onClick={confirmValidate} className="w-full h-12 rounded-xl btn-glow font-black uppercase text-xs">Confirmer & Analyser</Button>
+            <Button variant="ghost" onClick={() => setShowConfirm(false)} className="w-full h-12 rounded-xl font-bold text-xs uppercase">Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficient} onOpenChange={setShowInsufficient}>
+        <DialogContent className="glass-card border-destructive/20 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4 text-destructive">
+              <AlertCircle size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Crédits insuffisants</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Votre solde actuel ({credits} crédits) est trop bas pour valider cette idée.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => { setShowInsufficient(false); navigate('/dashboard/abonnement'); }} className="w-full h-12 rounded-xl bg-destructive hover:bg-destructive/90 font-black uppercase text-xs gap-2">
+               <Wallet size={16} /> Recharger maintenant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

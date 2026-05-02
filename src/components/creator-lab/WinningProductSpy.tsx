@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Sparkles, Globe, ArrowRight, Loader2, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useCreatorLab } from "@/contexts/CreatorLabContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertCircle, Wallet } from "lucide-react";
 
 // ─── 3 Principaux Changements ───
 // 1. Branchement sur le moteur Perplexity Deep Research pour une veille marché africaine de haute précision.
@@ -33,28 +37,49 @@ const generatePlaceholderSVG = (title: string, niche: string) => {
 };
 
 const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
-  const { setCurrentIdea, selectedMarkets, setSelectedMarkets, useCredits, deductCredits, updatePipelineStatus } = useCreatorLab();
+  const navigate = useNavigate();
+  const { setCurrentIdea, selectedMarkets, setSelectedMarkets, credits, spend, updatePipelineStatus } = useCreatorLab();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [remixProduct, setRemixProduct] = useState<any | null>(null);
   const [remixAngles, setRemixAngles] = useState<any[]>([]);
   const [isRemixing, setIsRemixing] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showInsufficient, setShowInsufficient] = useState(false);
 
   const handleSearch = async () => {
     if (!searchTerm) return;
-    if (!useCredits(10)) return;
+    const cost = CREDIT_COSTS['spy-research'];
+    
+    if (credits < cost) {
+      setShowInsufficient(true);
+      return;
+    }
+    
+    setShowConfirm(true);
+  };
 
+  const confirmSearch = async () => {
+    setShowConfirm(false);
     setIsSearching(true);
+    const cost = CREDIT_COSTS['spy-research'];
+
     try {
+      const result = await spend(cost, `Veille marché: ${searchTerm}`, 'spy-research');
+      if (!result.success) {
+        toast({ title: "Erreur crédits", description: result.error, variant: "destructive" });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('ai-creator', {
         body: { idea: searchTerm, type: 'spy-research', markets: selectedMarkets }
       });
       if (error) throw error;
       setResults(data.result.products || []);
-      deductCredits(Math.ceil(data.tokens_used / 50)); // Perplexity coûte plus cher
       updatePipelineStatus('spy', 'done');
       updatePipelineStatus('sandbox', 'active');
+      setCurrentIdea(searchTerm);
     } catch (err) {
       toast({ title: "Erreur de veille", variant: "destructive" });
     } finally {
@@ -66,14 +91,23 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
     setRemixProduct(product);
     setIsRemixing(true);
     setRemixAngles([]);
+    const cost = CREDIT_COSTS['remix'];
+
     try {
+      if (credits < cost) {
+         toast({ title: "Crédits insuffisants", description: `Le remix coûte ${cost} crédits.`, variant: "destructive" });
+         return;
+      }
+      
+      const res = await spend(cost, `Remix produit: ${product.title}`, 'remix');
+      if (!res.success) throw new Error(res.error);
+
       const { data } = await supabase.functions.invoke('ai-creator', {
         body: { idea: product.title, type: 'remix', markets: selectedMarkets }
       });
       setRemixAngles(data.result.angles || []);
-      deductCredits(Math.ceil(data.tokens_used / 100));
-    } catch (err) {
-      toast({ title: "Erreur Remix", variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Erreur Remix", description: err.message, variant: "destructive" });
     } finally {
       setIsRemixing(false);
     }
@@ -155,6 +189,55 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Zap size={32} className="text-primary" fill="currentColor" />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Confirmation</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Cette recherche approfondie va consommer <span className="text-white font-black">{CREDIT_COSTS['spy-research']} crédits</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-white/5 p-4 rounded-2xl space-y-3">
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde actuel</span>
+                <span className="font-bold">{credits} crédits</span>
+             </div>
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde après</span>
+                <span className="font-bold text-primary">{credits - CREDIT_COSTS['spy-research']} crédits</span>
+             </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button onClick={confirmSearch} className="w-full h-12 rounded-xl btn-glow font-black uppercase text-xs">Confirmer & Lancer</Button>
+            <Button variant="ghost" onClick={() => setShowConfirm(false)} className="w-full h-12 rounded-xl font-bold text-xs uppercase">Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficient} onOpenChange={setShowInsufficient}>
+        <DialogContent className="glass-card border-destructive/20 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4 text-destructive">
+              <AlertCircle size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Crédits insuffisants</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Votre solde actuel ({credits} crédits) est trop bas pour lancer cette recherche.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => { setShowInsufficient(false); navigate('/dashboard/abonnement'); }} className="w-full h-12 rounded-xl bg-destructive hover:bg-destructive/90 font-black uppercase text-xs gap-2">
+               <Wallet size={16} /> Recharger maintenant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

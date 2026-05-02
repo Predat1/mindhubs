@@ -7,6 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreatorLab } from "@/contexts/CreatorLabContext";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Wallet, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // ─── 3 Principaux Changements ───
 // 1. Implémentation du streaming temps réel pour la rédaction des chapitres avec Claude Opus 4.
@@ -14,11 +18,15 @@ import { useCreatorLab } from "@/contexts/CreatorLabContext";
 // 3. Amélioration de l'UX de rédaction : affichage progressif du texte (typewriter effect).
 
 const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
-  const { currentIdea, setCurrentIdea, useCredits, updatePipelineStatus, chapters, setChapters, productType, setProductInfo } = useCreatorLab();
+  const navigate = useNavigate();
+  const { currentIdea, setCurrentIdea, credits, spend, updatePipelineStatus, chapters, setChapters, productType, setProductInfo } = useCreatorLab();
   const [step, setStep] = useState(1);
   const [activeChapter, setActiveChapter] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDraftingAll, setIsDraftingAll] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirmDraft, setShowConfirmDraft] = useState(false);
+  const [showInsufficient, setShowInsufficient] = useState(false);
 
   useEffect(() => {
     if (chapters.length > 0 && chapters[0].content !== "En attente de rédaction...") {
@@ -29,35 +37,59 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
 
   const handleGenerateStructure = async () => {
     if (!currentIdea) return toast.error("Entrez une idée.");
-    if (!useCredits(15)) return;
+    const cost = CREDIT_COSTS['plan'];
+    if (credits < cost) {
+       setShowInsufficient(true);
+       return;
+    }
+    setShowConfirm(true);
+  };
 
+  const confirmGenerateStructure = async () => {
+    setShowConfirm(false);
     setIsGenerating(true);
+    const cost = CREDIT_COSTS['plan'];
+
     try {
+      const res = await spend(cost, `Planification produit: ${currentIdea}`, 'plan');
+      if (!res.success) throw new Error(res.error);
+
       const { data, error } = await supabase.functions.invoke('ai-creator', {
         body: { idea: currentIdea, format: productType, type: "plan" }
       });
       if (error) throw error;
       
-      // WHY: Utilisation du résultat structuré via Tool Calling
       if (data.result?.chapters) {
         setChapters(data.result.chapters.map((ch: any, i: number) => ({
           id: i + 1, title: ch.title, content: "En attente de rédaction..."
         })));
         toast.success("Structure générée avec succès !");
       }
-    } catch (err) {
-      toast.error("Erreur de génération.");
+    } catch (err: any) {
+      toast.error("Erreur de génération: " + err.message);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleDraftFullEbook = async () => {
-    if (!useCredits(chapters.length * 8)) return;
+    const cost = chapters.length * CREDIT_COSTS['chapter-draft'];
+    if (credits < cost) {
+       setShowInsufficient(true);
+       return;
+    }
+    setShowConfirmDraft(true);
+  };
+
+  const confirmDraftAll = async () => {
+    setShowConfirmDraft(false);
+    const cost = chapters.length * CREDIT_COSTS['chapter-draft'];
     setIsDraftingAll(true);
     const updatedChapters = [...chapters];
     
     try {
+      const res = await spend(cost, `Rédaction complète ebook: ${currentIdea}`, 'chapter-draft');
+      if (!res.success) throw new Error(res.error);
       for (let i = 0; i < chapters.length; i++) {
         setActiveChapter(i);
         updatedChapters[i].content = ""; // Reset pour le streaming
@@ -195,6 +227,74 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Confirmation Dialog - Structure */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Zap size={32} className="text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Confirmation</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Générer la structure complète va consommer <span className="text-white font-black">{CREDIT_COSTS['plan']} crédits</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-white/5 p-4 rounded-2xl space-y-3">
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde actuel</span>
+                <span className="font-bold">{credits} crédits</span>
+             </div>
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde après</span>
+                <span className="font-bold text-primary">{credits - CREDIT_COSTS['plan']} crédits</span>
+             </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button onClick={confirmGenerateStructure} className="w-full h-12 rounded-xl btn-glow font-black uppercase text-xs">Confirmer & Générer</Button>
+            <Button variant="ghost" onClick={() => setShowConfirm(false)} className="w-full h-12 rounded-xl font-bold text-xs uppercase">Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog - Full Draft */}
+      <Dialog open={showConfirmDraft} onOpenChange={setShowConfirmDraft}>
+        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <BookOpen size={32} className="text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Rédaction Complète</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium text-center">
+              Rédiger les <span className="text-white font-black">{chapters.length} chapitres</span> va consommer <span className="text-white font-black">{chapters.length * CREDIT_COSTS['chapter-draft']} crédits</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button onClick={confirmDraftAll} className="w-full h-12 rounded-xl btn-glow font-black uppercase text-xs">Confirmer & Rédiger tout</Button>
+            <Button variant="ghost" onClick={() => setShowConfirmDraft(false)} className="w-full h-12 rounded-xl font-bold text-xs uppercase">Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficient} onOpenChange={setShowInsufficient}>
+        <DialogContent className="glass-card border-destructive/20 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4 text-destructive">
+              <AlertCircle size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Crédits insuffisants</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Votre solde actuel est insuffisant pour cette action.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => { setShowInsufficient(false); navigate('/dashboard/abonnement'); }} className="w-full h-12 rounded-xl bg-destructive hover:bg-destructive/90 font-black uppercase text-xs gap-2">
+               <Wallet size={16} /> Recharger maintenant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

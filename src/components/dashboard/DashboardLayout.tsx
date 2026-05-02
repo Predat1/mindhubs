@@ -59,6 +59,7 @@ export const ADMIN_NAV: SidebarItem[] = [
   { label: "Commandes", href: "/admin?tab=orders", icon: ShoppingBag, group: "main" },
   { label: "Produits", href: "/admin?tab=products", icon: Package, group: "main" },
   { label: "Vendeurs", href: "/admin?tab=vendors", icon: Store, group: "main" },
+  { label: "Abonnements", href: "/admin?tab=subscriptions", icon: CreditCard, group: "main" },
   { label: "Utilisateurs", href: "/admin?tab=users", icon: Users, group: "main" },
   { label: "API Manager", href: "/admin?tab=api-manager", icon: Zap, group: "system", badge: "Power", badgeVariant: "hot" },
   { label: "Logs d'audit", href: "/admin?tab=logs", icon: Info, group: "system" },

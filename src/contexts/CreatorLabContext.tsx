@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { useCredits } from "@/hooks/useCredits";
+import { useCurrentVendor } from "@/hooks/useVendors";
 
 // ─── 3 Principaux Changements ───
 // 1. Centralisation totale du state du Creator Lab (Idée, Marchés, Score, Pipeline).
@@ -22,7 +24,6 @@ interface CreatorLabState {
   productType: string;
   chapters: Chapter[];
   pipelineStatus: Record<PipelineStepId, StepStatus>;
-  credits: number;
 }
 
 interface CreatorLabContextType extends CreatorLabState {
@@ -32,9 +33,8 @@ interface CreatorLabContextType extends CreatorLabState {
   setProductInfo: (title: string, type: string) => void;
   setChapters: (chapters: Chapter[]) => void;
   updatePipelineStatus: (step: PipelineStepId, status: StepStatus) => void;
-  useCredits: (amount: number) => boolean;
-  deductCredits: (amount: number) => void;
-  addCredits: (amount: number) => void;
+  credits: number;
+  spend: (amount: number, description: string, featureType: string) => Promise<{ success: boolean; balance?: number; error?: string }>;
   resetSession: () => void;
 }
 
@@ -67,9 +67,11 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
       productType: "",
       chapters: [],
       pipelineStatus: DEFAULT_STATUS,
-      credits: 500, // Solde initial simulé ou récupéré via auth
     };
   });
+
+  const { data: vendor } = useCurrentVendor();
+  const { balance: credits, spend: spendCredits } = useCredits(vendor?.id);
 
   // WHY: Persistance automatique à chaque mutation
   useEffect(() => {
@@ -85,14 +87,9 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
   const updatePipelineStatus = (step: PipelineStepId, status: StepStatus) => 
     setState(s => ({ ...s, pipelineStatus: { ...s.pipelineStatus, [step]: status } }));
 
-  const useCredits = (amount: number): boolean => {
-    if (state.credits < amount) return false;
-    return true;
+  const spend = async (amount: number, description: string, featureType: string) => {
+    return await spendCredits(amount, description, featureType);
   };
-
-  const deductCredits = (amount: number) => setState(s => ({ ...s, credits: Math.max(0, s.credits - amount) }));
-
-  const addCredits = (amount: number) => setState(s => ({ ...s, credits: s.credits + amount }));
 
   const resetSession = () => {
     localStorage.removeItem('cl_session');
@@ -104,12 +101,10 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
       productType: "",
       chapters: [],
       pipelineStatus: DEFAULT_STATUS,
-      credits: state.credits,
     });
   };
 
   return (
-    <CreatorLabContext.Provider value={{ 
       ...state, 
       setCurrentIdea, 
       setSelectedMarkets, 
@@ -117,9 +112,8 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
       setProductInfo, 
       setChapters, 
       updatePipelineStatus, 
-      useCredits, 
-      deductCredits,
-      addCredits,
+      credits,
+      spend, 
       resetSession
     }}>
       {children}

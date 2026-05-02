@@ -98,7 +98,7 @@ const CreatorLabContent = () => {
                 <p className="text-xl font-black text-primary">{credits}</p>
              </div>
              <div className="h-8 w-px bg-white/10" />
-             <Button variant="ghost" size="sm" onClick={() => navigate('/mon-compte?tab=credits')} className="text-xs font-bold hover:bg-primary/10">Recharger</Button>
+             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/abonnement')} className="text-xs font-bold hover:bg-primary/10">Recharger</Button>
           </div>
         </div>
 

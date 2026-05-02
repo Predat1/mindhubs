@@ -24,10 +24,16 @@ import {
 } from "@/hooks/useAdCreatives";
 import AdKitCard from "@/components/ads/AdKitCard";
 import { toast } from "sonner";
+import { useCredits } from "@/hooks/useCredits";
+import { CREDIT_COSTS } from "@/constants/credits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Wallet, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type SortKey = "newest" | "oldest" | "angle";
 
 const Inner = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const presetProductId = searchParams.get("product");
   const { user } = useAuth();
@@ -50,6 +56,10 @@ const Inner = () => {
   const [sort, setSort] = useState<SortKey>("newest");
   const [view, setView] = useState<"list" | "grid">("list");
   const [generationStep, setGenerationStep] = useState(0);
+
+  const { balance: credits, spend } = useCredits(vendor?.id);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showInsufficient, setShowInsufficient] = useState(false);
 
   useEffect(() => {
     if (presetProductId && !productId) setProductId(presetProductId);
@@ -121,24 +131,55 @@ const Inner = () => {
       toast.error("Choisissez au moins 1 angle et 1 format");
       return;
     }
-    if (totalToGenerate > 8) {
+    
+    const totalCreatives = angles.length * formats.length;
+    if (totalCreatives > 8) {
       toast.error("Maximum 8 créatives par génération", { description: "Réduisez le nombre d'angles ou de formats." });
       return;
     }
-    const t = toast.loading(`Génération du kit publicitaire en cours… (${totalToGenerate} créative${totalToGenerate > 1 ? "s" : ""})`, {
+
+    const totalCost = totalCreatives * CREDIT_COSTS['ads-creative'];
+    if (credits < totalCost) {
+      setShowInsufficient(true);
+      return;
+    }
+    
+    setShowConfirm(true);
+  };
+
+  const confirmGeneration = async () => {
+    setShowConfirm(false);
+    if (!productId || !vendor || !user || !selectedProduct) return;
+    
+    const totalCreatives = angles.length * formats.length;
+    const totalCost = totalCreatives * CREDIT_COSTS['ads-creative'];
+
+    const t = toast.loading(`Génération du kit publicitaire en cours… (${totalCreatives} créative${totalCreatives > 1 ? "s" : ""})`, {
       description: "Analyse du produit, copywriting, ciblage et création des images.",
     });
+
     try {
+      const res = await spend(totalCost, `Génération Kit Ad: ${selectedProduct.title} (${totalCreatives} variantes)`, 'ads-creative');
+      if (!res.success) {
+        toast.error("Erreur crédits: " + res.error, { id: t });
+        return;
+      }
+
       await generate.mutateAsync({
         vendorId: vendor.id,
         userId: user.id,
-        product: selectedProduct as unknown as { id: string; title: string; image_url?: string },
+        product: {
+          id: selectedProduct.id,
+          title: selectedProduct.title,
+          description: selectedProduct.description,
+          image_url: selectedProduct.image_url,
+        },
         angles,
         formats,
       });
       toast.success("🎉 Kit publicitaire généré !", { id: t, description: "Vos créatives sont prêtes ci-dessous." });
-    } catch (e: unknown) {
-      toast.error("Erreur de génération", { id: t, description: (e as Error).message });
+    } catch (err: any) {
+      toast.error("Erreur de génération", { id: t, description: err.message });
     }
   };
 
@@ -521,6 +562,55 @@ const Inner = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Megaphone size={32} className="text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Confirmation</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium text-center">
+              Générer <span className="text-white font-black">{angles.length * formats.length} créatives</span> va consommer <span className="text-white font-black">{(angles.length * formats.length) * CREDIT_COSTS['ads-creative']} crédits</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-white/5 p-4 rounded-2xl space-y-3">
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde actuel</span>
+                <span className="font-bold">{credits} crédits</span>
+             </div>
+             <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Solde après</span>
+                <span className="font-bold text-primary">{credits - ((angles.length * formats.length) * CREDIT_COSTS['ads-creative'])} crédits</span>
+             </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button onClick={confirmGeneration} className="w-full h-12 rounded-xl btn-glow font-black uppercase text-xs">Confirmer & Générer</Button>
+            <Button variant="ghost" onClick={() => setShowConfirm(false)} className="w-full h-12 rounded-xl font-bold text-xs uppercase">Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficient} onOpenChange={setShowInsufficient}>
+        <DialogContent className="glass-card border-destructive/20 text-white rounded-[2rem] max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4 text-destructive">
+              <AlertCircle size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black tracking-tighter">Crédits insuffisants</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">
+              Votre solde actuel ({credits} crédits) est trop bas pour générer ce kit publicitaire.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => { setShowInsufficient(false); navigate('/dashboard/abonnement'); }} className="w-full h-12 rounded-xl bg-destructive hover:bg-destructive/90 font-black uppercase text-xs gap-2">
+               <Wallet size={16} /> Recharger maintenant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
