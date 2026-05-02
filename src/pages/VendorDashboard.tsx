@@ -25,7 +25,12 @@ const VendorDashboard = () => {
   const navigate = useNavigate();
   const { data: vendor, isLoading: vendorLoading } = useCurrentVendor();
   const { data: products = [], refetch } = useVendorProducts(vendor?.id);
-  const { plan, commissionRate, canAddProduct, productCount, maxProducts } = useVendorSubscription(vendor?.id);
+  const subscription = useVendorSubscription(vendor?.id);
+  const plan = subscription?.plan;
+  const commissionRate = subscription?.commission_rate ?? 0;
+  const canAddProduct = subscription?.canAddProduct ?? false;
+  const productCount = subscription?.product_count ?? 0;
+  const maxProducts = subscription?.max_products ?? 0;
   const { stats: gameStats, nextLevelXp } = useGamification();
   const queryClient = useQueryClient();
 

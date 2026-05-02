@@ -26,7 +26,7 @@ export const useCredits = (vendorId?: string) => {
     queryKey: ['vendor-credits', vendorId],
     enabled: !!vendorId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_credits')
         .select('balance')
         .eq('vendor_id', vendorId)
@@ -40,14 +40,14 @@ export const useCredits = (vendorId?: string) => {
     queryKey: ['vendor-credit-transactions', vendorId],
     enabled: !!vendorId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_transactions')
         .select('*')
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false })
         .limit(20);
       if (error) throw error;
-      return data as CreditTransaction[];
+      return (data || []) as CreditTransaction[];
     }
   });
 
@@ -64,16 +64,16 @@ export const useCredits = (vendorId?: string) => {
     }) => {
       if (!vendorId) throw new Error("ID Vendeur manquant");
       
-      const { data, error } = await supabase.rpc('spend_credits', {
+      const { data, error } = await (supabase as any).rpc('spend_credits', {
         p_vendor_id: vendorId,
         p_amount: amount,
         p_description: description,
         p_feature_type: featureType,
-        p_cost_usd_cents: 0 // Optionnel: coût réel IA pour analytiques admin
+        p_cost_usd_cents: 0
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      if (!(data as any)?.success) throw new Error((data as any)?.error);
 
       return data;
     },

@@ -151,7 +151,7 @@ const Inner = ({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
-  const { canAddProduct, maxProducts, productCount, plan } = useVendorSubscription(vendorId);
+  const { canAddProduct, max_products: maxProducts, product_count: productCount, plan } = useVendorSubscription(vendorId);
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [step, setStep] = useState<StepKey>("info");
