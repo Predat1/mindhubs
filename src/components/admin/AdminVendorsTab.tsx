@@ -33,7 +33,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
     queryKey: ["admin-vendors-extended"],
     queryFn: async () => {
       // Joindre les vues pour avoir les infos complètes
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_subscription_view')
         .select('*')
         .order('created_at', { ascending: false });
@@ -45,7 +45,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
   const { data: orders = [] } = useQuery({
     queryKey: ["admin-all-orders-revenue"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('orders')
         .select('total_price, vendor_revenue, status');
       if (error) throw error;
@@ -60,9 +60,9 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
     queryFn: async () => {
       const vendorId = selectedVendor.vendor_id;
       const [credits, products, orders] = await Promise.all([
-        supabase.from('credit_transactions').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(10),
+        (supabase as any).from('credit_transactions').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(10),
         supabase.from('products').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }),
-        supabase.from('orders').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(5)
+        (supabase as any).from('orders').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(5)
       ]);
       return {
         transactions: credits.data || [],
