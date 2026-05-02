@@ -11,7 +11,7 @@ import { useVendorProductStats } from "@/hooks/useVendorOrders";
 import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap } from "lucide-react";
 
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);

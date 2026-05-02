@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { 
   CreditCard, Zap, Check, AlertCircle, ArrowUpRight, 
   History, Wallet, ShieldCheck, ChevronRight, Package,
-  ExternalLink, MessageSquare, Info, Loader2
+  ExternalLink, MessageSquare, Info, Loader2, Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

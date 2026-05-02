@@ -31,9 +31,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import jsPDF from "jspdf";
 import { useCredits } from "@/hooks/useCredits";
+import { useCurrentVendor } from "@/hooks/useVendors";
 import { CREDIT_COSTS } from "@/constants/credits";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Wallet, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 // Types
 type ProductType = "ebook" | "templates" | "course" | "checklist" | "prompts" | "planner" | "report" | "marketing_kit";
