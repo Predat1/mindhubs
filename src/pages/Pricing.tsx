@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
+import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,14 +30,14 @@ export default function Pricing() {
 
   useEffect(() => {
     async function fetchPlans() {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('plan_limits')
         .select('*')
         .order('price_fcfa_monthly', { ascending: true });
       
       if (!error && data) {
         // Formater les données pour l'affichage
-        const formattedPlans = data.map(p => {
+        const formattedPlans = data.map((p: any) => {
           const base = {
             id: p.plan,
             name: p.plan === 'free' ? 'Gratuit' : p.plan.charAt(0).toUpperCase() + p.plan.slice(1),
