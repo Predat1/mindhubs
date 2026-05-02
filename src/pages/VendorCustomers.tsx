@@ -18,7 +18,7 @@ interface CustomerSummary {
 
 const VendorCustomersInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [] } = useVendorProducts(vendorId);
-  const { data: orders = [], isLoading } = useVendorOrders(products.map((p) => p.id));
+  const { data: orders = [], isLoading } = useVendorOrders(vendorId, products.map((p) => p.id));
   const [search, setSearch] = useState("");
 
   const customers = useMemo<CustomerSummary[]>(() => {

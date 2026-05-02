@@ -113,7 +113,7 @@ const useVendorLiveBadges = (enabled: boolean) => {
   const { data: vendor } = useCurrentVendor();
   const { data: products = [] } = useVendorProducts(enabled ? vendor?.id : undefined);
   const productIds = useMemo(() => (Array.isArray(products) ? products.map((p) => p.id) : []), [products]);
-  const { data: orders = [] } = useVendorOrders(enabled && productIds.length > 0 ? productIds : []);
+  const { data: orders = [] } = useVendorOrders(enabled && productIds.length > 0 ? vendor?.id : undefined, productIds);
 
   return useMemo(() => {
     const map: Record<string, { badge: string; variant: BadgeVariant; tooltip: string }> = {};

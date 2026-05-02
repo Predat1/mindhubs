@@ -329,8 +329,8 @@ const VendorSubscriptionInner = ({ vendor }: { vendor: any }) => {
                          {paymentForm.plan === 'starter' ? (paymentForm.period === 'monthly' ? '4 900 FCFA' : '49 000 FCFA') : 
                           paymentForm.plan === 'pro' ? (paymentForm.period === 'monthly' ? '14 900 FCFA' : '149 000 FCFA') : 
                           paymentForm.plan === 'elite' ? (paymentForm.period === 'monthly' ? '29 900 FCFA' : '299 000 FCFA') :
-                          paymentForm.plan === 'credits' ? '3 500 FCFA' :
-                          paymentForm.plan === 'credits_pro' ? '6 000 FCFA' : '15 000 FCFA'}
+                           (paymentForm.plan as string) === 'credits' ? '3 500 FCFA' :
+                           (paymentForm.plan as string) === 'credits_pro' ? '6 000 FCFA' : '15 000 FCFA'}
                       </span>
                    </div>
                    <Button 
