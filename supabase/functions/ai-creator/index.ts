@@ -12,17 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const { idea, format, type, model = "anthropic/claude-3.5-sonnet" } = await req.json()
+    const { idea, format, type, model = "perplexity/sonar-deep-research" } = await req.json()
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY')
 
     if (!OPENROUTER_API_KEY) {
       throw new Error('Missing OPENROUTER_API_KEY')
     }
 
-    let systemPrompt = "Tu es un expert en création de produits digitaux et en marketing pour le marché africain. Réponds toujours en Français.";
+    // Mapping for specific user requests or defaults
+    let systemPrompt = "Tu es MindHubs AI, un expert en analyse de données web et création de produits digitaux.";
     let userPrompt = "";
 
-    if (type === 'plan') {
+    if (type === 'web-analysis') {
+      systemPrompt += " Ta mission est d'analyser les données publicitaires et les tendances web pour identifier la rentabilité.";
+      userPrompt = `Analyse ces données de marché pour l'idée : "${idea}". Identifie les points de douleur et le potentiel de vente directe.`;
+    } else if (type === 'plan') {
       systemPrompt += " Ta mission est de structurer un plan détaillé pour un produit digital. Sois persuasif, structuré et utilise des termes adaptés au marché local.";
       userPrompt = `Génère un plan de 5 chapitres pour un produit de type "${format}" basé sur cette idée : "${idea}". Pour chaque chapitre, donne un titre accrocheur et un résumé du contenu. Formate la réponse en JSON pour que je puisse l'analyser facilement. Exemple: { "chapters": [{ "title": "...", "content": "..." }] }`;
     } else if (type === 'marketing') {
