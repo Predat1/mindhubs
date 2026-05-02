@@ -34,7 +34,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
   const { data: plans = [], isLoading: plansLoading } = useQuery({
     queryKey: ["admin-plan-limits"],
     queryFn: async () => {
-      const { data, error } = await supabase.from('plan_limits').select('*').order('price_fcfa_monthly');
+      const { data, error } = await (supabase as any).from('plan_limits').select('*').order('price_fcfa_monthly');
       if (error) throw error;
       return data || [];
     }
@@ -44,7 +44,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
   const handleUpdatePlan = async (plan: any) => {
     setSavingPlan(plan.plan);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('plan_limits')
         .update(plan)
         .eq('plan', plan.plan);
@@ -65,7 +65,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
     e.preventDefault();
     setSendingNotif(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('global_notifications')
         .insert([{
           ...notif,
