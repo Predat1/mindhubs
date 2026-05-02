@@ -44,6 +44,8 @@ import { LiveSalesPopup } from "./components/gamification/LiveSalesPopup.tsx";
 import { ExitIntentPopup } from "./components/ExitIntentPopup.tsx";
 import { ExplorePopup } from "./components/ExplorePopup.tsx";
 import CreatorLab from "./pages/CreatorLab.tsx";
+import Pricing from "./pages/Pricing.tsx";
+import VendorSubscription from "./pages/VendorSubscription.tsx";
 
 
 const queryClient = new QueryClient();
@@ -84,6 +86,8 @@ const AppContent = () => {
         <Route path="/dashboard/creator-lab" element={<CreatorLab />} />
         <Route path="/dashboard/factory" element={<Navigate to="/dashboard/creator-lab" replace />} />
         <Route path="/dashboard/messages" element={<VendorMessages />} />
+        <Route path="/dashboard/abonnement" element={<VendorSubscription />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Navigate to="/mon-compte" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
