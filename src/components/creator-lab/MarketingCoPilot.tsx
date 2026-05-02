@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Megaphone, MessageSquare, TikTok, Facebook, WhatsApp, Play, Copy, Share2, Sparkles, Loader2, MapPin, Info } from "lucide-center";
+import { Megaphone, MessageSquare, Play, Copy, Share2, Sparkles, Loader2, MapPin, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
