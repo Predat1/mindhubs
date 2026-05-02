@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SEO from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Search, Lightbulb, PenTool, Megaphone, Rocket, CheckCircle2, Lock } from "lucide-react";
+import { Sparkles, Search, Lightbulb, PenTool, Megaphone, Rocket, CheckCircle2, Lock, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WinningProductSpy from "@/components/creator-lab/WinningProductSpy";
 import IdeaSandbox from "@/components/creator-lab/IdeaSandbox";
