@@ -37,7 +37,7 @@ export const useVendorAnalytics = (vendorId: string | undefined, timeRange: stri
 
       // Fetch Orders
       const orFilter = productIds.map(id => `items.cs.[{"id":"${id}"}]`).join(',');
-      const { data: ordersData, error: ordersError } = await supabase
+      const { data: ordersData, error: ordersError } = await (supabase as any)
         .from("orders")
         .select("created_at, items, country")
         .gte("created_at", startDate.toISOString())
@@ -46,7 +46,7 @@ export const useVendorAnalytics = (vendorId: string | undefined, timeRange: stri
       if (ordersError) throw ordersError;
 
       // Fetch Events
-      const { data: eventsData, error: eventsError } = await supabase
+      const { data: eventsData, error: eventsError } = await (supabase as any)
         .from("product_events")
         .select("created_at, event_type, source")
         .gte("created_at", startDate.toISOString())

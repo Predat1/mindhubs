@@ -72,7 +72,7 @@ export const trackProductView = async (productId: string) => {
   if (getViewedThisSession().has(productId)) return;
   markViewed(productId);
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase.from("product_events").insert({
+  await (supabase as any).from("product_events").insert({
     product_id: productId,
     event_type: "view",
     user_id: user?.id ?? null,
@@ -83,7 +83,7 @@ export const trackProductView = async (productId: string) => {
 
 export const trackProductPurchase = async (productId: string) => {
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase.from("product_events").insert({
+  await (supabase as any).from("product_events").insert({
     product_id: productId,
     event_type: "purchase",
     user_id: user?.id ?? null,
