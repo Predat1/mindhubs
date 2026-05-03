@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 const Boutique = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = (searchParams.get("category") as Category) || "Tous";
+  // WHY: ensure the category exists in our data, otherwise fallback to "Tous"
+  const safeCategory = categories.includes(activeCategory) ? activeCategory : "Tous";
   const searchQuery = searchParams.get("q") || "";
   
   const { data: products = [], isLoading } = useProducts();
@@ -34,7 +36,7 @@ const Boutique = () => {
   }, [searchQuery]);
 
   const filtered = rankedProducts
-    .filter((p) => activeCategory === "Tous" || p.category === activeCategory)
+    .filter((p) => safeCategory === "Tous" || p.category === safeCategory)
     .filter((p) => !searchQuery.trim() || p.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const resultCount = filtered.length;
@@ -111,7 +113,7 @@ const Boutique = () => {
                    setSearchParams(newParams);
                  }}
                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
-                   activeCategory === cat
+                   safeCategory === cat
                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                  }`}
@@ -136,7 +138,7 @@ const Boutique = () => {
                    setSearchParams(newParams);
                  }}
                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
-                   activeCategory === cat
+                   safeCategory === cat
                      ? "bg-primary text-primary-foreground"
                      : "bg-white/5 text-muted-foreground"
                  }`}

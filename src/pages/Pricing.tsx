@@ -3,65 +3,102 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Zap, Sparkles, Trophy, Star, ArrowRight, Info, HelpCircle } from "lucide-react";
+import { Check, Zap, Sparkles, Trophy, Star, ArrowRight, HelpCircle, Rocket, Crown, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
-// ─── CONFIGURATION DES PACKS DE CRÉDITS ───
 const CREDIT_PACKS = [
   { credits: 500,  price_fcfa: 3500,  per_credit: '7 FCFA', label: 'Pack Essentiel' },
   { credits: 1000, price_fcfa: 6000,  per_credit: '6 FCFA', label: 'Pack Boosté', badge: 'Économisez 14%' },
   { credits: 3000, price_fcfa: 15000, per_credit: '5 FCFA', label: 'Pack Puissance', badge: 'Économisez 29%' },
 ];
 
+const STATIC_PLANS = [
+  {
+    id: "free",
+    name: "Free",
+    icon: Sprout,
+    price_monthly: 0,
+    price_yearly: 0,
+    features: ["5 produits max", "50 crédits IA / mois", "Commission 20%", "Boutique standard", "Support email"],
+    cta: "Commencer gratuitement",
+    highlight: false,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    icon: Rocket,
+    price_monthly: 5000,
+    price_yearly: 50000,
+    features: ["20 produits max", "200 crédits IA / mois", "Commission 15%", "Ads Studio (basique)", "Support prioritaire"],
+    cta: "Choisir Starter",
+    highlight: false,
+    badge: "Idéal débutant",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    icon: Star,
+    price_monthly: 15000,
+    price_yearly: 150000,
+    features: ["Produits illimités", "1000 crédits IA / mois", "Commission 10%", "Ads Studio complet", "Creator Lab (validation)"],
+    cta: "Passer à Pro",
+    highlight: true,
+    badge: "Recommandé",
+  },
+  {
+    id: "elite",
+    name: "Elite",
+    icon: Crown,
+    price_monthly: 30000,
+    price_yearly: 300000,
+    features: ["Tout illimité", "5000 crédits IA / mois", "Commission 5%", "Placement prioritaire", "Accompagnement 1:1"],
+    cta: "Devenir Elite",
+    highlight: false,
+    badge: "L'excellence",
+  }
+];
+
 export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState(STATIC_PLANS);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchPlans() {
-      const { data, error } = await (supabase as any)
-        .from('plan_limits')
-        .select('*')
-        .order('price_fcfa_monthly', { ascending: true });
-      
-      if (!error && data) {
-        // Formater les données pour l'affichage
-        const formattedPlans = data.map((p: any) => {
-          const base = {
+      try {
+        const { data, error } = await supabase
+          .from('plan_limits')
+          .select('*')
+          .order('price_fcfa_monthly', { ascending: true });
+        
+        if (!error && data && data.length > 0) {
+          const formattedPlans = data.map((p: any) => ({
             id: p.plan,
-            name: p.plan === 'free' ? 'Gratuit' : p.plan.charAt(0).toUpperCase() + p.plan.slice(1),
+            name: p.plan.charAt(0).toUpperCase() + p.plan.slice(1),
+            icon: p.plan === 'free' ? Sprout : p.plan === 'starter' ? Rocket : p.plan === 'pro' ? Star : Crown,
             price_monthly: p.price_fcfa_monthly,
             price_yearly: p.price_fcfa_yearly,
             highlight: p.plan === 'pro',
             badge: p.badge,
-            cta: p.plan === 'free' ? 'Commencer gratuitement' : `Démarrer ${p.plan.charAt(0).toUpperCase() + p.plan.slice(1)}`,
+            cta: p.plan === 'free' ? 'Commencer' : `Démarrer ${p.plan}`,
             features: [
-              p.max_products === -1 ? 'Produits illimités' : `${p.max_products} produit${p.max_products > 1 ? 's' : ''} maximum`,
+              p.max_products === -1 ? 'Produits illimités' : `${p.max_products} produits max`,
               `${p.monthly_credits} crédits IA / mois`,
               `Commission ${Math.round(p.commission_rate * 100)}%`,
-              'Boutique publique premium',
-              p.ads_studio ? 'Ads Studio inclus' : '— Ads Studio non inclus',
-              p.creator_lab_full ? 'Creator Lab complet (4 étapes)' : p.plan === 'free' ? 'Creator Lab (veille seulement)' : 'Creator Lab (veille + validation)',
-              p.priority_placement ? 'Placement prioritaire' : '— Placement standard',
-              p.whatsapp_support ? 'Support WhatsApp dédié' : '— Support email standard',
+              p.ads_studio ? 'Ads Studio complet' : 'Ads Studio non inclus',
+              p.priority_placement ? 'Placement prioritaire' : 'Support standard'
             ]
-          };
-          return base;
-        });
-        setPlans(formattedPlans);
+          }));
+          setPlans(formattedPlans);
+        }
+      } catch (e) {
+        console.error("Pricing fetch error", e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchPlans();
   }, []);
@@ -72,16 +109,11 @@ export default function Pricing() {
       <Navbar />
 
       <main className="pt-32 pb-24 px-4 overflow-hidden relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
         
         <div className="max-w-7xl mx-auto space-y-20 relative z-10">
-          {/* Hero Header */}
           <div className="text-center space-y-6 max-w-3xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <Badge variant="outline" className="px-4 py-1.5 border-primary/20 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest mb-4">
                 Tarification transparente
               </Badge>
@@ -93,7 +125,6 @@ export default function Pricing() {
               </p>
             </motion.div>
 
-            {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4 mt-12">
               <span className={`text-sm font-bold ${billingCycle === 'monthly' ? 'text-white' : 'text-zinc-500'}`}>Mensuel</span>
               <button 
@@ -111,14 +142,10 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* Pricing Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-[600px] rounded-[2.5rem] bg-white/5 animate-pulse border border-white/10" />
-              ))
-            ) : (
-              plans.map((p, idx) => (
+            {plans.map((p, idx) => {
+              const Icon = p.icon;
+              return (
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -136,7 +163,10 @@ export default function Pricing() {
                     </div>
                   )}
 
-                  <div className="mb-8">
+                  <div className="mb-8 flex flex-col items-center text-center">
+                    <div className={`p-3 rounded-2xl mb-4 ${p.highlight ? 'bg-primary/20 text-primary' : 'bg-white/5 text-zinc-400'}`}>
+                      <Icon size={28} />
+                    </div>
                     <h3 className="text-xl font-black mb-2">{p.name}</h3>
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-black">
@@ -144,25 +174,16 @@ export default function Pricing() {
                       </span>
                       <span className="text-zinc-500 font-bold text-sm">FCFA / mois</span>
                     </div>
-                    {billingCycle === 'yearly' && p.price_yearly > 0 && (
-                      <p className="text-[10px] text-emerald-500 font-black mt-1 uppercase">Facturé {p.price_yearly.toLocaleString()} FCFA / an</p>
-                    )}
                   </div>
 
                   <div className="space-y-4 mb-10 flex-1">
                     {p.features.map((f: string, i: number) => (
-                      <div key={i} className="flex items-start gap-3 group/item">
-                        {f.startsWith('—') ? (
-                          <div className="mt-1 shrink-0 w-4 h-4 rounded-full border border-white/10 flex items-center justify-center opacity-30">
-                            <Check size={10} className="hidden" />
-                          </div>
-                        ) : (
-                          <div className="mt-1 shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
-                            <Check size={10} />
-                          </div>
-                        )}
-                        <span className={`text-xs font-medium leading-relaxed ${f.startsWith('—') ? 'text-zinc-600' : 'text-zinc-300'}`}>
-                          {f.replace('— ', '')}
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="mt-1 shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                          <Check size={10} />
+                        </div>
+                        <span className="text-xs font-medium leading-relaxed text-zinc-300">
+                          {f}
                         </span>
                       </div>
                     ))}
@@ -175,73 +196,42 @@ export default function Pricing() {
                       p.highlight ? 'bg-primary text-zinc-950 hover:bg-primary/90' : 'border-white/10 hover:bg-white/5'
                     }`}
                   >
-                    <Link to={p.id === 'free' ? "/dashboard" : "/dashboard/abonnement"}>
+                    <Link to={`/become-a-seller?plan=${p.id}`}>
                       {p.cta} <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </Button>
                 </motion.div>
-              ))
-            )}
+              );
+            })}
           </div>
 
-          {/* Credit Packs Section */}
+          {/* Credit Packs */}
           <div className="pt-20 space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Besoin de <span className="text-gradient-primary">plus de puissance ?</span></h2>
-              <p className="text-zinc-400 max-w-2xl mx-auto">
-                Vos crédits IA sont épuisés ? Rechargez votre compte à la carte. Valables 90 jours et cumulables avec tous les plans.
-              </p>
+              <p className="text-zinc-400 max-w-2xl mx-auto">Rechargez votre compte à la carte pour vos générations IA.</p>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {CREDIT_PACKS.map((pack, i) => (
                 <div key={i} className="glass-card p-8 rounded-[2rem] border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden">
-                  {pack.badge && (
-                    <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded">
-                      {pack.badge}
-                    </div>
-                  )}
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{pack.label}</p>
                   <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-4xl font-black">{pack.credits}</span>
                     <span className="text-zinc-500 font-bold">crédits</span>
                   </div>
                   <div className="flex items-center justify-between py-4 border-t border-white/5">
-                    <span className="text-sm font-bold text-zinc-400">{pack.per_credit} / crédit</span>
+                    <span className="text-sm font-bold text-zinc-400">{pack.per_credit}</span>
                     <span className="text-xl font-black">{pack.price_fcfa.toLocaleString()} FCFA</span>
                   </div>
-                  <Button asChild className="w-full bg-white text-zinc-950 hover:bg-primary hover:text-zinc-950 transition-colors font-black uppercase tracking-widest text-[10px] h-12 rounded-xl mt-4">
+                  <Button asChild className="w-full bg-white text-zinc-950 hover:bg-primary transition-colors font-black uppercase tracking-widest text-[10px] h-12 rounded-xl mt-4">
                     <Link to="/dashboard/abonnement">Acheter</Link>
                   </Button>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* FAQ Section */}
-          <div className="pt-20 max-w-3xl mx-auto space-y-12">
-             <h2 className="text-center text-2xl font-black uppercase tracking-widest opacity-50">Questions Fréquentes</h2>
-             <div className="space-y-6">
-                {[
-                  { q: "Comment payer mon abonnement ?", a: "Vous pouvez régler par Wave, Orange Money, MTN ou Carte Bancaire directement depuis votre dashboard vendeur." },
-                  { q: "Puis-je changer de plan à tout moment ?", a: "Oui, vous pouvez upgrader vers un plan supérieur instantanément. La commission réduite s'appliquera sur vos prochaines ventes." },
-                  { q: "Les crédits sont-ils renouvelés chaque mois ?", a: "Oui, votre allocation mensuelle est rechargée à la date anniversaire de votre abonnement." },
-                  { q: "Que se passe-t-il si je dépasse ma limite de produits ?", a: "Vous ne pourrez plus publier de nouveaux produits tant que vous n'aurez pas libéré de l'espace ou upgradé votre plan." },
-                  { q: "Comment fonctionne la commission ?", a: "MindHubs prélève sa part uniquement au moment de la vente. Le reste est ajouté instantanément à votre solde vendeur." }
-                ].map((item, i) => (
-                  <div key={i} className="p-6 rounded-2xl bg-white/5 border border-white/5">
-                    <h4 className="font-bold mb-2 flex items-center gap-2">
-                      <HelpCircle size={16} className="text-primary" /> {item.q}
-                    </h4>
-                    <p className="text-sm text-zinc-400 leading-relaxed">{item.a}</p>
-                  </div>
-                ))}
-             </div>
-          </div>
-
         </div>
       </main>
-
       <FooterSection />
     </div>
   );

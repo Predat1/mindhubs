@@ -15,7 +15,7 @@ export interface DbProduct {
   featured: boolean;
   sort_order: number;
   payment_link: string | null;
-  image_urls: any | null;
+  image_urls: string[] | null;
   key_features: string[] | null;
   vendor_id: string | null;
 }
