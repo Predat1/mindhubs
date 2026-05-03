@@ -487,7 +487,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                   <MessageSquare size={24} className="group-hover:animate-pulse" />
                 </a>
               </TooltipTrigger>
-              <TooltipContent side="left" className="bg-zinc-900 border-white/10 text-white font-black uppercase text-[10px] px-4 py-2">
+              <TooltipContent side="left" className="bg-popover border-border text-popover-foreground font-black uppercase text-[10px] px-4 py-2 shadow-xl">
                 Besoin d'aide ? WhatsApp
               </TooltipContent>
             </Tooltip>

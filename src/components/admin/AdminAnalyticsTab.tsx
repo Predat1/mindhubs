@@ -155,7 +155,7 @@ const AdminAnalyticsTab = () => {
           <h2 className="text-3xl font-black">Intelligence Marketplace</h2>
           <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Données réelles et indicateurs de performance</p>
         </div>
-        <div className="flex bg-muted/50 p-1 rounded-xl border border-white/5">
+        <div className="flex bg-card p-1 rounded-xl border border-border">
           {["7d", "30d", "90d"].map(r => (
             <button 
               key={r}
@@ -169,7 +169,7 @@ const AdminAnalyticsTab = () => {
       </div>
 
       {/* ─── ROW 1: REVENUE CHART ─── */}
-      <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-zinc-950/50">
+      <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-background/50">
         <div className="flex items-center justify-between mb-8">
            <div>
              <h3 className="text-xl font-black tracking-tighter">Flux de Revenus</h3>
@@ -216,7 +216,7 @@ const AdminAnalyticsTab = () => {
 
       {/* ─── ROW 2: AI COSTS & CREDITS ─── */}
       <div className="grid lg:grid-cols-2 gap-8">
-        <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-zinc-950/50">
+        <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-background/50">
            <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black tracking-tighter">Coûts IA par Module</h3>
               <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
@@ -241,7 +241,7 @@ const AdminAnalyticsTab = () => {
            </div>
         </Card>
 
-        <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-zinc-950/50">
+        <Card className="stat-card p-8 rounded-[2.5rem] border-glow bg-background/50">
            <h3 className="text-xl font-black tracking-tighter mb-8">Consommation Crédits</h3>
            <div className="h-[300px] flex items-center">
              {aiLoading ? <Skeleton className="h-full w-full rounded-2xl" /> : (
@@ -286,7 +286,7 @@ const AdminAnalyticsTab = () => {
            <div className="space-y-4">
               {geoLoading ? Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />) : 
                geoData?.byOrders.map((c, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border hover:border-primary/20 transition-all">
                    <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-black text-xs">{i+1}</div>
                       <span className="font-bold">{c.country}</span>
@@ -302,7 +302,7 @@ const AdminAnalyticsTab = () => {
            <div className="space-y-4">
               {geoLoading ? Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />) : 
                geoData?.byRevenue.map((c, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/20 transition-all">
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border hover:border-emerald-500/20 transition-all">
                    <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center font-black text-xs text-emerald-500">{i+1}</div>
                       <span className="font-bold">{c.country}</span>
@@ -328,7 +328,7 @@ const AdminAnalyticsTab = () => {
                const drop = i > 0 ? (step.count / (prevCount || 1)) * 100 : 100;
                return (
                 <div key={i} className="relative flex flex-col items-center text-center space-y-4 group">
-                   <div className={`w-16 h-16 rounded-3xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-primary/50 transition-all shadow-2xl`}>
+                   <div className={`w-16 h-16 rounded-3xl flex items-center justify-center bg-muted/30 border border-border group-hover:border-primary/50 transition-all shadow-2xl`}>
                       <step.icon size={24} className="text-primary" />
                    </div>
                    <div>

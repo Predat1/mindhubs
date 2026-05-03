@@ -101,7 +101,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
           {plansLoading ? (
             Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-40 w-full rounded-3xl" />)
           ) : plans.map((p) => (
-            <Card key={p.plan} className="stat-card p-8 rounded-[2.5rem] border-glow bg-zinc-950/30 overflow-hidden group">
+            <Card key={p.plan} className="stat-card p-8 rounded-[2.5rem] border-glow bg-background/30 overflow-hidden group">
                <div className="flex flex-col lg:flex-row gap-8">
                   {/* Plan Header */}
                   <div className="lg:w-48 shrink-0">
@@ -118,7 +118,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                                const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, price_fcfa_monthly: parseInt(e.target.value)} : pl);
                                queryClient.setQueryData(["admin-plan-limits"], newPlans);
                              }}
-                             className="h-10 bg-white/5 border-white/10 rounded-xl font-bold"
+                             className="h-10 bg-muted/30 border-border rounded-xl font-bold"
                            />
                         </div>
                         <div className="space-y-1">
@@ -130,7 +130,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                                const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, price_fcfa_yearly: parseInt(e.target.value)} : pl);
                                queryClient.setQueryData(["admin-plan-limits"], newPlans);
                              }}
-                             className="h-10 bg-white/5 border-white/10 rounded-xl font-bold"
+                             className="h-10 bg-muted/30 border-border rounded-xl font-bold"
                            />
                         </div>
                      </div>
@@ -147,7 +147,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                             const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, monthly_credits: parseInt(e.target.value)} : pl);
                             queryClient.setQueryData(["admin-plan-limits"], newPlans);
                           }}
-                          className="h-10 bg-white/5 border-white/10 rounded-xl font-bold"
+                          className="h-10 bg-muted/30 border-border rounded-xl font-bold"
                         />
                      </div>
                      <div className="space-y-1">
@@ -159,7 +159,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                             const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, max_products: parseInt(e.target.value)} : pl);
                             queryClient.setQueryData(["admin-plan-limits"], newPlans);
                           }}
-                          className="h-10 bg-white/5 border-white/10 rounded-xl font-bold"
+                          className="h-10 bg-muted/30 border-border rounded-xl font-bold"
                         />
                      </div>
                      <div className="space-y-1">
@@ -172,18 +172,18 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                             const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, commission_rate: parseFloat(e.target.value) / 100} : pl);
                             queryClient.setQueryData(["admin-plan-limits"], newPlans);
                           }}
-                          className="h-10 bg-white/5 border-white/10 rounded-xl font-bold"
+                          className="h-10 bg-muted/30 border-border rounded-xl font-bold"
                         />
                      </div>
 
                      {/* Toggles */}
-                     <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
+                     <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
                         {[
                           { key: 'ads_studio', label: 'Ads Studio' },
                           { key: 'creator_lab_full', label: 'Lab Complet' },
                           { key: 'priority_placement', label: 'Priorité' },
                         ].map(toggle => (
-                          <div key={toggle.key} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                          <div key={toggle.key} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
                              <span className="text-[10px] font-black uppercase">{toggle.label}</span>
                              <Switch 
                                checked={p[toggle.key]} 
@@ -203,7 +203,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                               const newPlans = plans.map(pl => pl.plan === p.plan ? {...pl, badge: e.target.value} : pl);
                               queryClient.setQueryData(["admin-plan-limits"], newPlans);
                             }}
-                            className="h-8 text-[10px] bg-white/5 border-white/10 rounded-lg"
+                            className="h-8 text-[10px] bg-muted/30 border-border rounded-lg"
                            />
                         </div>
                      </div>
@@ -237,7 +237,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
         <Card className="stat-card rounded-3xl overflow-hidden border-glow">
            <table className="w-full text-left">
               <thead>
-                <tr className="bg-muted/30 border-b border-white/5">
+                <tr className="bg-muted/30 border-b border-border">
                    <th className="p-4 text-[10px] font-black uppercase tracking-widest">Feature</th>
                    <th className="p-4 text-[10px] font-black uppercase tracking-widest">Crédits</th>
                    <th className="p-4 text-[10px] font-black uppercase tracking-widest">Coût Réel (FCFA)</th>
@@ -254,7 +254,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                   { name: "Ads Studio (Kit)", key: "ads-creative", cost: 36, margin: "90%" },
                   { name: "Description IA", key: "description", cost: 1, margin: "98%" },
                 ].map((f) => (
-                  <tr key={f.key} className="hover:bg-white/5 transition-colors">
+                  <tr key={f.key} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4 font-bold text-sm">{f.name}</td>
                     <td className="p-4 font-black text-primary">{CREDIT_COSTS[f.key as keyof typeof CREDIT_COSTS] || "-"}</td>
                     <td className="p-4 text-xs font-mono text-muted-foreground">~{f.cost} FCFA</td>
@@ -292,13 +292,13 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                       placeholder="Ex: Maintenance du système" 
                       value={notif.title}
                       onChange={e => setNotif({...notif, title: e.target.value})}
-                      className="h-12 rounded-xl bg-white/5 border-white/10" 
+                      className="h-12 rounded-xl bg-muted/30 border-border" 
                     />
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase">Type de message</label>
                     <select 
-                      className="w-full h-12 bg-zinc-900 border border-white/10 rounded-xl px-3 font-bold text-sm outline-none"
+                      className="w-full h-12 bg-card border border-border rounded-xl px-3 font-bold text-sm outline-none"
                       value={notif.type}
                       onChange={e => setNotif({...notif, type: e.target.value})}
                     >
@@ -316,7 +316,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                   placeholder="Écrivez votre message ici..." 
                   value={notif.message}
                   onChange={e => setNotif({...notif, message: e.target.value})}
-                  className="h-20 rounded-xl bg-white/5 border-white/10" 
+                  className="h-20 rounded-xl bg-muted/30 border-border" 
                  />
               </div>
               <div className="space-y-2">
@@ -325,7 +325,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                   placeholder="https://mindhubs.market/..." 
                   value={notif.link}
                   onChange={e => setNotif({...notif, link: e.target.value})}
-                  className="h-12 rounded-xl bg-white/5 border-white/10" 
+                  className="h-12 rounded-xl bg-muted/30 border-border" 
                  />
               </div>
               <Button type="submit" disabled={sendingNotif} className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest gap-2 bg-fuchsia-600 hover:bg-fuchsia-500 shadow-xl shadow-fuchsia-500/20">

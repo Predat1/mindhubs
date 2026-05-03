@@ -404,7 +404,7 @@ const Admin = () => {
                  </div>
 
                 {productEditing && (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="stat-card rounded-3xl p-8 border-glow space-y-8 bg-zinc-950">
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="stat-card rounded-3xl p-8 border-glow space-y-8 bg-card shadow-2xl">
                     <div className="flex items-center justify-between border-b border-border pb-6">
                       <h2 className="text-2xl font-black">{productEditing.id ? "Modifier" : "Nouvelle"} Pépite</h2>
                       <button onClick={() => setProductEditing(null)}><X /></button>
@@ -436,15 +436,15 @@ const Admin = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-white/5 bg-muted/30">
+                          <tr className="border-b border-border bg-muted/30">
                             <th className="py-4 px-4 text-[10px] font-black uppercase">Produit</th>
                             <th className="py-4 px-4 text-[10px] font-black uppercase">Prix</th>
                             <th className="py-4 px-4 text-[10px] font-black uppercase text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-border">
                           {products.filter((p:any) => p.title.toLowerCase().includes(productSearch.toLowerCase())).map((product: any) => (
-                            <tr key={product.id} className="group hover:bg-white/5">
+                            <tr key={product.id} className="group hover:bg-muted/50 transition-colors">
                               <td className="py-4 px-4"><p className="font-black text-sm">{product.title}</p></td>
                               <td className="py-4 px-4 font-black text-sm">{formatCurrency(product.price)}</td>
                               <td className="py-4 px-4 text-right">

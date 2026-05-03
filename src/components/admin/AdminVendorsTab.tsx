@@ -121,7 +121,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
         <Input 
           placeholder="Filtrer par boutique ou username..." 
-          className="pl-10 h-12 bg-card rounded-2xl border-white/5" 
+          className="pl-10 h-12 bg-card rounded-2xl border-border" 
           value={search} 
           onChange={(e) => setSearch(e.target.value)} 
         />
@@ -132,7 +132,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="bg-muted/30 border-b border-white/5">
+              <tr className="bg-muted/30 border-b border-border">
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Boutique</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Plan</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Crédits</th>
@@ -145,10 +145,10 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
               {vendorsLoading ? (
                 Array(6).fill(0).map((_, i) => <tr key={i}><td colSpan={6} className="p-4"><Skeleton className="h-12 w-full rounded-xl" /></td></tr>)
               ) : filteredVendors.map((v) => (
-                <tr key={v.vendor_id} className="group hover:bg-white/5 transition-colors">
+                <tr key={v.vendor_id} className="group hover:bg-muted/30 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-white/5">
+                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
                           {v.avatar_url ? <img src={v.avatar_url} className="w-full h-full object-cover" /> : <Store size={18} className="text-muted-foreground" />}
                        </div>
                        <div>
@@ -169,7 +169,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                   <td className="p-4 text-center">
                     <button 
                       onClick={() => toggleVerification(v.vendor_id, v.shop_name, v.verified)}
-                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${v.verified ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-white/5 text-muted-foreground border border-white/5 hover:border-primary/50"}`}
+                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${v.verified ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-muted/30 text-muted-foreground border border-border hover:border-primary/50"}`}
                     >
                       {v.verified ? "VÉRIFIÉ ✓" : "STANDARD"}
                     </button>
@@ -193,15 +193,15 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
 
       {/* ─── VENDOR DETAIL SHEET ─── */}
       <Sheet open={!!selectedVendor} onOpenChange={(open) => !open && setSelectedVendor(null)}>
-        <SheetContent className="w-full sm:max-w-2xl glass-card border-l-white/10 p-0 overflow-y-auto hide-scrollbar">
+        <SheetContent className="w-full sm:max-w-2xl glass-card border-border p-0 overflow-y-auto hide-scrollbar">
           {selectedVendor && (
             <div className="flex flex-col h-full">
                <div className="relative h-48 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-transparent">
-                  <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-3xl" />
-                  <Button variant="ghost" size="icon" onClick={() => setSelectedVendor(null)} className="absolute top-6 right-6 text-white hover:bg-white/10"><X /></Button>
+                  <div className="absolute inset-0 bg-background/40 backdrop-blur-3xl" />
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedVendor(null)} className="absolute top-6 right-6 hover:bg-muted/50"><X /></Button>
                   
                   <div className="absolute -bottom-10 left-10 flex items-end gap-6">
-                     <div className="h-32 w-32 rounded-[2.5rem] bg-zinc-900 border-4 border-zinc-950 overflow-hidden shadow-2xl">
+                     <div className="h-32 w-32 rounded-[2.5rem] bg-card border-4 border-zinc-950 overflow-hidden shadow-2xl">
                         {selectedVendor.avatar_url ? <img src={selectedVendor.avatar_url} className="w-full h-full object-cover" /> : <Store size={48} className="text-muted-foreground m-auto" />}
                      </div>
                      <div className="pb-4">
@@ -214,11 +214,11 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                <div className="p-10 pt-16 space-y-10">
                   {/* General Info Grid */}
                   <div className="grid grid-cols-2 gap-6">
-                     <div className="stat-card p-4 rounded-2xl bg-white/5 border-white/5">
+                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
                         <p className="text-[9px] font-black text-muted-foreground uppercase">Abonnement Actuel</p>
                         <p className="text-lg font-black uppercase text-primary">{selectedVendor.plan}</p>
                      </div>
-                     <div className="stat-card p-4 rounded-2xl bg-white/5 border-white/5">
+                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
                         <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>
                         <p className="text-lg font-black">{new Date(selectedVendor.created_at).toLocaleDateString()}</p>
                      </div>
@@ -233,7 +233,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                         {detailsLoading ? Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />) : 
                          vendorDetails?.transactions.length === 0 ? <p className="text-center py-6 text-xs text-muted-foreground uppercase font-black opacity-30">Aucun mouvement de crédits</p> :
                          vendorDetails?.transactions.map((t: any) => (
-                          <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 text-[11px]">
+                          <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border text-[11px]">
                              <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${t.amount > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"}`}>
                                    {t.amount > 0 ? "+" : ""}{t.amount}
@@ -258,7 +258,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                         {detailsLoading ? Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />) :
                          vendorDetails?.products.length === 0 ? <p className="text-center py-6 text-xs text-muted-foreground uppercase font-black opacity-30">Aucun produit en vente</p> :
                          vendorDetails?.products.map((p: any) => (
-                          <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                          <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
                              <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-lg bg-zinc-800 overflow-hidden">
                                    <img src={p.image_url} className="w-full h-full object-cover" />
@@ -285,7 +285,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                         {detailsLoading ? Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />) :
                          vendorDetails?.orders.length === 0 ? <p className="text-center py-6 text-xs text-muted-foreground uppercase font-black opacity-30">Aucune commande reçue</p> :
                          vendorDetails?.orders.map((o: any) => (
-                          <div key={o.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-900/50 border border-white/5">
+                          <div key={o.id} className="flex items-center justify-between p-4 rounded-2xl bg-card/50 border border-border">
                              <div>
                                 <p className="text-xs font-black">#{o.id.slice(0, 8)}</p>
                                 <p className="text-[9px] text-muted-foreground">{o.customer_name}</p>

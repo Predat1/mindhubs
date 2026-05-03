@@ -254,7 +254,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
           <Input 
             placeholder="Rechercher un vendeur..." 
-            className="pl-10 h-12 bg-card rounded-2xl border-white/5" 
+            className="pl-10 h-12 bg-card rounded-2xl border-border" 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
           />
@@ -269,7 +269,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
             <thead>
-              <tr className="bg-muted/30 border-b border-white/5">
+              <tr className="bg-muted/30 border-b border-border">
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Vendeur</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Plan</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statut</th>
@@ -280,13 +280,13 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border">
               {subsLoading ? (
                 Array(5).fill(0).map((_, i) => (
                   <tr key={i}><td colSpan={8} className="p-4"><Skeleton className="h-12 w-full rounded-xl" /></td></tr>
                 ))
               ) : filteredSubs.map((sub) => (
-                <tr key={sub.vendor_id} className="group hover:bg-white/5 transition-colors">
+                <tr key={sub.vendor_id} className="group hover:bg-muted/30 transition-colors">
                   <td className="p-4">
                     <p className="font-bold">{sub.shop_name || "Boutique"}</p>
                     <p className="text-[10px] text-muted-foreground">@{sub.username}</p>
@@ -302,7 +302,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                         <span>{sub.credit_balance}</span>
                         <span className="text-muted-foreground">/ {sub.monthly_credits}</span>
                       </div>
-                      <Progress value={(sub.credit_balance / (sub.monthly_credits || 1)) * 100} className="h-1 bg-white/5" />
+                      <Progress value={(sub.credit_balance / (sub.monthly_credits || 1)) * 100} className="h-1 bg-muted/30" />
                     </div>
                   </td>
                   <td className="p-4">
@@ -319,16 +319,16 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl"><MoreVertical size={16} /></Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="glass-card border-white/10 w-48">
+                      <DropdownMenuContent align="end" className="glass-card border-border w-48">
                         <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer" onClick={() => setGrantingCredits({ vendorId: sub.vendor_id, shopName: sub.shop_name, amount: "", description: "", type: "bonus" })}>
                           <Wallet size={14} className="text-primary" /> Ajouter crédits
                         </DropdownMenuItem>
                         
                         <DropdownMenu>
-                          <DropdownMenuTrigger className="w-full flex items-center px-2 py-1.5 text-xs font-bold gap-2 hover:bg-white/5 outline-none">
+                          <DropdownMenuTrigger className="w-full flex items-center px-2 py-1.5 text-xs font-bold gap-2 hover:bg-muted/30 outline-none">
                              <RefreshCw size={14} className="text-blue-500" /> Changer plan <ChevronRight size={12} className="ml-auto" />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent side="left" className="glass-card border-white/10">
+                          <DropdownMenuContent side="left" className="glass-card border-border">
                              {['free', 'starter', 'pro', 'elite'].map(plan => (
                                <DropdownMenuItem key={plan} className="text-[10px] font-black uppercase cursor-pointer" onClick={() => handleUpdatePlan(sub.vendor_id, sub.shop_name, plan)}>
                                  {plan}
@@ -360,7 +360,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
       
       {/* Grant Credits Dialog */}
       <Dialog open={!!grantingCredits} onOpenChange={(open) => !open && setGrantingCredits(null)}>
-        <DialogContent className="glass-card border-white/10 text-white rounded-[2rem] max-w-sm">
+        <DialogContent className="glass-card border-border text-white rounded-[2rem] max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tighter">Ajouter des crédits</DialogTitle>
             <DialogDescription className="text-muted-foreground font-medium uppercase text-[10px] tracking-widest">
@@ -376,13 +376,13 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                 placeholder="Ex: 50" 
                 value={grantingCredits?.amount || ""} 
                 onChange={e => setGrantingCredits({...grantingCredits, amount: e.target.value})}
-                className="h-12 bg-white/5 border-white/10 rounded-xl font-bold"
+                className="h-12 bg-muted/30 border-border rounded-xl font-bold"
               />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase text-muted-foreground">Type</label>
               <select 
-                className="w-full h-12 bg-zinc-900 border border-white/10 rounded-xl px-3 font-bold text-sm outline-none"
+                className="w-full h-12 bg-zinc-900 border border-border rounded-xl px-3 font-bold text-sm outline-none"
                 value={grantingCredits?.type || "bonus"}
                 onChange={e => setGrantingCredits({...grantingCredits, type: e.target.value})}
               >
@@ -399,7 +399,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                 placeholder="Pourquoi ?" 
                 value={grantingCredits?.description || ""} 
                 onChange={e => setGrantingCredits({...grantingCredits, description: e.target.value})}
-                className="h-12 bg-white/5 border-white/10 rounded-xl text-sm"
+                className="h-12 bg-muted/30 border-border rounded-xl text-sm"
               />
             </div>
             <DialogFooter className="pt-4">
@@ -413,7 +413,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
 
       {/* Cancel Subscription Dialog */}
       <AlertDialog open={!!cancellingSub} onOpenChange={(o) => !o && setCancellingSub(null)}>
-        <AlertDialogContent className="glass-card border-white/10 rounded-[2.5rem]">
+        <AlertDialogContent className="glass-card border-border rounded-[2.5rem]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black tracking-tighter uppercase">Annuler l'abonnement ?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground font-medium">
@@ -421,7 +421,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl border-white/10 font-bold uppercase text-[10px] tracking-widest">Retour</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl border-border font-bold uppercase text-[10px] tracking-widest">Retour</AlertDialogCancel>
             <AlertDialogAction onClick={handleCancelSub} disabled={isProcessing} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-black uppercase text-[10px] tracking-widest">
               Confirmer l'annulation
             </AlertDialogAction>
