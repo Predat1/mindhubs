@@ -110,6 +110,54 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_limits: {
+        Row: {
+          ads_studio: boolean
+          badge: string | null
+          commission_rate: number
+          created_at: string
+          creator_lab_full: boolean
+          id: string
+          max_products: number
+          monthly_credits: number
+          plan: string
+          price_fcfa_monthly: number
+          price_fcfa_yearly: number
+          priority_placement: boolean
+          whatsapp_support: boolean
+        }
+        Insert: {
+          ads_studio?: boolean
+          badge?: string | null
+          commission_rate?: number
+          created_at?: string
+          creator_lab_full?: boolean
+          id?: string
+          max_products?: number
+          monthly_credits?: number
+          plan: string
+          price_fcfa_monthly?: number
+          price_fcfa_yearly?: number
+          priority_placement?: boolean
+          whatsapp_support?: boolean
+        }
+        Update: {
+          ads_studio?: boolean
+          badge?: string | null
+          commission_rate?: number
+          created_at?: string
+          creator_lab_full?: boolean
+          id?: string
+          max_products?: number
+          monthly_credits?: number
+          plan?: string
+          price_fcfa_monthly?: number
+          price_fcfa_yearly?: number
+          priority_placement?: boolean
+          whatsapp_support?: boolean
+        }
+        Relationships: []
+      }
       product_events: {
         Row: {
           created_at: string
