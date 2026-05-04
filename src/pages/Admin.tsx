@@ -29,6 +29,7 @@ import AdminSubscriptionsTab from "@/components/admin/AdminSubscriptionsTab";
 import AdminAnalyticsTab from "@/components/admin/AdminAnalyticsTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
 import AdminVendorsTab from "@/components/admin/AdminVendorsTab";
+import AdminProductsTab from "@/components/admin/AdminProductsTab";
 
 // ─── Types ───
 type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | 
@@ -388,79 +389,8 @@ const Admin = () => {
               </div>
             )}
 
-            {/* ─── TAB: PRODUCTS ─── */}
-            {currentTab === "products" && (
-               <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-black">Catalogue Elite</h2>
-                    <Button onClick={() => setProductEditing(DEFAULT_PRODUCT)} className="rounded-2xl gap-2 font-black">
-                      <Plus size={18} /> Ajouter une pépite
-                    </Button>
-                 </div>
-
-                 <div className="relative max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                    <Input placeholder="Rechercher une pépite..." className="pl-10 h-12 bg-card rounded-2xl" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} />
-                 </div>
-
-                {productEditing && (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="stat-card rounded-3xl p-8 border-glow space-y-8 bg-card shadow-2xl">
-                    <div className="flex items-center justify-between border-b border-border pb-6">
-                      <h2 className="text-2xl font-black">{productEditing.id ? "Modifier" : "Nouvelle"} Pépite</h2>
-                      <button onClick={() => setProductEditing(null)}><X /></button>
-                    </div>
-                    <div className="grid lg:grid-cols-3 gap-10">
-                        <div className="space-y-6">
-                           <div onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-3xl border-2 border-dashed border-border bg-muted/20 flex items-center justify-center cursor-pointer hover:border-primary overflow-hidden relative">
-                              {productEditing.image_url ? <img src={productEditing.image_url} className="w-full h-full object-cover" /> : <Upload size={32} />}
-                              {uploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="animate-spin" /></div>}
-                              <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
-                           </div>
-                        </div>
-                        <div className="lg:col-span-2 space-y-4">
-                           <div className="grid md:grid-cols-2 gap-4">
-                              <Input value={productEditing.title} onChange={e => setProductEditing({...productEditing, title: e.target.value})} placeholder="Titre" />
-                              <Input value={productEditing.price} onChange={e => setProductEditing({...productEditing, price: e.target.value})} placeholder="Prix" />
-                           </div>
-                           <RichDescriptionEditor value={productEditing.description} onChange={val => setProductEditing({...productEditing, description: val})} title={productEditing.title} category={productEditing.category} />
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-3 pt-6 border-t border-border">
-                       <Button variant="ghost" onClick={() => setProductEditing(null)}>Annuler</Button>
-                       <Button onClick={saveProduct} disabled={saving} className="rounded-xl px-10 font-black">Enregistrer</Button>
-                    </div>
-                  </motion.div>
-                )}
-
-                <div className="stat-card rounded-2xl overflow-hidden border-glow">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-border bg-muted/30">
-                            <th className="py-4 px-4 text-[10px] font-black uppercase">Produit</th>
-                            <th className="py-4 px-4 text-[10px] font-black uppercase">Prix</th>
-                            <th className="py-4 px-4 text-[10px] font-black uppercase text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {products.filter((p:any) => p.title.toLowerCase().includes(productSearch.toLowerCase())).map((product: any) => (
-                            <tr key={product.id} className="group hover:bg-muted/50 transition-colors">
-                              <td className="py-4 px-4"><p className="font-black text-sm">{product.title}</p></td>
-                              <td className="py-4 px-4 font-black text-sm">{formatCurrency(product.price)}</td>
-                              <td className="py-4 px-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button variant="ghost" size="icon" onClick={() => setProductEditing(product)}><Edit size={14} /></Button>
-                                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteConfirm({ type: "product", id: product.id, label: product.title })}><Trash2 size={14} /></Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                </div>
-               </div>
-            )}
+            {/* ─── TAB: PRODUCTS (FULL CONTROL) ─── */}
+            {currentTab === "products" && <AdminProductsTab logAction={logAction} />}
 
             {/* ─── TAB: ORDERS ─── */}
             {currentTab === "orders" && (
