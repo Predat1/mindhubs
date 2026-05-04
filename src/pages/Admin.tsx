@@ -239,7 +239,19 @@ const Admin = () => {
     toast.success("Supprimé");
     if (deleteConfirm.type === "product") refetchProducts();
     else if (deleteConfirm.type === "api") setApiConfigs(prev => prev.filter(a => a.id !== deleteConfirm.id));
+    else if (deleteConfirm.type === "order") refetchOrders();
+    else if (deleteConfirm.type === "log") {
+      // Logic for log deletion if needed, but usually we just refetch or the effect handles it
+    }
     logAction("DELETE", `Suppression ${deleteConfirm.type} : ${deleteConfirm.label}`);
+  };
+
+  const handleClearLogs = async () => {
+    const { error } = await (supabase as any).from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) { toast.error(error.message); return; }
+    toast.success("Logs effacés");
+    setAuditLogs([]);
+    logAction("CLEAR_LOGS", "Tous les logs ont été effacés");
   };
 
   const handleImageUpload = async (file: File) => {
@@ -408,7 +420,12 @@ const Admin = () => {
                                <td className="p-4"><p className="font-bold">{o.customer_name}</p><p className="text-[10px] text-muted-foreground">{o.customer_email}</p></td>
                                <td className="p-4 font-black">{formatCurrency(o.total_price)}</td>
                                <td className="p-4"><Badge className={statusConfig[o.status as keyof typeof statusConfig]?.color}>{o.status}</Badge></td>
-                               <td className="p-4 text-right"><Button variant="ghost" size="sm" onClick={() => setViewingOrder(o)} className="rounded-xl"><Eye size={16} /></Button></td>
+                               <td className="p-4 text-right">
+                                 <div className="flex items-center justify-end gap-2">
+                                   <Button variant="ghost" size="sm" onClick={() => setViewingOrder(o)} className="rounded-xl"><Eye size={16} /></Button>
+                                   <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => setDeleteConfirm({ type: "order", id: o.id, label: `Commande de ${o.customer_name}` })}><Trash2 size={16} /></Button>
+                                 </div>
+                               </td>
                             </tr>
                          ))}
                       </tbody>
@@ -421,11 +438,16 @@ const Admin = () => {
             {/* ─── TAB: LOGS ─── */}
             {currentTab === "logs" && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-black">Audit Système</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-3xl font-black">Audit Système</h2>
+                  <Button variant="destructive" size="sm" onClick={handleClearLogs} className="rounded-xl font-black uppercase text-[10px] tracking-widest gap-2">
+                    <Trash2 size={14} /> Tout effacer
+                  </Button>
+                </div>
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
                    <table className="w-full text-sm text-left">
                       <thead className="bg-muted/30 border-b border-border">
-                         <tr><th className="p-4 font-black text-[10px] uppercase">Date</th><th className="p-4 font-black text-[10px] uppercase">Action</th><th className="p-4 font-black text-[10px] uppercase">Détails</th></tr>
+                         <tr><th className="p-4 font-black text-[10px] uppercase">Date</th><th className="p-4 font-black text-[10px] uppercase">Action</th><th className="p-4 font-black text-[10px] uppercase">Détails</th><th className="p-4 font-black text-[10px] uppercase text-right">Actions</th></tr>
                       </thead>
                       <tbody>
                          {auditLogs.map((log, i) => (
@@ -433,6 +455,9 @@ const Admin = () => {
                                <td className="p-4 text-[10px] font-mono">{new Date(log.created_at).toLocaleString()}</td>
                                <td className="p-4"><Badge className="bg-primary/10 text-primary font-black text-[9px] uppercase">{log.action}</Badge></td>
                                <td className="p-4 text-xs font-medium">{log.details}</td>
+                               <td className="p-4 text-right">
+                                 <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => setDeleteConfirm({ type: "log", id: log.id, label: `Log ${log.action}` })}><Trash2 size={14} /></Button>
+                               </td>
                             </tr>
                          ))}
                       </tbody>
