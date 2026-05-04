@@ -106,14 +106,7 @@ const Admin = () => {
   };
 
   // ─── Queries ───
-  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useQuery({
-    queryKey: ["admin-products"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("*").order("sort_order", { ascending: true });
-      if (error) throw error;
-      return (data || []).map(db => ({ ...db, image: db.image_url || "" }));
-    },
-  });
+  // No products query here, it's handled in AdminProductsTab
 
   const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
     queryKey: ["admin-orders"],
@@ -122,6 +115,7 @@ const Admin = () => {
       if (error) throw error;
       return data || [];
     },
+    enabled: currentTab === "overview" || currentTab === "orders",
   });
 
   const { data: allVendors = [] } = useQuery({
@@ -131,6 +125,7 @@ const Admin = () => {
       if (error) throw error;
       return data || [];
     },
+    enabled: currentTab === "overview" || currentTab === "vendors",
   });
 
   // ─── Universal API Manager Logic ───
@@ -198,25 +193,7 @@ const Admin = () => {
     }
   };
 
-  // ─── Products Handlers ───
-  const saveProduct = async () => {
-    if (!productEditing) return;
-    setSaving(true);
-    const isNew = !products.find((p: any) => p.id === productEditing.id);
-    const productData = { ...productEditing, rating: parseFloat(productEditing.rating) || 5, sort_order: parseInt(productEditing.sort_order.toString()) || 0 };
-    try {
-      const { error } = isNew ? await supabase.from("products").insert([productData]) : await supabase.from("products").update(productData).eq("id", productEditing.id);
-      if (error) throw error;
-      toast.success(isNew ? "Produit ajouté" : "Produit mis à jour");
-      setProductEditing(null);
-      refetchProducts();
-      logAction(isNew ? "PRODUCT_ADD" : "PRODUCT_UPDATE", `Produit ${productEditing.title}`);
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setSaving(false);
-    }
-  };
+  // ─── Products Handlers Removed (Moved to AdminProductsTab) ───
 
   const updateOrderStatus = async (orderId: string, status: Order["status"]) => {
     setUpdatingStatus(orderId);
@@ -237,8 +214,7 @@ const Admin = () => {
     setDeleteConfirm(null);
     if (error) { toast.error(error.message); return; }
     toast.success("Supprimé");
-    if (deleteConfirm.type === "product") refetchProducts();
-    else if (deleteConfirm.type === "api") setApiConfigs(prev => prev.filter(a => a.id !== deleteConfirm.id));
+    if (deleteConfirm.type === "api") setApiConfigs(prev => prev.filter(a => a.id !== deleteConfirm.id));
     else if (deleteConfirm.type === "order") refetchOrders();
     else if (deleteConfirm.type === "log") {
       // Logic for log deletion if needed, but usually we just refetch or the effect handles it
