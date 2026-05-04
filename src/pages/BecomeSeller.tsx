@@ -61,9 +61,9 @@ const schema = z.object({
 
 const PLANS = [
   { id: "free", name: "Free", icon: Sprout, price: "Gratuit", features: ["5 produits", "50 crédits IA", "Comm. 20%"] },
-  { id: "starter", name: "Starter", icon: Rocket, price: "5.000 FCFA", features: ["20 produits", "200 crédits IA", "Comm. 15%"] },
-  { id: "pro", name: "Pro", icon: Star, price: "15.000 FCFA", features: ["Illimité", "1000 crédits IA", "Comm. 10%"], recommended: true },
-  { id: "elite", name: "Elite", icon: Crown, price: "30.000 FCFA", features: ["Illimité", "5000 crédits IA", "Comm. 5%"] },
+  { id: "starter", name: "Starter", icon: Rocket, price: "4 999 FCFA", features: ["20 produits", "200 crédits IA", "Comm. 15%"] },
+  { id: "pro", name: "Pro", icon: Star, price: "14 999 FCFA", features: ["Illimité", "1000 crédits IA", "Comm. 10%"], recommended: true },
+  { id: "elite", name: "Elite", icon: Crown, price: "49 999 FCFA", features: ["Illimité", "5000 crédits IA", "Comm. 5%"] },
 ];
 
 const NICHES = [

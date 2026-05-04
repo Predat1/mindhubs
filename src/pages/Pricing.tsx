@@ -70,7 +70,7 @@ const PLANS = [
   },
   {
     id: 'elite', name: 'Elite', badge: 'VIP',
-    price_monthly: 29999, price_yearly: 299990,
+    price_monthly: 49999, price_yearly: 499990,
     tagline: 'Pour dominer votre marché',
     highlight: false, highlight_label: '🏆 Tout inclus',
     features: [
