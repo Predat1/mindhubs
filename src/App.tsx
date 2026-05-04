@@ -13,6 +13,7 @@ import CartPage from "./pages/CartPage.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import MonCompte from "./pages/MonCompte.tsx";
+import MyPurchases from "./pages/MyPurchases.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ConditionsGenerales from "./pages/ConditionsGenerales.tsx";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite.tsx";
@@ -30,6 +31,7 @@ import VendorSales from "./pages/VendorSales.tsx";
 import VendorProducts from "./pages/VendorProducts.tsx";
 import VendorCustomers from "./pages/VendorCustomers.tsx";
 import VendorRevenue from "./pages/VendorRevenue.tsx";
+import VendorPayouts from "./pages/VendorPayouts.tsx";
 import VendorAnalytics from "./pages/VendorAnalytics.tsx";
 import VendorMarketing from "./pages/VendorMarketing.tsx";
 import VendorSettings from "./pages/VendorSettings.tsx";
@@ -63,6 +65,7 @@ const AppContent = () => {
         <Route path="/a-propos" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/mon-compte" element={<MonCompte />} />
+        <Route path="/mes-achats" element={<MyPurchases />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/conditions-generales" element={<ConditionsGenerales />} />
         <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
@@ -81,6 +84,7 @@ const AppContent = () => {
         <Route path="/dashboard/products" element={<VendorProducts />} />
         <Route path="/dashboard/customers" element={<VendorCustomers />} />
         <Route path="/dashboard/revenue" element={<VendorRevenue />} />
+        <Route path="/dashboard/payouts" element={<VendorPayouts />} />
         <Route path="/dashboard/analytics" element={<VendorAnalytics />} />
         <Route path="/dashboard/marketing" element={<VendorMarketing />} />
         <Route path="/dashboard/settings" element={<VendorSettings />} />

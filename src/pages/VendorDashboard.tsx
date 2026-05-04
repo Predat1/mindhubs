@@ -21,6 +21,8 @@ import { LevelProgressBar } from "@/components/gamification/LevelProgressBar";
 import { BadgeGrid } from "@/components/gamification/BadgeSystem";
 import { cn } from "@/lib/utils";
 
+import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
+
 const VendorDashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -109,6 +111,8 @@ const VendorDashboard = () => {
       <SEO title="Dashboard Vendeur — MindHubs" description="Gérez votre empire digital" path="/dashboard" />
 
       <div className="mx-auto max-w-6xl space-y-8 pb-10">
+        <OnboardingProgress />
+        
         {/* Welcome Section */}
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">

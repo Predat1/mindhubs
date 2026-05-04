@@ -54,6 +54,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Cinema Studio", href: "/dashboard/cinema-studio", icon: Video, group: "growth", badge: "VIP", badgeVariant: "hot", badgeTooltip: "Générez des vidéos ultra-réalistes (Sora, Veo, Kling, Avatars)." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },
   { label: "Abonnement", href: "/dashboard/abonnement", icon: CreditCard, group: "system" },
+  { label: "Retraits", href: "/dashboard/payouts", icon: DollarSign, group: "system" },
   { label: "Profil & Boutique", href: "/dashboard/settings", icon: Settings, group: "system" },
 ];
 
