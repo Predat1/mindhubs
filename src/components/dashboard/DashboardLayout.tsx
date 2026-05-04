@@ -51,6 +51,7 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Creator Lab", href: "/dashboard/creator-lab", icon: Sparkles, group: "growth", badge: "Hot", badgeVariant: "hot", badgeTooltip: "Découvrez, validez et créez vos produits avec l'IA." },
   { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, group: "growth" },
   { label: "Studio Pub", href: "/dashboard/ads-studio", icon: Zap, group: "growth", badge: "Nouveau", badgeVariant: "new", badgeTooltip: "Générez des créatives Facebook Ads + ciblage par IA." },
+  { label: "Cinema Studio", href: "/dashboard/cinema-studio", icon: Video, group: "growth", badge: "VIP", badgeVariant: "hot", badgeTooltip: "Générez des vidéos ultra-réalistes (Sora, Veo, Kling, Avatars)." },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "main", badge: "2", badgeVariant: "count" },
   { label: "Abonnement", href: "/dashboard/abonnement", icon: CreditCard, group: "system" },
   { label: "Profil & Boutique", href: "/dashboard/settings", icon: Settings, group: "system" },

@@ -46,6 +46,8 @@ import { ExplorePopup } from "./components/ExplorePopup.tsx";
 import CreatorLab from "./pages/CreatorLab.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import VendorSubscription from "./pages/VendorSubscription.tsx";
+import CinemaStudio from "./pages/CinemaStudio.tsx";
+
 
 
 const queryClient = new QueryClient();
@@ -84,6 +86,7 @@ const AppContent = () => {
         <Route path="/dashboard/settings" element={<VendorSettings />} />
         <Route path="/dashboard/ads-studio" element={<VendorAdsStudio />} />
         <Route path="/dashboard/creator-lab" element={<CreatorLab />} />
+        <Route path="/dashboard/cinema-studio" element={<CinemaStudio />} />
         <Route path="/dashboard/factory" element={<Navigate to="/dashboard/creator-lab" replace />} />
         <Route path="/dashboard/messages" element={<VendorMessages />} />
         <Route path="/dashboard/abonnement" element={<VendorSubscription />} />
