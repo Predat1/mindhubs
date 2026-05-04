@@ -76,7 +76,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-4 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase text-primary shadow-xl"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-md px-4 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase text-primary shadow-xl"
         >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -123,7 +123,7 @@ const HeroSection = () => {
           </Link>
           <Link
             to="/dashboard/factory"
-            className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg border border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500"
+            className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-xl hover:bg-muted/30 dark:hover:bg-white/10 transition-all duration-500"
           >
             <Zap size={20} className="text-primary" />
             Lancer l'AI Factory
@@ -157,7 +157,7 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:block h-16 w-px bg-white/10" />
+              <div className="hidden lg:block h-16 w-px bg-black/5 dark:bg-white/10" />
 
               {/* Center: Vendors */}
               <div className="flex flex-col items-center gap-4 text-center">

@@ -234,7 +234,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
       {shopName && (
         <button
           onClick={() => shopUrl && navigate(shopUrl)}
-          className={`group relative mx-3 mt-3 flex items-center gap-2.5 rounded-xl border border-border/70 bg-background/50 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-background hover:shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.25)] hover:-translate-y-px ${isCollapsed ? 'justify-center mx-2 p-1.5' : ''}`}
+          className={`group relative mx-3 mt-3 flex items-center gap-2.5 rounded-xl border border-border/70 bg-muted/20 dark:bg-background/50 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-background hover:shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.25)] hover:-translate-y-px ${isCollapsed ? 'justify-center mx-2 p-1.5' : ''}`}
         >
           <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground shadow-md ring-1 ring-primary/20">
             {shopName.slice(0, 2).toUpperCase()}
@@ -427,7 +427,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         {/* Main */}
         <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
           {/* Topbar */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
+          <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/95 dark:bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
             <button
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setMobileOpen(true)}

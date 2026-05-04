@@ -77,8 +77,8 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500">
-        <div className="container mx-auto px-4 py-4">
-          <div className="glass-card rounded-[2rem] px-6 py-3 flex items-center justify-between border-white/10 shadow-2xl">
+        <div className="container mx-auto px-4 py-2">
+          <div className="glass-card rounded-[2rem] px-6 py-3 flex items-center justify-between border-black/5 dark:border-white/10 shadow-2xl">
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">

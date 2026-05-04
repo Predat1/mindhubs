@@ -52,7 +52,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         className="h-full"
       >
         <Link to={`/produit/${product.id}`} className="block group h-full">
-          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-glass bg-card/40">
+          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-glass bg-white/40 dark:bg-card/40">
             
             {/* Image Container */}
             <div className="relative aspect-square overflow-hidden">

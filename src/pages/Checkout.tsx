@@ -191,15 +191,15 @@ const Checkout = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom complet</Label>
-                    <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Jean Dupont" required className="h-14 rounded-2xl bg-white/5 border-white/10 focus:ring-primary/20 font-bold" />
+                    <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Jean Dupont" required className="h-14 rounded-2xl bg-muted/30 dark:bg-white/5 border-black/5 dark:border-white/10 focus:ring-primary/20 font-bold" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Adresse Email</Label>
-                    <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="jean@exemple.com" required className="h-14 rounded-2xl bg-white/5 border-white/10 focus:ring-primary/20 font-bold" />
+                    <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="jean@exemple.com" required className="h-14 rounded-2xl bg-muted/30 dark:bg-white/5 border-black/5 dark:border-white/10 focus:ring-primary/20 font-bold" />
                   </div>
                   <div className="md:col-span-2 space-y-2">
                     <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Numéro Téléphone (WhatsApp)</Label>
-                    <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+225 07 XX XX XX XX" required className="h-14 rounded-2xl bg-white/5 border-white/10 focus:ring-primary/20 font-bold" />
+                    <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+225 07 XX XX XX XX" required className="h-14 rounded-2xl bg-muted/30 dark:bg-white/5 border-black/5 dark:border-white/10 focus:ring-primary/20 font-bold" />
                   </div>
                 </div>
 
@@ -217,7 +217,7 @@ const Checkout = () => {
                         className={`p-5 rounded-2xl border-2 flex items-center gap-4 transition-all duration-300 ${
                           form.paymentMethod === m.value
                             ? "border-primary bg-primary/10 text-primary shadow-lg shadow-primary/10"
-                            : "border-white/5 bg-white/5 text-muted-foreground hover:border-white/20 hover:bg-white/10"
+                            : "border-black/5 dark:border-white/5 bg-muted/20 dark:bg-white/5 text-muted-foreground hover:border-primary/20 hover:bg-muted/30"
                         }`}
                       >
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${form.paymentMethod === m.value ? "bg-primary text-white" : "bg-muted"}`}>
@@ -258,7 +258,7 @@ const Checkout = () => {
 
                 <div className="space-y-4 max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
                   {items.map((item) => (
-                    <div key={item.product.id} className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5 relative group">
+                    <div key={item.product.id} className="flex items-center gap-4 bg-muted/20 dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/5 relative group">
                       <img src={item.product.image} alt={item.product.title} className="w-14 h-14 rounded-xl object-cover shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{item.product.category}</p>

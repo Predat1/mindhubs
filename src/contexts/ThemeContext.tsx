@@ -16,10 +16,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem("theme") as Theme | null;
       if (saved) return saved;
       
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      return prefersDark ? "dark" : "light";
+      // Default to light as requested
+      return "light";
     }
-    return "dark";
+    return "light";
   });
 
   useEffect(() => {

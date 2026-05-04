@@ -115,7 +115,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
 
   return (
     <div className="space-y-10">
-      <div className="stat-card p-10 rounded-[2.5rem] border-glow bg-white/5 backdrop-blur-3xl overflow-hidden relative">
+      <div className="stat-card p-10 rounded-[2.5rem] border-glow bg-muted/20 dark:bg-white/5 backdrop-blur-3xl overflow-hidden relative">
         <div className="absolute top-0 right-0 p-10 opacity-10"><Globe size={120} /></div>
         <div className="max-w-2xl space-y-4 relative z-10">
            <h2 className="text-3xl font-black tracking-tighter">Scannez l'Afrique en temps réel</h2>
@@ -128,7 +128,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
               <button 
                 key={m.code} 
                 onClick={() => setSelectedMarkets(selectedMarkets.includes(m.code) ? selectedMarkets.filter(c => c !== m.code) : [...selectedMarkets, m.code])}
-                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${selectedMarkets.includes(m.code) ? 'bg-primary border-primary text-white scale-105 shadow-lg' : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'}`}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${selectedMarkets.includes(m.code) ? 'bg-primary border-primary text-white scale-105 shadow-lg' : 'bg-muted/30 dark:bg-white/5 border-black/5 dark:border-white/10 text-muted-foreground hover:bg-muted/50 dark:hover:bg-white/10'}`}
               >
                 <span>{m.flag}</span> {m.label}
               </button>
@@ -138,7 +138,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <Input placeholder="Ex: Business plan pour aviculture..." className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              <Input placeholder="Ex: Business plan pour aviculture..." className="pl-12 h-14 bg-muted/20 dark:bg-white/5 border-black/5 dark:border-white/10 rounded-2xl" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
             <Button onClick={handleSearch} disabled={isSearching} className="h-14 px-10 rounded-2xl btn-primary-brand font-black gap-2">
               {isSearching ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />} Scannage IA
@@ -173,7 +173,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
       </div>
 
       <Sheet open={!!remixProduct} onOpenChange={() => setRemixProduct(null)}>
-        <SheetContent className="w-full sm:max-w-md bg-zinc-950 border-white/10 p-8 space-y-8 overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-md bg-background dark:bg-zinc-950 border-black/5 dark:border-white/10 p-8 space-y-8 overflow-y-auto">
           <SheetHeader className="text-left">
             <SheetTitle className="text-2xl font-black flex items-center gap-2"><Sparkles className="text-primary" /> Remix Lab</SheetTitle>
             <SheetDescription className="font-medium">Différenciation stratégique via Gemini 2.5 Flash.</SheetDescription>

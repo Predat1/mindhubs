@@ -94,7 +94,7 @@ const Boutique = () => {
                 }
                 setSearchParams(newParams, { replace: true });
               }}
-              className="w-full pl-14 pr-6 h-14 rounded-2xl bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full pl-14 pr-6 h-14 rounded-2xl bg-muted/30 dark:bg-white/5 border-none text-foreground font-bold placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
 
