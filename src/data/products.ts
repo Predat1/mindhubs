@@ -37,6 +37,11 @@ export interface Product {
   imageUrls?: string[];
   keyFeatures?: string[];
   vendorId?: string;
+  vendor?: {
+    shop_name: string;
+    avatar_url: string | null;
+    verified: boolean;
+  };
 }
 
 export const allProducts: Product[] = [

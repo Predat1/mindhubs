@@ -39,6 +39,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 // --- TYPES & SCHEMA ---
 type Step = 1 | 2 | 3;

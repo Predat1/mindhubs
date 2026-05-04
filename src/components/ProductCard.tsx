@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
 import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
-import { useVendorById } from "@/hooks/useVendors";
 import { usePrefetchProduct } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +29,7 @@ const StarRating = ({ rating }: { rating: number }) => (
 const ProductCard = ({ product }: { product: Product }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const isBestSeller = BEST_SELLERS.includes(product.id);
-  const { data: vendor } = useVendorById(product.vendorId);
+  const vendor = product.vendor;
   const prefetch = usePrefetchProduct();
 
   const handleBuy = (e: React.MouseEvent) => {

@@ -8,6 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +43,8 @@ const Navbar = () => {
         .split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
     : "";
     
-  const { data: searchResults = [] } = useSearchProducts(searchQuery);
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
+  const { data: searchResults = [] } = useSearchProducts(debouncedSearchQuery);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

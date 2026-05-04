@@ -18,6 +18,11 @@ export interface DbProduct {
   image_urls: string[] | null;
   key_features: string[] | null;
   vendor_id: string | null;
+  vendor?: {
+    shop_name: string;
+    avatar_url: string | null;
+    verified: boolean;
+  };
 }
 
 const mapDbToProduct = (db: DbProduct): Product => ({
@@ -34,6 +39,7 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
   keyFeatures: db.key_features ?? [],
   vendorId: db.vendor_id ?? undefined,
+  vendor: db.vendor,
 });
 
 export const useProducts = () => {
@@ -42,7 +48,7 @@ export const useProducts = () => {
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
         .order("sort_order", { ascending: true }); // Admin priority
 
       const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
@@ -84,7 +90,7 @@ export const useFeaturedProducts = () => {
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
         .eq("featured", true)
         .order("sort_order");
 
@@ -115,7 +121,7 @@ export const useProduct = (id: string) => {
     queryFn: async (): Promise<Product | null> => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
         .eq("id", id)
         .maybeSingle();
 
@@ -145,7 +151,7 @@ export const useNewProducts = () => {
     queryFn: async (): Promise<Product[]> => {
       const { data } = await supabase
         .from("products")
-        .select("*")
+        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
         .order("created_at", { ascending: false })
         .limit(10);
 
@@ -173,7 +179,7 @@ export const useSearchProducts = (query: string) => {
 
       const { data } = await supabase
         .from("products")
-        .select("*")
+        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
         .ilike("title", `%${query}%`)
         .order("sort_order")
         .limit(20);
@@ -205,7 +211,7 @@ export const usePrefetchProduct = () => {
       queryFn: async (): Promise<Product | null> => {
         const { data, error } = await supabase
           .from("products")
-          .select("*")
+          .select("*, vendor:vendors(shop_name, avatar_url, verified)")
           .eq("id", id)
           .maybeSingle();
 

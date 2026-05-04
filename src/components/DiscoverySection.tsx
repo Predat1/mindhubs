@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, ArrowRight, TrendingUp, Sparkles, BookOpen, Briefcase, Code, Paintbrush, Megaphone } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { useDebounce } from "@/hooks/useDebounce";
 import ProductCard from "@/components/ProductCard";
 import { useSearchProducts, useFeaturedProducts, useProducts } from "@/hooks/useProducts";
 import { useSmartRanking } from "@/hooks/useSmartRanking";
@@ -18,7 +19,8 @@ const categories = [
 
 const DiscoverySection = () => {
   const [query, setQuery] = useState("");
-  const { data: searchResults = [] } = useSearchProducts(query);
+  const debouncedQuery = useDebounce(query, 500);
+  const { data: searchResults = [] } = useSearchProducts(debouncedQuery);
   const { data: allProductsData = [] } = useProducts();
   const rankedProducts = useSmartRanking(allProductsData);
   const navigate = useNavigate();

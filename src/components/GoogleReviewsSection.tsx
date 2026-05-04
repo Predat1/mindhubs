@@ -2,6 +2,20 @@ import { Star, CheckCircle2 } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { motion } from "framer-motion";
 
+// Internal BadgeCheck replacement to avoid import issues if not available in lucide-react
+const BadgeCheck = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+
+const Button = ({ children, variant, className, onClick }: any) => (
+  <button onClick={onClick} className={`inline-flex items-center justify-center gap-2 transition-all active:scale-95 ${variant === "outline" ? "border" : "bg-primary text-white"} ${className}`}>
+    {children}
+  </button>
+);
+
 const reviews = [
   { name: "Issa Kharou", text: "Les formations sont très complètes et bien structurées. J'ai beaucoup appris en peu de temps.", avatar: "https://i.pravatar.cc/150?u=issa" },
   { name: "Olive Larivière", text: "Excellente plateforme, le contenu est de qualité et le support est très réactif.", avatar: "https://i.pravatar.cc/150?u=olive" },
@@ -123,19 +137,5 @@ const GoogleReviewsSection = () => {
     </section>
   );
 };
-
-// Internal BadgeCheck replacement to avoid import issues if not available in lucide-react
-const BadgeCheck = ({ className }: { className?: string }) => (
-  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-const Button = ({ children, variant, className, onClick }: any) => (
-  <button onClick={onClick} className={`inline-flex items-center justify-center gap-2 transition-all active:scale-95 ${variant === "outline" ? "border" : "bg-primary text-white"} ${className}`}>
-    {children}
-  </button>
-);
 
 export default GoogleReviewsSection;
