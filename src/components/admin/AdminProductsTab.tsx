@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/currency";
-import { categories as CATEGORIES } from "@/data/products";
+import { categories as CATEGORIES, allProducts as STATIC_PRODUCTS } from "@/data/products";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -30,6 +30,7 @@ interface ProductRow {
   payment_link: string; image_urls: string[]; key_features: string[];
   sort_order: number; featured: boolean; status: string; vendor_id: string;
   created_at: string; vendors?: { shop_name: string } | null;
+  isStatic?: boolean;
 }
 
 const EMPTY: Partial<ProductRow> = {
@@ -60,7 +61,38 @@ const AdminProductsTab = ({ logAction }: Props) => {
         .select("*, vendors(shop_name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []) as ProductRow[];
+      
+      const dbProducts = (data || []) as ProductRow[];
+      
+      // Combine with static products to show EVERYTHING in admin
+      const combined = [...dbProducts];
+      STATIC_PRODUCTS.forEach(sp => {
+        if (!combined.some(p => p.id === sp.id)) {
+          combined.push({
+            id: sp.id,
+            title: sp.title,
+            image_url: sp.image,
+            old_price: sp.oldPrice,
+            price: sp.price,
+            category: sp.category,
+            rating: sp.rating || 5,
+            tag: sp.tag || "",
+            description: sp.description || "",
+            payment_link: sp.paymentLink || "",
+            image_urls: sp.imageUrls || [],
+            key_features: sp.keyFeatures || [],
+            sort_order: 99,
+            featured: false,
+            status: "published",
+            vendor_id: sp.vendorId || "",
+            created_at: new Date().toISOString(),
+            vendors: null,
+            isStatic: true
+          } as any);
+        }
+      });
+      
+      return combined;
     },
   });
 
@@ -108,7 +140,8 @@ const AdminProductsTab = ({ logAction }: Props) => {
   const handleSave = async () => {
     if (!editing || !editing.title?.trim()) { toast.error("Titre requis"); return; }
     setSaving(true);
-    const isNew = !products.find(p => p.id === editing.id);
+    const isStatic = !!editing.isStatic;
+    const isNew = !products.find(p => p.id === editing.id) || isStatic;
     const slug = (editing.title || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,50);
     const payload: any = {
       title: editing.title?.trim(),
@@ -127,13 +160,18 @@ const AdminProductsTab = ({ logAction }: Props) => {
       tag: editing.tag || null,
       rating: editing.rating || 5,
     };
-    if (isNew) payload.id = `${slug}-${Date.now().toString(36)}`;
+    
+    // If it was a system product, we keep its ID to "override" it in the DB
+    if (isNew) {
+      payload.id = isStatic ? editing.id : `${slug}-${Date.now().toString(36)}`;
+    }
+
     try {
-      const { error } = isNew
-        ? await (supabase as any).from("products").insert([payload])
+      const { error } = (isNew && !isStatic) || (isStatic && isNew)
+        ? await (supabase as any).from("products").upsert([payload]) // Use upsert to handle static override safely
         : await (supabase as any).from("products").update(payload).eq("id", editing.id);
       if (error) throw error;
-      toast.success(isNew ? "Produit créé ✨" : "Produit mis à jour ✓");
+      toast.success(isStatic ? "Produit système importé et modifié ✓" : isNew ? "Produit créé ✨" : "Produit mis à jour ✓");
       setEditing(null);
       refetch();
       logAction(isNew ? "PRODUCT_ADD" : "PRODUCT_UPDATE", `${editing.title}`);
@@ -250,7 +288,13 @@ const AdminProductsTab = ({ logAction }: Props) => {
                     <p className="text-[10px] text-muted-foreground font-mono">{p.id.slice(0,12)}...</p>
                   </td>
                   <td className="p-4">
-                    <span className="text-xs font-bold">{(p.vendors as any)?.shop_name || <span className="text-muted-foreground italic">Admin</span>}</span>
+                    <span className="text-xs font-bold">
+                      {p.isStatic ? (
+                        <Badge variant="secondary" className="text-[8px] bg-blue-500/10 text-blue-500 border-blue-500/20">SYSTÈME</Badge>
+                      ) : (
+                        (p.vendors as any)?.shop_name || <span className="text-muted-foreground italic">Admin</span>
+                      )}
+                    </span>
                   </td>
                   <td className="p-4"><Badge variant="outline" className="text-[9px] font-black uppercase">{p.category}</Badge></td>
                   <td className="p-4">
