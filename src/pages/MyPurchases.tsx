@@ -46,13 +46,13 @@ export default function MyPurchases() {
           )
         `)
         .eq('user_id', user?.id)
-        .eq('status', 'completed'); // Only show paid items
+        .eq('status', 'confirmed'); // Only show paid items
 
       if (error) throw error;
       
       // Flatten products from orders
-      const allProducts = data?.flatMap(order => 
-        order.order_items.map(item => ({
+      const allProducts = (data as any)?.flatMap((order: any) => 
+        order.order_items?.map((item: any) => ({
           ...item.products,
           orderId: order.id,
           purchasedAt: order.created_at

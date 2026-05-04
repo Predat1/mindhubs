@@ -20,9 +20,10 @@ export const OnboardingProgress = () => {
   const { data: vendor } = useCurrentVendor();
   const queryClient = useQueryClient();
 
-  if (!vendor || vendor.onboarding_progress?.completed) return null;
+  const onboardingProgress = (vendor as any)?.onboarding_progress;
+  if (!vendor || onboardingProgress?.completed) return null;
 
-  const progress = vendor.onboarding_progress || {
+  const progress = onboardingProgress || {
     avatar: false,
     description: false,
     first_product: false,
@@ -47,7 +48,7 @@ export const OnboardingProgress = () => {
 
     try {
       // 1. Mark as completed
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('vendors')
         .update({ 
           onboarding_progress: { ...progress, completed: true } 

@@ -210,14 +210,14 @@ const BecomeSeller = () => {
       await supabase.from("user_roles").insert({ user_id: userId, role: "vendor" });
 
       // Create subscription
-      await supabase.from("vendor_subscriptions").insert({
+      await (supabase as any).from("vendor_subscriptions").insert({
         vendor_id: vendorId,
         plan: selectedPlan,
         status: selectedPlan === 'free' ? 'active' : 'pending'
       });
 
       // Initialize credits with 0
-      await supabase.from("vendor_credits").insert({
+      await (supabase as any).from("vendor_credits").insert({
         vendor_id: vendorId,
         balance: 0
       });
