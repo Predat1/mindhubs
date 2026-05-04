@@ -189,7 +189,7 @@ export default function VendorLanding() {
                    <p className="text-4xl font-black">49 999 <span className="text-xs text-muted-foreground uppercase">FCFA / mois</span></p>
                 </div>
                 <ul className="space-y-4 flex-1">
-                   {["Tout Illimité", "5 000 Crédits IA", "Commission 5%", "Modèles Sora & Veo", "Manager Dédié"].map((f, i) => (
+                   {["Tout Illimité", "Cinema Studio Ultra HD", "Commission 5%", "Modèles Sora & Veo", "Manager Dédié"].map((f, i) => (
                      <li key={i} className="flex items-center gap-2 text-sm font-medium"><CheckCircle2 size={16} className="text-primary" /> {f}</li>
                    ))}
                 </ul>
