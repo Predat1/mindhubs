@@ -14,6 +14,7 @@ import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import MonCompte from "./pages/MonCompte.tsx";
 import MyPurchases from "./pages/MyPurchases.tsx";
+import VendorLanding from "./pages/VendorLanding.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ConditionsGenerales from "./pages/ConditionsGenerales.tsx";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite.tsx";
@@ -66,6 +67,7 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/mon-compte" element={<MonCompte />} />
         <Route path="/mes-achats" element={<MyPurchases />} />
+        <Route path="/experts" element={<VendorLanding />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/conditions-generales" element={<ConditionsGenerales />} />
         <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
