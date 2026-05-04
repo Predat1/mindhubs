@@ -20,9 +20,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { VIDEO_MODELS, VideoModel } from "@/constants/videoModels";
 import { useCredits } from "@/hooks/useCredits";
+import { useAntiPiracy } from "@/hooks/useAntiPiracy";
 import { toast } from "sonner";
 
 const CinemaStudioInner = ({ vendor }: { vendor: any }) => {
+  useAntiPiracy(); // Active la protection anti-piratage
   const { balance: credits } = useCredits(vendor?.id);
   const [activeTab, setActiveTab] = useState<'create' | 'projects'>('create');
   const [creationMode, setCreationMode] = useState<'magic' | 'pro'>('magic');

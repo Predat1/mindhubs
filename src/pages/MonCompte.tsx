@@ -66,6 +66,7 @@ const MonCompte = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
+  const [hpValue, setHpValue] = useState(""); // Honeypot
 
   const handleGoogle = async () => {
     setSubmitting(true);
@@ -80,6 +81,13 @@ const MonCompte = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Bot check (Honeypot)
+    if (hpValue) {
+      console.warn("Bot detected");
+      return; 
+    }
+
     setSubmitting(true);
     try {
       if (mode === "register") {
@@ -435,11 +443,17 @@ const MonCompte = () => {
                  </div>
 
                  <TabsContent value="login" className="mt-0 space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={(e) => { e.preventDefault(); if (!hpValue) handleSubmit(e); }} className="space-y-6">
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
                           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold focus:ring-primary/20" />
                        </div>
+
+                       {/* Honeypot - Hidden from humans */}
+                       <div className="opacity-0 absolute -z-10 h-0 w-0 overflow-hidden" aria-hidden="true">
+                          <input type="text" value={hpValue} onChange={(e) => setHpValue(e.target.value)} tabIndex={-1} autoComplete="off" />
+                       </div>
+
                        <div className="space-y-2">
                           <div className="flex justify-between items-center px-1">
                              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mot de Passe</Label>
