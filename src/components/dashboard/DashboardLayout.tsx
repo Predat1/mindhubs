@@ -166,6 +166,7 @@ const useVendorLiveBadges = (enabled: boolean) => {
 
 const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: DashboardLayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false); // New state for collapse
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -203,59 +204,74 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
     return acc;
   }, {});
 
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+
   const Sidebar = (
-    <aside className="relative flex h-full w-[260px] shrink-0 flex-col border-r border-border/80 bg-gradient-to-b from-card via-card to-background/40 overflow-hidden backdrop-blur-xl">
+    <aside 
+      className={`relative flex h-full flex-col border-r border-border/80 bg-gradient-to-b from-card via-card to-background/40 overflow-hidden backdrop-blur-xl transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[80px]' : 'w-[260px]'}`}
+    >
       {/* Decorative ambient glows */}
       <div className="pointer-events-none absolute -top-32 -left-16 h-56 w-56 rounded-full bg-primary/10 blur-[80px]" />
       <div className="pointer-events-none absolute bottom-1/3 -right-16 h-56 w-56 rounded-full bg-accent/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
 
       {/* Brand */}
-      <div className="relative flex h-16 items-center gap-2 border-b border-border/50 px-5">
+      <div className={`relative flex h-16 items-center gap-2 border-b border-border/50 px-5 ${isCollapsed ? 'justify-center px-0' : ''}`}>
         <Link to="/" className="group flex items-center gap-1.5 text-base font-bold tracking-tight transition">
-          <span className="text-foreground group-hover:text-primary transition-colors">MIND</span>
+          {!isCollapsed && <span className="text-foreground group-hover:text-primary transition-colors">MIND</span>}
           <span className="text-gradient-brand animate-pulse drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]">✦</span>
-          <span className="text-accent group-hover:text-primary transition-colors">HUB</span>
+          {!isCollapsed && <span className="text-accent group-hover:text-primary transition-colors">HUB</span>}
         </Link>
-        <span className="ml-auto rounded-md border border-primary/30 bg-gradient-to-r from-primary/15 to-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary shadow-[0_0_10px_hsl(var(--primary)/0.15)]">
-          {variant === "admin" ? "Admin" : "Pro"}
-        </span>
+        {!isCollapsed && (
+          <span className="ml-auto rounded-md border border-primary/30 bg-gradient-to-r from-primary/15 to-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary shadow-[0_0_10px_hsl(var(--primary)/0.15)]">
+            {variant === "admin" ? "Admin" : "Pro"}
+          </span>
+        )}
       </div>
 
       {/* Shop selector */}
       {shopName && (
         <button
           onClick={() => shopUrl && navigate(shopUrl)}
-          className="group relative mx-3 mt-3 flex items-center gap-2.5 rounded-xl border border-border/70 bg-background/50 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-background hover:shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.25)] hover:-translate-y-px"
+          className={`group relative mx-3 mt-3 flex items-center gap-2.5 rounded-xl border border-border/70 bg-background/50 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-background hover:shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.25)] hover:-translate-y-px ${isCollapsed ? 'justify-center mx-2 p-1.5' : ''}`}
         >
           <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground shadow-md ring-1 ring-primary/20">
             {shopName.slice(0, 2).toUpperCase()}
             <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500 shadow-[0_0_6px_hsl(142_76%_45%/0.6)]" />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-foreground">{shopName}</p>
-            <p className="truncate text-[10px] text-muted-foreground flex items-center gap-1">
-              <span className="inline-block h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-              En ligne
-            </p>
-          </div>
-          <ChevronDown size={14} className="text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary" />
+          {!isCollapsed && (
+            <>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-foreground">{shopName}</p>
+                <p className="truncate text-[10px] text-muted-foreground flex items-center gap-1">
+                  <span className="inline-block h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                  En ligne
+                </p>
+              </div>
+              <ChevronDown size={14} className="text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary" />
+            </>
+          )}
         </button>
       )}
 
       {/* Quick action */}
       {variant === "vendor" && (
-        <div className="px-3 mt-3">
-          <Button
-            asChild
-            size="sm"
-            className="group relative w-full overflow-hidden bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] text-primary-foreground shadow-md hover:shadow-[0_0_24px_hsl(var(--primary)/0.45)] hover:bg-[position:100%_0] transition-all duration-500"
-          >
-            <Link to="/dashboard/new-product" onClick={() => setMobileOpen(false)}>
-              <Plus size={14} className="mr-1 transition-transform group-hover:rotate-90" />
-              Nouveau produit
-            </Link>
-          </Button>
+        <div className={`px-3 mt-3 ${isCollapsed ? 'px-2' : ''}`}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                asChild
+                size={isCollapsed ? "icon" : "sm"}
+                className="group relative w-full overflow-hidden bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] text-primary-foreground shadow-md hover:shadow-[0_0_24px_hsl(var(--primary)/0.45)] hover:bg-[position:100%_0] transition-all duration-500"
+              >
+                <Link to="/dashboard/new-product" onClick={() => setMobileOpen(false)}>
+                  <Plus size={14} className={`${isCollapsed ? '' : 'mr-1'} transition-transform group-hover:rotate-90`} />
+                  {!isCollapsed && "Nouveau produit"}
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && <TooltipContent side="right">Nouveau produit</TooltipContent>}
+          </Tooltip>
         </div>
       )}
 
@@ -263,79 +279,87 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
       <nav className="relative flex-1 space-y-5 overflow-y-auto px-3 py-4 mt-2 [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">
         {Object.entries(groupedItems).map(([group, groupItems], idx) => (
           <div key={group} className="relative">
-            {idx > 0 && (
+            {idx > 0 && !isCollapsed && (
               <div className="absolute -top-2.5 left-3 right-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             )}
-            <div className="px-3 mb-2 flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
-                {GROUP_LABELS[group] ?? group}
-              </p>
-              {idx === 0 && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      className="rounded-full p-0.5 text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition"
-                      aria-label="Légende des badges"
-                    >
-                      <Info size={11} />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent side="right" align="start" className="w-64 p-3">
-                    <p className="text-xs font-semibold mb-2 text-foreground">Légende des badges</p>
-                    <ul className="space-y-2">
-                      {BADGE_LEGEND.map((b) => (
-                        <li key={b.variant} className="flex items-start gap-2">
-                          <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badgeStyles(b.variant)}`}>
-                            {b.label}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground leading-snug">
-                            {b.description}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-3 pt-2 border-t border-border text-[10px] text-muted-foreground/80">
-                      Les badges sont mis à jour automatiquement selon vos données en temps réel.
-                    </p>
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
+            {!isCollapsed && (
+              <div className="px-3 mb-2 flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+                  {GROUP_LABELS[group] ?? group}
+                </p>
+                {idx === 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="rounded-full p-0.5 text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition"
+                        aria-label="Légende des badges"
+                      >
+                        <Info size={11} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="right" align="start" className="w-64 p-3">
+                      <p className="text-xs font-semibold mb-2 text-foreground">Légende des badges</p>
+                      <ul className="space-y-2">
+                        {BADGE_LEGEND.map((b) => (
+                          <li key={b.variant} className="flex items-start gap-2">
+                            <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badgeStyles(b.variant)}`}>
+                              {b.label}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground leading-snug">
+                              {b.description}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            )}
             <div className="space-y-0.5">
               {groupItems.map((item) => {
                 const Icon = item.icon;
                 const active = fullPath === item.href;
                 return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
-                      active
-                        ? "bg-gradient-to-r from-primary/20 via-accent/10 to-transparent text-foreground font-semibold shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:translate-x-0.5"
-                    }`}
-                  >
-                    {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+                  <Tooltip key={item.label} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Link
+                        to={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                          active
+                            ? "bg-gradient-to-r from-primary/20 via-accent/10 to-transparent text-foreground font-semibold shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:translate-x-0.5"
+                        } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+                        )}
+                        <span
+                          className={`relative flex h-7 w-7 items-center justify-center rounded-md transition-all ${
+                            active
+                              ? "bg-primary/15 text-primary"
+                              : "text-muted-foreground/80 group-hover:bg-muted group-hover:text-foreground"
+                          }`}
+                        >
+                          <Icon
+                            size={15}
+                            className={`transition-transform duration-200 ${
+                              active ? "scale-110" : "group-hover:scale-110"
+                            }`}
+                          />
+                        </span>
+                        {!isCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+                        {!isCollapsed && item.badge && renderBadge(item.badge, item.badgeVariant, item.badgeTooltip)}
+                      </Link>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                      <TooltipContent side="right" className="flex items-center gap-2">
+                        {item.label}
+                        {item.badge && renderBadge(item.badge, item.badgeVariant)}
+                      </TooltipContent>
                     )}
-                    <span
-                      className={`relative flex h-7 w-7 items-center justify-center rounded-md transition-all ${
-                        active
-                          ? "bg-primary/15 text-primary"
-                          : "text-muted-foreground/80 group-hover:bg-muted group-hover:text-foreground"
-                      }`}
-                    >
-                      <Icon
-                        size={15}
-                        className={`transition-transform duration-200 ${
-                          active ? "scale-110" : "group-hover:scale-110"
-                        }`}
-                      />
-                    </span>
-                    <span className="flex-1 truncate">{item.label}</span>
-                    {item.badge && renderBadge(item.badge, item.badgeVariant, item.badgeTooltip)}
-                  </Link>
+                  </Tooltip>
                 );
               })}
             </div>
@@ -343,22 +367,41 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="relative space-y-0.5 border-t border-border/50 p-3 bg-background/30">
-        <Link
-          to="/faq"
-          className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <HelpCircle size={15} className="transition-transform group-hover:rotate-12" />
-          Centre d'aide
-        </Link>
+      {/* Sidebar Footer Controls */}
+      <div className="mt-auto border-t border-border/50 p-3 bg-background/30 space-y-1">
         <button
-          onClick={handleSignOut}
-          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+          onClick={toggleCollapse}
+          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground mb-2"
         >
-          <LogOut size={15} className="transition-transform group-hover:-translate-x-0.5" />
-          Déconnexion
+          {isCollapsed ? <ChevronDown className="rotate-[-90deg] transition-transform" size={15} /> : <ChevronDown className="rotate-90 transition-transform" size={15} />}
+          {!isCollapsed && <span>Réduire le menu</span>}
         </button>
+
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Link
+              to="/faq"
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground ${isCollapsed ? 'justify-center px-2' : ''}`}
+            >
+              <HelpCircle size={15} className="transition-transform group-hover:rotate-12" />
+              {!isCollapsed && <span>Centre d'aide</span>}
+            </Link>
+          </TooltipTrigger>
+          {isCollapsed && <TooltipContent side="right">Centre d'aide</TooltipContent>}
+        </Tooltip>
+
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleSignOut}
+              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive ${isCollapsed ? 'justify-center px-2' : ''}`}
+            >
+              <LogOut size={15} className="transition-transform group-hover:-translate-x-0.5" />
+              {!isCollapsed && <span>Déconnexion</span>}
+            </button>
+          </TooltipTrigger>
+          {isCollapsed && <TooltipContent side="right">Déconnexion</TooltipContent>}
+        </Tooltip>
       </div>
     </aside>
   );
