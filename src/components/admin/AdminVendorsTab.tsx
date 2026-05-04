@@ -11,6 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -27,6 +37,8 @@ interface AdminVendorsTabProps {
 const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
   const [search, setSearch] = useState("");
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; label: string; type: 'vendor' | 'product' } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // ─── Queries ───
   const { data: vendors = [], isLoading: vendorsLoading, refetch } = useQuery({
@@ -71,6 +83,34 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
       };
     }
   });
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    setDeleting(true);
+    try {
+      const table = deleteConfirm.type === 'vendor' ? 'vendors' : 'products';
+      const { error } = await supabase.from(table).delete().eq('id', deleteConfirm.id);
+      if (error) throw error;
+      
+      toast.success(deleteConfirm.type === 'vendor' ? 'Vendeur supprimé' : 'Produit supprimé');
+      
+      if (deleteConfirm.type === 'vendor') {
+        setSelectedVendor(null);
+        refetch();
+        await logAction('VENDOR_DELETE', deleteConfirm.label);
+      } else {
+        // Refetch vendor details if a product was deleted
+        refetch();
+        // Since we don't have a direct refetch for the vendorDetails query, we can force a re-render or let it invalidate
+        await logAction('PRODUCT_DELETE', deleteConfirm.label);
+      }
+    } catch (err: any) {
+      toast.error("Erreur de suppression: " + err.message);
+    } finally {
+      setDeleting(false);
+      setDeleteConfirm(null);
+    }
+  };
 
   // ─── Calculations ───
   const stats = useMemo(() => {
@@ -175,14 +215,24 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                     </button>
                   </td>
                   <td className="p-4 text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setSelectedVendor(v)}
-                      className="rounded-xl font-black uppercase text-[9px] tracking-widest gap-2"
-                    >
-                      Voir Détail <ChevronRight size={14} />
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setSelectedVendor(v)}
+                        className="rounded-xl font-black uppercase text-[9px] tracking-widest gap-2"
+                      >
+                        Voir Détail <ChevronRight size={14} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: v.vendor_id, label: v.shop_name, type: 'vendor' }); }}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -265,11 +315,16 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                                 </div>
                                 <span className="text-xs font-bold">{p.title}</span>
                              </div>
-                             <div className="text-right">
+                             <div className="text-right flex flex-col items-end gap-1">
                                 <p className="text-[10px] font-black text-primary">{formatCurrency(p.price)}</p>
-                                <Badge className={`text-[8px] font-black ${p.status === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted'}`}>
-                                   {p.status?.toUpperCase() || "BROUILLON"}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`text-[8px] font-black ${p.status === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted'}`}>
+                                     {p.status?.toUpperCase() || "BROUILLON"}
+                                  </Badge>
+                                  <button onClick={() => setDeleteConfirm({ id: p.id, label: p.title, type: 'product' })} className="text-destructive hover:text-red-600 transition-colors">
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
                              </div>
                           </div>
                         ))}
@@ -303,6 +358,24 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
           )}
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={o => !o && setDeleteConfirm(null)}>
+        <AlertDialogContent className="rounded-3xl border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Supprimer définitivement "{deleteConfirm?.label}" ? Cette action est irréversible.
+              {deleteConfirm?.type === 'vendor' && " Tous ses produits et données associées risquent d'être supprimés également."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold uppercase text-[10px] tracking-widest">
+              {deleting ? <Loader2 size={14} className="animate-spin mr-2" /> : null} Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
