@@ -41,13 +41,13 @@ export default function VendorPayouts() {
   const { data: payouts, isLoading } = useQuery({
     queryKey: ['payouts', vendor?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('payout_requests')
         .select('*')
         .eq('vendor_id', vendor?.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: !!vendor?.id
   });
@@ -60,7 +60,7 @@ export default function VendorPayouts() {
       // Basic check (Real check should be on backend)
       if (numAmount < 5000) throw new Error("Le montant minimum est de 5 000 FCFA");
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('payout_requests')
         .insert([{
           vendor_id: vendor.id,
@@ -100,7 +100,7 @@ export default function VendorPayouts() {
           <div className="glass-card p-6 rounded-3xl border-white/5 space-y-2">
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Solde Disponible</p>
             <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-black">{vendor?.balance_fcfa?.toLocaleString() || 0} <span className="text-sm">FCFA</span></h3>
+              <h3 className="text-3xl font-black">{(vendor as any)?.balance_fcfa?.toLocaleString() || 0} <span className="text-sm">FCFA</span></h3>
               <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                 <DollarSign size={20} />
               </div>

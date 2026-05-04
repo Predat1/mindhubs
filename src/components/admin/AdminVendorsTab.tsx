@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   Store, ShieldCheck, ExternalLink, Search, Download, 
   History, ShoppingBag, Package, TrendingUp, DollarSign,
-  ChevronRight, Info, UserCog, BadgeCheck, Loader2, X, Wallet
+  ChevronRight, Info, UserCog, BadgeCheck, Loader2, X, Wallet, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

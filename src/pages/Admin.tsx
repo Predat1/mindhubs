@@ -83,7 +83,7 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [productSearch, setProductSearch] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "api"; id: string; label: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "product" | "testimonial" | "api" | "order" | "log"; id: string; label: string } | null>(null);
   const [apiConfigs, setApiConfigs] = useState<ApiConfig[]>([]);
   const [editingApi, setEditingApi] = useState<ApiConfig | null>(null);
   const [testResult, setTestResult] = useState<any | null>(null);
