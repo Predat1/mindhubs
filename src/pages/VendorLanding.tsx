@@ -15,9 +15,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { SEO } from "@/components/SEO";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/FooterSection";
+import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const FEATURES = [

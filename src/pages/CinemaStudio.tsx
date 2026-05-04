@@ -15,7 +15,7 @@ import {
   Gamepad2, Image as ImageIcon,
   UserCheck, ShieldCheck, Star,
   Loader2, Wand2, ArrowRight,
-  Maximize2, Layout, Sliders
+  Maximize2, Layout, Sliders, Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { VIDEO_MODELS, VideoModel } from "@/constants/videoModels";
