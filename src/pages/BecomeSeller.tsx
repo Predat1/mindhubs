@@ -191,27 +191,36 @@ const BecomeSeller = () => {
         }
       }
 
-      const { error: vendorError } = await supabase.from("vendors").insert({
-        user_id: userId,
-        username: form.username,
-        shop_name: form.shopName,
-        description: `Niche: ${form.niche} | ${form.bio}`,
-        avatar_url: avatarUrl,
-      });
+      const { data: newVendor, error: vendorError } = await supabase
+        .from("vendors")
+        .insert({
+          user_id: userId,
+          username: form.username,
+          shop_name: form.shopName,
+          description: `Niche: ${form.niche} | ${form.bio}`,
+          avatar_url: avatarUrl,
+        })
+        .select()
+        .single();
 
       if (vendorError) throw vendorError;
+      const vendorId = newVendor.id;
 
       // Assign vendor role
       await supabase.from("user_roles").insert({ user_id: userId, role: "vendor" });
 
       // Create subscription
-      if (selectedPlan !== "free") {
-        await supabase.from("vendor_subscriptions").insert({
-          vendor_id: userId,
-          plan: selectedPlan,
-          status: 'pending'
-        });
-      }
+      await supabase.from("vendor_subscriptions").insert({
+        vendor_id: vendorId,
+        plan: selectedPlan,
+        status: selectedPlan === 'free' ? 'active' : 'pending'
+      });
+
+      // Initialize credits with 0
+      await supabase.from("vendor_credits").insert({
+        vendor_id: vendorId,
+        balance: 0
+      });
 
       setSubmitStep("✓ Presque prêt !");
       await queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
