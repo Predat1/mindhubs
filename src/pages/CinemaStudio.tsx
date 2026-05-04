@@ -24,41 +24,75 @@ import { toast } from "sonner";
 
 const CinemaStudioInner = ({ vendor }: { vendor: any }) => {
   const { balance: credits } = useCredits(vendor?.id);
-  const [prompt, setPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState<VideoModel | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'create' | 'history'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'projects'>('create');
   const [creationMode, setCreationMode] = useState<'magic' | 'pro'>('magic');
+  
+  // Project State
+  const [projectTitle, setProjectTitle] = useState("Ma Publicité Premium");
+  const [scenes, setScenes] = useState<any[]>([
+    { id: '1', prompt: "", model: 'minimax', duration: 5, voiceScript: "", status: 'empty' }
+  ]);
+  const [selectedSceneIndex, setSelectedSceneIndex] = useState<number>(0);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const filteredModels = useMemo(() => {
-    if (creationMode === 'magic') return [];
-    return VIDEO_MODELS;
-  }, [creationMode]);
+  const currentScene = scenes[selectedSceneIndex];
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast.error("Veuillez entrer une description pour votre vidéo.");
+  const addScene = () => {
+    if (scenes.length >= 10) {
+      toast.error("Limite de 10 scènes par projet atteinte.");
+      return;
+    }
+    const newScene = { 
+      id: Math.random().toString(36).substr(2, 9), 
+      prompt: "", 
+      model: 'kling-1-5', 
+      duration: 5, 
+      voiceScript: "",
+      status: 'empty' 
+    };
+    setScenes([...scenes, newScene]);
+    setSelectedSceneIndex(scenes.length);
+  };
+
+  const updateCurrentScene = (updates: any) => {
+    const newScenes = [...scenes];
+    newScenes[selectedSceneIndex] = { ...newScenes[selectedSceneIndex], ...updates };
+    setScenes(newScenes);
+  };
+
+  const handleGenerateScene = async () => {
+    if (!currentScene.prompt.trim()) {
+      toast.error("Veuillez décrire la scène.");
       return;
     }
 
-    const modelToUse = creationMode === 'magic' ? VIDEO_MODELS.find(m => m.id === 'kling-1-5') : selectedModel;
-    
-    if (!modelToUse) {
-      toast.error("Veuillez sélectionner un moteur de rendu.");
+    const modelObj = VIDEO_MODELS.find(m => m.id === currentScene.model);
+    if (credits < (modelObj?.creditCost || 0)) {
+      toast.error("Crédits insuffisants.");
       return;
     }
 
-    if (credits < modelToUse.creditCost) {
-      toast.error("Crédits insuffisants pour ce modèle.");
-      return;
-    }
-
+    updateCurrentScene({ status: 'generating' });
     setIsGenerating(true);
-    // Simulation du processus de génération
+    
+    // Simulate generation
     setTimeout(() => {
       setIsGenerating(false);
-      toast.success("Votre demande de vidéo a été envoyée au studio ! Vous recevrez une notification dès que le rendu est prêt.");
-    }, 2000);
+      updateCurrentScene({ 
+        status: 'completed', 
+        videoUrl: 'https://cdn.pixabay.com/video/2023/10/20/185793-876182147_tiny.mp4' // Placeholder
+      });
+      toast.success("Scène générée avec succès !");
+    }, 3000);
+  };
+
+  const handleExport = () => {
+    const totalCost = scenes.length * 50; // Export fee
+    if (credits < totalCost) {
+      toast.error("Pas assez de crédits pour l'exportation finale.");
+      return;
+    }
+    toast.success("Assemblage final lancé ! Vous recevrez votre vidéo d'une minute d'ici quelques instants.");
   };
 
   return (
@@ -71,169 +105,196 @@ const CinemaStudioInner = ({ vendor }: { vendor: any }) => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-               <Badge className="bg-primary/20 text-primary border-none font-black text-[9px] px-3">TECHNOLOGIE 2026</Badge>
+               <Badge className="bg-primary/20 text-primary border-none font-black text-[9px] px-3">DIRECTOR MODE 2.1</Badge>
                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Studio de Production Virtuel</span>
+               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Éditeur Cinématique Long-Format</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter">MindHubs <span className="text-gradient-primary">Cinema Studio</span></h2>
-            <p className="text-muted-foreground font-medium max-w-xl">L'arsenal ultime pour dominer vos marchés avec des vidéos publicitaires au réalisme cinématographique.</p>
+            <div className="flex items-center gap-4">
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">MindHubs <span className="text-gradient-primary">Cinema Studio</span></h2>
+              <Input 
+                value={projectTitle} 
+                onChange={(e) => setProjectTitle(e.target.value)}
+                className="bg-transparent border-none text-2xl font-black p-0 focus-visible:ring-0 w-auto text-muted-foreground/50 hover:text-foreground transition-colors"
+              />
+            </div>
           </div>
 
-          <div className="bg-card/50 backdrop-blur-xl p-4 rounded-3xl border border-border flex items-center gap-4 shadow-xl">
-             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><Zap size={24} /></div>
-             <div>
-                <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Solde IA</p>
-                <p className="text-xl font-black">{credits} <span className="text-xs text-muted-foreground">Crédits</span></p>
-             </div>
-             <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-[10px] font-black h-10 px-4 ml-2">RECHARGER</Button>
+          <div className="flex items-center gap-4">
+            <div className="bg-card/50 backdrop-blur-xl p-4 rounded-3xl border border-border flex items-center gap-4 shadow-xl">
+               <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><Zap size={20} /></div>
+               <div className="pr-4">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Solde IA</p>
+                  <p className="text-lg font-black">{credits} <span className="text-xs text-muted-foreground">Crédits</span></p>
+               </div>
+            </div>
+            <Button onClick={handleExport} className="h-14 rounded-2xl bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-black px-8 gap-2 btn-glow">
+              <Clapperboard size={18} /> EXPORTER 1 MIN+
+            </Button>
           </div>
         </div>
 
-        {/* Studio Controls */}
+        {/* Timeline Editor */}
+        <div className="glass-card rounded-[2.5rem] border-white/5 p-4 bg-muted/20">
+           <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
+              {scenes.map((scene, idx) => (
+                <button
+                  key={scene.id}
+                  onClick={() => setSelectedSceneIndex(idx)}
+                  className={`relative shrink-0 w-48 aspect-video rounded-2xl border-2 transition-all overflow-hidden group ${selectedSceneIndex === idx ? 'border-primary shadow-lg shadow-primary/20' : 'border-white/5 hover:border-white/20 bg-muted/40'}`}
+                >
+                   {scene.videoUrl ? (
+                     <video src={scene.videoUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                   ) : (
+                     <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                        {scene.status === 'generating' ? <Loader2 className="animate-spin text-primary" size={20} /> : <ImageIcon size={20} className="text-muted-foreground/30" />}
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Scène {idx + 1}</span>
+                     </div>
+                   )}
+                   <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[8px] font-black text-white">
+                      {scene.duration}S
+                   </div>
+                </button>
+              ))}
+              <button 
+                onClick={addScene}
+                className="shrink-0 w-20 aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center text-muted-foreground hover:text-primary"
+              >
+                <Plus size={24} />
+              </button>
+           </div>
+        </div>
+
+        {/* Main Content Area */}
         <div className="grid lg:grid-cols-12 gap-8">
           
-          {/* Main Console */}
-          <div className="lg:col-span-8 space-y-8">
-             
-             {/* Mode Selector */}
-             <div className="flex gap-4">
-                <button 
-                  onClick={() => setCreationMode('magic')}
-                  className={`flex-1 p-6 rounded-[2rem] border-2 transition-all text-left relative overflow-hidden group ${creationMode === 'magic' ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10' : 'bg-card border-border hover:border-primary/30'}`}
-                >
-                   {creationMode === 'magic' && <motion.div layoutId="mode-bg" className="absolute inset-0 bg-primary/5" />}
-                   <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${creationMode === 'magic' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                      <Wand2 size={24} />
-                   </div>
-                   <h4 className="font-black text-lg">Mode Magique</h4>
-                   <p className="text-xs text-muted-foreground mt-1 font-medium">L'IA choisit le meilleur moteur pour votre publicité automatiquement.</p>
-                </button>
-
-                <button 
-                  onClick={() => setCreationMode('pro')}
-                  className={`flex-1 p-6 rounded-[2rem] border-2 transition-all text-left relative overflow-hidden group ${creationMode === 'pro' ? 'bg-card border-primary shadow-lg shadow-primary/10' : 'bg-card border-border hover:border-primary/30'}`}
-                >
-                   {creationMode === 'pro' && <motion.div layoutId="mode-bg" className="absolute inset-0 bg-primary/5" />}
-                   <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${creationMode === 'pro' ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'}`}>
-                      <Sliders size={24} />
-                   </div>
-                   <h4 className="font-black text-lg">Mode Pro</h4>
-                   <p className="text-xs text-muted-foreground mt-1 font-medium">Choisissez manuellement parmi Sora, Veo, Minimax et plus.</p>
-                </button>
+          {/* Preview & Controls */}
+          <div className="lg:col-span-8 space-y-6">
+             <div className="glass-card rounded-[3rem] border-white/5 overflow-hidden bg-black aspect-video relative group">
+                {currentScene.videoUrl ? (
+                  <video src={currentScene.videoUrl} controls className="w-full h-full object-contain" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 space-y-4">
+                     <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary/30"><Monitor size={40} /></div>
+                     <h3 className="text-xl font-black text-muted-foreground/40 uppercase tracking-widest">Prévisualisation Scène {selectedSceneIndex + 1}</h3>
+                     <p className="text-sm text-muted-foreground/20 font-medium">Décrivez votre scène ci-dessous pour lancer le moteur.</p>
+                  </div>
+                )}
+                
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-xl p-2 rounded-2xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-white hover:bg-white/10"><Settings size={18} /></Button>
+                   <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-white hover:bg-white/10"><Layout size={18} /></Button>
+                   <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-white hover:bg-white/10"><Maximize2 size={18} /></Button>
+                </div>
              </div>
 
-             {/* Rendering Area */}
-             <div className="glass-card rounded-[3rem] border-white/5 p-8 space-y-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Clapperboard size={120} /></div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Description de la scène (Prompt)</Label>
-                    <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Exemples d'Experts</button>
+             {/* Scene Editor Form */}
+             <div className="glass-card rounded-[3rem] border-white/5 p-8 space-y-8 shadow-2xl">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Description Visuelle (Prompt)</Label>
+                    <Textarea 
+                      placeholder="Décrivez ce qui se passe dans cette scène..."
+                      value={currentScene.prompt}
+                      onChange={(e) => updateCurrentScene({ prompt: e.target.value })}
+                      className="min-h-[120px] rounded-3xl bg-muted/20 border-white/5 p-6 text-base font-medium leading-relaxed resize-none focus:ring-primary/20"
+                    />
                   </div>
-                  <Textarea 
-                    placeholder="Ex: Un portrait ultra-réaliste d'un entrepreneur africain devant un gratte-ciel au coucher du soleil, mouvement de caméra cinématographique, 4k, textures de peau détaillées..."
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    className="min-h-[150px] rounded-3xl bg-muted/20 border-white/5 p-6 text-lg font-medium leading-relaxed resize-none focus:ring-primary/20"
-                  />
-                  <div className="flex items-center gap-2 px-2">
-                     <Info size={14} className="text-primary" />
-                     <p className="text-[10px] font-medium text-muted-foreground italic">Soyez précis sur les mouvements et l'ambiance pour un résultat optimal.</p>
+                  <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Script de l'Expert (Voiceover)</Label>
+                    <Textarea 
+                      placeholder="Ce que l'avatar ou le narrateur dit pendant cette scène..."
+                      value={currentScene.voiceScript}
+                      onChange={(e) => updateCurrentScene({ voiceScript: e.target.value })}
+                      className="min-h-[120px] rounded-3xl bg-muted/20 border-white/5 p-6 text-base font-medium leading-relaxed resize-none focus:ring-primary/20"
+                    />
                   </div>
                 </div>
 
-                {creationMode === 'pro' && (
-                  <div className="space-y-6 pt-4 border-t border-white/5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Arsenal de moteurs disponibles</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       {VIDEO_MODELS.map((model) => (
-                         <button
-                           key={model.id}
-                           onClick={() => setSelectedModel(model)}
-                           className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-4 group ${selectedModel?.id === model.id ? 'bg-primary/10 border-primary ring-1 ring-primary/20' : 'bg-muted/30 border-white/5 hover:border-primary/40'}`}
-                         >
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${selectedModel?.id === model.id ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'bg-background text-muted-foreground'}`}>
-                               {model.isAvatar ? <UserCheck size={20} /> : <Play size={20} />}
-                            </div>
-                            <div className="flex-1 space-y-1">
-                               <div className="flex items-center justify-between">
-                                  <span className="font-black text-sm">{model.name}</span>
-                                  <Badge variant="outline" className="text-[8px] font-black border-primary/20 text-primary">{model.creditCost} pts</Badge>
-                               </div>
-                               <p className="text-[10px] text-muted-foreground font-medium leading-tight">{model.description}</p>
-                               {model.badge && (
-                                 <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[8px] font-black px-2 mt-1">{model.badge}</Badge>
-                               )}
-                            </div>
-                         </button>
-                       ))}
-                    </div>
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
+                   <div className="flex items-center gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Moteur de Rendu</Label>
+                        <select 
+                          value={currentScene.model}
+                          onChange={(e) => updateCurrentScene({ model: e.target.value })}
+                          className="bg-muted/40 border-white/10 rounded-xl text-xs font-bold p-2 focus:ring-primary/20 outline-none min-w-[150px]"
+                        >
+                          {VIDEO_MODELS.map(m => <option key={m.id} value={m.id}>{m.name} ({m.creditCost} pts)</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Durée (S)</Label>
+                        <select 
+                          value={currentScene.duration}
+                          onChange={(e) => updateCurrentScene({ duration: parseInt(e.target.value) })}
+                          className="bg-muted/40 border-white/10 rounded-xl text-xs font-bold p-2 focus:ring-primary/20 outline-none"
+                        >
+                          <option value={5}>5 Sec</option>
+                          <option value={10}>10 Sec</option>
+                        </select>
+                      </div>
+                   </div>
 
-                <div className="pt-6">
                    <Button 
-                     onClick={handleGenerate}
-                     disabled={isGenerating}
-                     className="w-full h-20 rounded-[2rem] bg-primary text-primary-foreground hover:bg-primary/90 font-black text-xl tracking-tighter gap-3 btn-glow shadow-2xl"
+                     onClick={handleGenerateScene}
+                     disabled={isGenerating || currentScene.status === 'generating'}
+                     className="h-16 rounded-2xl bg-primary text-primary-foreground font-black px-12 gap-2 shadow-xl shadow-primary/20"
                    >
-                     {isGenerating ? (
-                       <><Loader2 className="animate-spin" size={28} /> Production en cours...</>
-                     ) : (
-                       <><Sparkles size={28} /> Lancer le Moteur de Rendu</>
-                     )}
+                     {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles />} 
+                     GÉNÉRER LA SCÈNE {selectedSceneIndex + 1}
                    </Button>
-                   <p className="text-center text-[10px] text-muted-foreground mt-4 font-bold uppercase tracking-widest opacity-50">
-                     Le rendu peut prendre entre 60s et 180s selon le moteur choisi.
-                   </p>
                 </div>
              </div>
           </div>
 
-          {/* Side Panels */}
+          {/* Side Info */}
           <div className="lg:col-span-4 space-y-8">
-             
-             {/* Studio Tips */}
              <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-6 bg-gradient-to-br from-primary/10 to-transparent">
-                <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-xl"><Clapperboard size={28} /></div>
-                <h3 className="text-xl font-black tracking-tight">Secrets d'Expert</h3>
+                <h3 className="text-xl font-black tracking-tight">Récapitulatif Projet</h3>
                 <div className="space-y-4">
-                   {[
-                     { t: "Utilisez Minimax pour les gros plans visages.", i: Star },
-                     { t: "Kling est imbattable pour les textures d'eau et de feu.", i: Zap },
-                     { t: "Activez le mode Standalone pour vos landing pages.", i: Layout },
-                     { t: "Les vidéos de 8s convertissent mieux que 30s.", i: ShieldCheck }
-                   ].map((tip, i) => (
-                     <div key={i} className="flex gap-3 items-start">
-                        <div className="mt-1"><tip.i size={14} className="text-primary" /></div>
-                        <p className="text-xs font-medium text-muted-foreground leading-relaxed">{tip.t}</p>
-                     </div>
-                   ))}
+                   <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground font-medium">Nombre de scènes</span>
+                      <span className="font-black">{scenes.length} / 10</span>
+                   </div>
+                   <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground font-medium">Durée estimée</span>
+                      <span className="font-black">{scenes.reduce((acc, s) => acc + s.duration, 0)} Secondes</span>
+                   </div>
+                   <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground font-medium">Total Crédits</span>
+                      <span className="text-primary font-black">{scenes.reduce((acc, s) => acc + (VIDEO_MODELS.find(m => m.id === s.model)?.creditCost || 0), 0)} Pts</span>
+                   </div>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                   <div className="p-4 rounded-2xl bg-black/20 space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-primary">
+                         <ShieldCheck size={12} /> PROTECTION RENTABILITÉ
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-medium leading-tight">
+                        Toute modification lourde du visuel consommera des crédits. Les modifications de script texte sont gratuites.
+                      </p>
+                   </div>
                 </div>
              </div>
 
-             {/* Last Generation Preview (Placeholder) */}
-             <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-6">
-                <div className="flex items-center justify-between">
-                   <h3 className="text-sm font-black uppercase tracking-widest text-primary">Dernière Production</h3>
-                   <Badge className="bg-muted text-muted-foreground border-none text-[9px]">EN ATTENTE</Badge>
+             <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-4">
+                <h3 className="text-sm font-black uppercase tracking-widest text-primary">Audio & Musique</h3>
+                <div className="space-y-3">
+                   <Button variant="outline" className="w-full justify-start rounded-xl border-white/5 bg-muted/20 gap-3 h-12 text-xs font-bold">
+                      <Monitor size={16} className="text-primary" /> Choisir une Musique (IA)
+                   </Button>
+                   <Button variant="outline" className="w-full justify-start rounded-xl border-white/5 bg-muted/20 gap-3 h-12 text-xs font-bold">
+                      <UserCheck size={16} className="text-primary" /> Paramètres Avatar Expert
+                   </Button>
                 </div>
-                <div className="aspect-video rounded-3xl bg-muted/30 border border-dashed border-white/10 flex flex-col items-center justify-center text-center p-6 gap-3">
-                   <div className="h-12 w-12 rounded-full bg-background flex items-center justify-center text-muted-foreground/30"><Monitor size={24} /></div>
-                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">Aucune vidéo générée récemment</p>
-                </div>
-                <Button variant="ghost" className="w-full rounded-2xl text-[10px] font-black uppercase tracking-widest gap-2 text-muted-foreground">
-                   <History size={14} /> Voir tout l'historique
-                </Button>
              </div>
-
           </div>
         </div>
       </div>
     </DashboardLayout>
   );
 };
+
 
 const CinemaStudio = () => (
   <VendorGuard>{(vendor) => <CinemaStudioInner vendor={vendor} />}</VendorGuard>
