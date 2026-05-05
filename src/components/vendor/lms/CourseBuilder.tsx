@@ -122,12 +122,12 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
     try {
       // 1. Delete existing structure to keep it simple for this first version
       // In a production app, we would use upsert or handle diffs
-      const { error: delLessonsError } = await supabase
+      const { error: delLessonsError } = await (supabase as any)
         .from("course_lessons")
         .delete()
         .in("chapter_id", chapters.map(c => c.id).filter(Boolean));
 
-      const { error: delChaptersError } = await supabase
+      const { error: delChaptersError } = await (supabase as any)
         .from("course_chapters")
         .delete()
         .eq("course_id", courseId);
@@ -135,7 +135,7 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
       // 2. Re-insert chapters and lessons
       for (let i = 0; i < chapters.length; i++) {
         const chapter = chapters[i];
-        const { data: savedChapter, error: chError } = await supabase
+        const { data: savedChapter, error: chError } = await (supabase as any)
           .from("course_chapters")
           .insert([{
             course_id: courseId,
@@ -156,7 +156,7 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
             order_index: lIdx
           }));
 
-          const { error: lError } = await supabase
+          const { error: lError } = await (supabase as any)
             .from("course_lessons")
             .insert(lessonsToInsert);
 
