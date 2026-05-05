@@ -13,6 +13,7 @@ import FAQSection from "@/components/FAQSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import HelpSection from "@/components/HelpSection";
 import FooterSection from "@/components/FooterSection";
+import SEO from "@/components/SEO";
 
 const Index = () => {
   return (
