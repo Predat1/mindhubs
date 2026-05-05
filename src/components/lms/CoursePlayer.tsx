@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { 
   Play, CheckCircle2, Circle, ChevronRight, 
-  Menu, X, ArrowLeft, Trophy, MessageSquare 
+  Menu, X, ArrowLeft, Trophy, MessageSquare, Video, FileText 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
