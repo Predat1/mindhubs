@@ -41,7 +41,8 @@ export default function MyPurchases() {
               name,
               image_url,
               file_url,
-              category
+              category,
+              is_lms
             )
           )
         `)
@@ -122,9 +123,17 @@ export default function MyPurchases() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                       <Button className="w-full h-12 rounded-xl bg-white text-black hover:bg-primary hover:text-white font-black gap-2">
-                         <Download size={16} /> TÉLÉCHARGER
-                       </Button>
+                       {product.is_lms ? (
+                         <Button asChild className="w-full h-12 rounded-xl bg-primary text-white font-black gap-2">
+                           <Link to={`/formation/${product.id}`}>
+                             <Play size={16} /> ACCÉDER À LA FORMATION
+                           </Link>
+                         </Button>
+                       ) : (
+                         <Button className="w-full h-12 rounded-xl bg-white text-black hover:bg-primary hover:text-white font-black gap-2" onClick={() => window.open(product.file_url, '_blank')}>
+                           <Download size={16} /> TÉLÉCHARGER
+                         </Button>
+                       )}
                     </div>
                     <div className="absolute top-4 left-4">
                        <Badge className="bg-black/60 backdrop-blur-md text-[8px] font-black uppercase tracking-widest">{product.category}</Badge>

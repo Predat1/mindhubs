@@ -59,6 +59,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
+import CourseBuilder from "@/components/vendor/lms/CourseBuilder";
 import ProductCard from "@/components/ProductCard";
 import { useVendorSubscription } from "@/hooks/useSubscription";
 
@@ -71,7 +72,7 @@ const STYLE_PRESETS = [
   { id: "minimal", label: "Minimal", emoji: "⚪" },
 ];
 
-type StepKey = "info" | "media" | "pricing" | "details";
+type StepKey = "info" | "media" | "pricing" | "curriculum" | "details";
 
 const STEPS: {
   key: StepKey;
@@ -98,6 +99,12 @@ const STEPS: {
     desc: "Prix de vente & promo",
   },
   {
+    key: "curriculum",
+    label: "Programme",
+    icon: Layers,
+    desc: "Chapitres & leçons",
+  },
+  {
     key: "details",
     label: "Détails",
     icon: Sparkles,
@@ -117,6 +124,7 @@ interface FormState {
   payment_link: string;
   key_features: string[];
   status: "draft" | "published";
+  is_lms: boolean;
 }
 
 const emptyForm: FormState = {
@@ -131,6 +139,7 @@ const emptyForm: FormState = {
   payment_link: "",
   key_features: [],
   status: "published",
+  is_lms: false,
 };
 
 const DRAFT_KEY = "vendor:product:draft:v1";
@@ -428,6 +437,7 @@ const Inner = ({
             key_features: data.key_features || [],
             status:
               ((data as Record<string, unknown>).status as "draft" | "published") || "published",
+            is_lms: (data as any).is_lms || false,
           });
         }
       });
@@ -447,7 +457,7 @@ const Inner = ({
   const allValid = stepValid.info && stepValid.media && stepValid.pricing;
   const currentStepIndex = STEPS.findIndex((s) => s.key === step);
   const progress =
-    (Object.values(stepValid).filter(Boolean).length / STEPS.length) * 100;
+    (Object.values(stepValid).filter(Boolean).length / (form.is_lms ? STEPS.length : STEPS.length - 1)) * 100;
 
   const goNext = () => {
     if (currentStepIndex < STEPS.length - 1)
@@ -581,6 +591,7 @@ const Inner = ({
         key_features: form.key_features,
         vendor_id: vendorId,
         status: finalStatus,
+        is_lms: form.is_lms,
       };
       const { error } = isEdit
         ? await (supabase as any).from("products").update(productData).eq("id", form.id).eq("vendor_id", vendorId)
@@ -797,7 +808,7 @@ const Inner = ({
             {/* Stepper */}
             <div className="overflow-x-auto">
               <div className="flex min-w-max items-center gap-2 rounded-2xl border border-border bg-card p-2">
-                {STEPS.map((s, i) => {
+                {STEPS.filter(s => s.key !== "curriculum" || form.is_lms).map((s, i) => {
                   const Icon = s.icon;
                   const active = s.key === step;
                   const done = stepValid[s.key] && s.key !== step;
@@ -846,13 +857,27 @@ const Inner = ({
             >
               {step === "info" && (
                 <div className="space-y-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">
-                      Informations principales
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Donnez à votre produit un titre clair et descriptif.
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">
+                        Informations principales
+                      </h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Donnez à votre produit un titre clair et descriptif.
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="lms-toggle" className="text-[10px] font-black uppercase tracking-widest text-primary">Formation structurée</Label>
+                        <Switch 
+                          id="lms-toggle" 
+                          checked={form.is_lms} 
+                          onCheckedChange={(v) => setForm({ ...form, is_lms: v })} 
+                        />
+                      </div>
+                      <p className="text-[9px] text-muted-foreground font-medium italic">Active le mode Chapitres & Leçons</p>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1366,6 +1391,10 @@ const Inner = ({
                     </div>
                   )}
                 </div>
+              )}
+
+              {step === "curriculum" && (
+                <CourseBuilder courseId={form.id} />
               )}
 
               {step === "details" && (

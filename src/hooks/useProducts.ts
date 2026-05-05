@@ -18,6 +18,7 @@ export interface DbProduct {
   image_urls: string[] | null;
   key_features: string[] | null;
   vendor_id: string | null;
+  is_lms: boolean;
   vendor?: {
     shop_name: string;
     avatar_url: string | null;
@@ -40,6 +41,7 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   keyFeatures: db.key_features ?? [],
   vendorId: db.vendor_id ?? undefined,
   vendor: db.vendor,
+  is_lms: db.is_lms || false,
 });
 
 export const useProducts = () => {

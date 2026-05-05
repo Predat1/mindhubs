@@ -42,6 +42,7 @@ export interface Product {
     avatar_url: string | null;
     verified: boolean;
   };
+  is_lms?: boolean;
 }
 
 export const allProducts: Product[] = [

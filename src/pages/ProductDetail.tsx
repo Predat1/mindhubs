@@ -22,6 +22,7 @@ import { useVendorById, useVendorProducts } from "@/hooks/useVendors";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import payMtn from "@/assets/pay-mtn.png";
 import payMoov from "@/assets/pay-moov.png";
 import payOrange from "@/assets/pay-orange.png";
@@ -42,6 +43,26 @@ const ProductDetail = () => {
   const { data: vendorProducts = [] } = useVendorProducts(product?.vendorId);
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [currentImage, setCurrentImage] = useState(0);
+
+  // LMS Curriculum data
+  const { data: chapters = [] } = useQuery({
+    queryKey: ['product-curriculum', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('course_chapters')
+        .select(`*, lessons:course_lessons(*)`)
+        .eq('course_id', id)
+        .order('order_index', { ascending: true });
+      
+      if (error) throw error;
+      return (data || []).map(ch => ({
+        ...ch,
+        lessons: (ch.lessons || []).sort((a: any, b: any) => a.order_index - b.order_index)
+      }));
+    },
+    enabled: !!id && product?.is_lms
+  });
 
   useEffect(() => {
     if (product) {
@@ -293,9 +314,47 @@ const ProductDetail = () => {
                </button>
             </div>
             <div className="glass-card rounded-b-[3rem] rounded-tr-[3rem] p-8 md:p-12">
-               {activeTab === "description" ? (
-                 <div className="space-y-12">
-                    <div className="grid md:grid-cols-2 gap-8">
+                {activeTab === "description" ? (
+                  <div className="space-y-12">
+                     {product.is_lms && chapters.length > 0 && (
+                       <div className="space-y-6">
+                         <h3 className="text-2xl font-black flex items-center gap-3"><BookOpen className="text-primary" /> Programme de la formation</h3>
+                         <Accordion type="multiple" defaultValue={[chapters[0]?.id]} className="space-y-4">
+                           {chapters.map((chapter: any, idx: number) => (
+                             <AccordionItem key={chapter.id} value={chapter.id} className="border border-white/5 rounded-[2rem] overflow-hidden bg-white/5 px-6">
+                               <AccordionTrigger className="hover:no-underline py-6">
+                                 <div className="flex items-center gap-4 text-left">
+                                   <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-sm">{idx + 1}</div>
+                                   <div>
+                                     <h4 className="font-black text-lg leading-tight">{chapter.title}</h4>
+                                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{chapter.lessons?.length || 0} Leçons</p>
+                                   </div>
+                                 </div>
+                               </AccordionTrigger>
+                               <AccordionContent className="pb-6">
+                                 <div className="space-y-3 pl-14">
+                                   {chapter.lessons?.map((lesson: any) => (
+                                     <div key={lesson.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-colors">
+                                       <div className="flex items-center gap-3">
+                                          <div className="h-2 w-2 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
+                                          <span className="text-sm font-medium">{lesson.title}</span>
+                                       </div>
+                                       {lesson.is_preview ? (
+                                         <Badge className="bg-primary/20 text-primary border-none text-[8px] font-black uppercase">Aperçu Gratuit</Badge>
+                                       ) : (
+                                         <Lock size={12} className="text-muted-foreground/30" />
+                                       )}
+                                     </div>
+                                   ))}
+                                 </div>
+                               </AccordionContent>
+                             </AccordionItem>
+                           ))}
+                         </Accordion>
+                       </div>
+                     )}
+
+                     <div className="grid md:grid-cols-2 gap-8">
                        <div className="space-y-6">
                           <h3 className="text-2xl font-black flex items-center gap-3"><Sparkles className="text-primary" /> Ce que vous allez maîtriser</h3>
                           <div className="space-y-4">

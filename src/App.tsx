@@ -40,6 +40,7 @@ import VendorAdsStudio from "./pages/VendorAdsStudio.tsx";
 import DigitalProductFactory from "./pages/DigitalProductFactory.tsx";
 import VendorMessages from "./pages/VendorMessages.tsx";
 import ProtectionAcheteur from "./pages/ProtectionAcheteur.tsx";
+import LMSPlayer from "./pages/LMSPlayer.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import AdminGuard from "./components/dashboard/AdminGuard.tsx";
@@ -67,6 +68,7 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/mon-compte" element={<MonCompte />} />
         <Route path="/mes-achats" element={<MyPurchases />} />
+        <Route path="/formation/:id" element={<LMSPlayer />} />
         <Route path="/experts" element={<VendorLanding />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/conditions-generales" element={<ConditionsGenerales />} />
