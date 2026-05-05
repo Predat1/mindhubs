@@ -61,7 +61,7 @@ const ProductDetail = () => {
         lessons: (ch.lessons || []).sort((a: any, b: any) => a.order_index - b.order_index)
       }));
     },
-    enabled: !!id && product?.is_lms
+    enabled: !!id
   });
 
   useEffect(() => {
