@@ -18,17 +18,17 @@ const LMSPlayerPage = () => {
       if (!id || !user?.id) return null;
 
       // 1. Check if product exists and get title
-      const { data: product, error: pError } = await supabase
+      const { data: product, error: pError } = await (supabase as any)
         .from('products')
         .select('title, is_lms')
         .eq('id', id)
         .single();
       
       if (pError || !product) throw new Error("Produit introuvable");
-      if (!product.is_lms) throw new Error("Ce produit n'est pas une formation structurée");
+      if (!(product as any).is_lms) throw new Error("Ce produit n'est pas une formation structurée");
 
       // 2. Check if user has purchased it
-      const { data: orderItem, error: oError } = await supabase
+      const { data: orderItem, error: oError } = await (supabase as any)
         .from('order_items')
         .select('id, orders!inner(status, user_id)')
         .eq('product_id', id)
@@ -40,7 +40,7 @@ const LMSPlayerPage = () => {
       
       return {
         hasAccess: !!orderItem,
-        title: product.title
+        title: (product as any).title
       };
     },
     enabled: !!id && !!user?.id
@@ -79,7 +79,7 @@ const LMSPlayerPage = () => {
 
   return (
     <>
-      <SEO title={`${purchaseInfo.title} | Formation MindHubs`} />
+      <SEO title={`${purchaseInfo.title} | Formation MindHubs`} description="Formation MindHubs" />
       <CoursePlayer courseId={id!} courseTitle={purchaseInfo.title} />
     </>
   );

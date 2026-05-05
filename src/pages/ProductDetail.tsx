@@ -13,7 +13,7 @@ import ProductReviewsSection from "@/components/ProductReviewsSection";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
-import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck, Zap, ShieldCheck, Share2, Sparkles } from "lucide-react";
+import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck, Zap, ShieldCheck, Share2, Sparkles, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -50,7 +50,7 @@ const ProductDetail = () => {
     queryKey: ['product-curriculum', id],
     queryFn: async () => {
       if (!id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('course_chapters')
         .select(`*, lessons:course_lessons(*)`)
         .eq('course_id', id)
