@@ -5,6 +5,7 @@ import progicielBudget from "@/assets/progiciel-budget.png";
 import kitLogistique from "@/assets/kit-logistique.png";
 import premiersClients from "@/assets/premiers-clients.png";
 import demarreMaintenantImg from "@/assets/demarre-maintenant.png";
+import claudeCodeImg from "@/assets/claude-code.jpg";
 
 export type Category = 
   | "Tous" 
@@ -123,9 +124,21 @@ export const allProducts: Product[] = [
     description: "**🔥 DÉMARRE MAINTENANT**\n\nLe plan exact pour lancer ton business en ligne en Afrique en 30 jours\n\nSans expérience. Sans capital. Depuis ton téléphone.\n\n❌ Tu regardes des vidéos business depuis des mois…\n❌ Tu lis des conseils partout…\n❌ Mais tu n'as toujours gagné aucun franc en ligne\n\nTu n'es pas le problème.\n\n👉 Le vrai problème, c'est que personne ne t'a donné une méthode claire, adaptée à ta réalité en Afrique.\n\n**💡 IMAGINE PLUTÔT :**\n\n- Savoir exactement quoi faire chaque jour\n- Lancer ton activité depuis ton téléphone\n- Faire ta première vente en ligne en moins de 30 jours\n\n**📘 Voici la solution :**\n\nDÉMARRE MAINTENANT – Un guide complet + plan d'action qui te montre étape par étape comment :\n\n- Trouver une idée rentable même sans expérience\n- Créer un produit ou service que les gens veulent vraiment\n- Vendre avec WhatsApp, Facebook et TikTok\n- Encaisser avec Mobile Money (MTN, Orange, Wave…)\n- Obtenir tes premiers clients sans publicité\n\n**🎯 CE QUE TU VAS APPRENDRE :**\n\n- Les 4 modèles de business qui marchent en Afrique\n- Comment créer une offre irrésistible\n- Le script exact pour vendre sur WhatsApp\n- Comment trouver tes premiers clients gratuitement\n- Le plan 7 jours pour lancer rapidement\n\n**🎁 BONUS INCLUS :**\n\n🔥 Scripts WhatsApp prêts à copier-coller\n🔥 Modèles de pages de vente\n🔥 Plan d'action 30 jours étape par étape\n\n**⚠️ Pourquoi ce prix ?**\n\nParce que le but n'est pas juste de vendre… c'est de t'aider à faire tes premiers revenus rapidement.\n\n**🚨 IMPORTANT :**\n\nCe guide n'est PAS pour tout le monde.\n\n❌ Si tu veux devenir riche sans rien faire\n❌ Si tu cherches encore \"la méthode magique\"\n\nPasse ton chemin.\n\n✅ Par contre, il est pour toi si :\n\n- Tu veux vraiment passer à l'action\n- Tu es prêt à travailler 30 minutes par jour\n- Tu veux changer ta situation financière\n\n🔥 Des centaines de jeunes africains commencent déjà.\n\nLa seule question : Est-ce que tu continues à regarder… ou tu passes enfin à l'action ?",
     paymentLink: "https://nhvjjgbn.mychariow.shop/prd_2354xd/checkout",
   },
+  {
+    id: "claude-code",
+    title: "Claude Code — L'IA qui code à ta place",
+    image: claudeCodeImg,
+    oldPrice: "12.000 FCFA",
+    price: "5.000 FCFA",
+    category: "IA & Automatisation",
+    rating: 5.0,
+    tag: "Nouveau",
+    description: "**🤖 Accède à Claude Code — L'IA qui code à ta place**\n\nPour seulement 5 000 FCFA/mois\n\nTu te reconnais dans l'une de ces situations ?\n\n❌ Tu passes des heures à déboguer un code qui ne marche pas\n\n❌ Tu cherches sur Google pendant des heures pour une simple fonction\n\n❌ Tu livres tes projets en retard parce que tu bloques sur des détails\n\n❌ Tu veux apprendre à coder mais tu ne sais pas par où commencer\n\nSi oui, Claude Code est fait pour toi.\n\n**🔥 C'est quoi Claude Code ?**\n\nClaude Code est l'outil d'intelligence artificielle numéro 1 mondial pour les développeurs. Il est utilisé chaque jour par des milliers de développeurs aux USA, en Europe et maintenant ici en Afrique.\n\nIl peut :\n\n→ Écrire du code complet à partir d'une simple description\n\n→ Corriger tes bugs en quelques secondes\n\n→ Expliquer chaque ligne pour que tu comprennes vraiment\n\n→ Générer des projets entiers — sites web, API, scripts, applications\n\n→ Travailler avec tous les langages — Python, JavaScript, PHP, React, et plus\n\n💡 **Pourquoi passer par nous ?**\n\nL'abonnement officiel coûte plus de 12 000 FCFA/mois et nécessite une carte bancaire internationale.\n\n**Nous avons trouvé la solution :**\n\n✅ Accès partagé — tu profites des mêmes fonctionnalités\n\n✅ 5 000 FCFA/mois seulement\n\n✅ Paiement MTN Money ou Orange Money — pas besoin de carte visa\n\n✅ Accès immédiat après confirmation du paiement\n\n✅ Support disponible en cas de problème\n\n👥 **Qui peut en profiter ?**\n\n- Développeurs freelance qui veulent livrer plus vite\n- Étudiants en informatique qui veulent apprendre mieux\n- Entrepreneurs qui veulent créer leur application\n- Toute personne curieuse qui veut explorer l'IA\n\n📦 **Ce que tu reçois**\n\n- **Accès complet à Claude Code** (5 000 FCFA/mois)\n- **Paiement Mobile Money** (Pas besoin de carte étrangère)\n- **Activation immédiate** (Tu commences le jour même)\n\n⭐ **Ils l'utilisent déjà**\n\n> \"J'ai livré un projet en 2 jours au lieu de 2 semaines. Claude Code m'a sauvé.\"\n> — *Étudiant en informatique, Yaoundé*\n\n> \"Je débogue mes projets Python 10x plus vite maintenant.\"\n> — *Développeur freelance, Douala*\n\n🔴 **Attention — Places limitées**\n\nOn accepte un nombre limité d'abonnés par mois pour garantir la qualité du service.\n\n👉 **Pour réserver ta place maintenant :**\n\n1. Effectue le paiement de 5 000 FCFA via MTN ou Orange Money\n2. Reçois ton accès immédiatement",
+    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_9d8z3o/checkout",
+  },
 ];
 
-export const featuredProductIds = ["anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
+export const featuredProductIds = ["claude-code", "anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
 
 export const categories: Category[] = [
   "Tous", 
