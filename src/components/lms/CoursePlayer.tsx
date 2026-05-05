@@ -64,12 +64,12 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
       // 2. Fetch progress
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: progressData } = await supabase
+        const { data: progressData } = await (supabase as any)
           .from("user_course_progress")
           .select("lesson_id")
           .eq("user_id", user.id);
         
-        setCompletedLessons((progressData || []).map(p => p.lesson_id));
+        setCompletedLessons((progressData || []).map((p: any) => p.lesson_id));
       }
 
       // Set first lesson as default
