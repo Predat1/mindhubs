@@ -40,6 +40,9 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; label: string; type: 'vendor' | 'product' } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [updatingPlan, setUpdatingPlan] = useState(false);
+  const [grantingCredits, setGrantingCredits] = useState(false);
+  const [creditAmount, setCreditAmount] = useState(100);
+  const [creditDesc, setCreditDesc] = useState("Bonus Admin");
 
   // ─── Queries ───
   const { data: vendors = [], isLoading: vendorsLoading, refetch } = useQuery({
@@ -163,6 +166,31 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
       toast.error("Erreur de mise à jour: " + err.message);
     } finally {
       setUpdatingPlan(false);
+    }
+  };
+
+  const handleGrantCredits = async (vendorId: string, shopName: string) => {
+    if (creditAmount <= 0) return;
+    setGrantingCredits(true);
+    try {
+      const { data, error } = await supabase.rpc('grant_credits', {
+        p_vendor_id: vendorId,
+        p_amount: creditAmount,
+        p_description: creditDesc,
+        p_type: 'bonus'
+      });
+      
+      if (error) throw error;
+      
+      await logAction('CREDIT_GRANT', `${shopName} : +${creditAmount} credits (${creditDesc})`);
+      toast.success(`${creditAmount} crédits ajoutés à ${shopName}`);
+      setCreditAmount(100);
+      setCreditDesc("Bonus Admin");
+      refetch();
+    } catch (err: any) {
+      toast.error("Erreur d'ajout: " + err.message);
+    } finally {
+      setGrantingCredits(false);
     }
   };
 
@@ -316,11 +344,48 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                            </div>
                         </div>
                      </div>
-                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
-                        <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>
-                        <p className="text-lg font-black">{new Date(selectedVendor.created_at).toLocaleDateString()}</p>
-                     </div>
-                  </div>
+                      <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
+                         <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>
+                         <p className="text-lg font-black">{new Date(selectedVendor.created_at).toLocaleDateString()}</p>
+                      </div>
+                   </div>
+
+                   {/* Credit Management (Admin ONLY UI) */}
+                   <div className="stat-card p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="text-primary" size={20} />
+                        <h3 className="text-sm font-black uppercase tracking-widest">Gestion des Crédits</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-1">
+                            <label className="text-[8px] font-black uppercase text-muted-foreground">Quantité</label>
+                            <Input 
+                              type="number" 
+                              value={creditAmount} 
+                              onChange={(e) => setCreditAmount(parseInt(e.target.value) || 0)}
+                              className="h-10 bg-card rounded-xl font-black text-primary"
+                            />
+                         </div>
+                         <div className="space-y-1">
+                            <label className="text-[8px] font-black uppercase text-muted-foreground">Motif</label>
+                            <Input 
+                              value={creditDesc} 
+                              onChange={(e) => setCreditDesc(e.target.value)}
+                              className="h-10 bg-card rounded-xl text-xs font-bold"
+                            />
+                         </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => handleGrantCredits(selectedVendor.vendor_id, selectedVendor.shop_name)}
+                        disabled={grantingCredits}
+                        className="w-full rounded-xl bg-primary text-black font-black uppercase text-[10px] tracking-widest h-12"
+                      >
+                        {grantingCredits ? <Loader2 className="animate-spin mr-2" /> : <Plus size={14} className="mr-2" />}
+                        Ajouter les Crédits
+                      </Button>
+                   </div>
 
                   {/* Credits History */}
                   <div className="space-y-4">
