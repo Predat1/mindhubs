@@ -45,7 +45,7 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
   const fetchCourseStructure = async () => {
     setLoading(true);
     try {
-      const { data: chaptersData, error: chaptersError } = await supabase
+      const { data: chaptersData, error: chaptersError } = await (supabase as any)
         .from("course_chapters")
         .select(`
           *,
@@ -57,12 +57,12 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
       if (chaptersError) throw chaptersError;
 
       // Sort lessons within chapters
-      const structuredData = (chaptersData || []).map(ch => ({
+      const structuredData = (chaptersData || []).map((ch: any) => ({
         ...ch,
         lessons: (ch.lessons || []).sort((a: any, b: any) => a.order_index - b.order_index)
       }));
 
-      setChapters(structuredData);
+      setChapters(structuredData as any);
     } catch (error: any) {
       toast.error("Erreur lors du chargement du programme", { description: error.message });
     } finally {
