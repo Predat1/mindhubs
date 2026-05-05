@@ -89,7 +89,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
       if (!user) return;
 
       if (completedLessons.includes(lessonId)) {
-        await supabase
+        await (supabase as any)
           .from("user_course_progress")
           .delete()
           .eq("user_id", user.id)
@@ -97,7 +97,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
         
         setCompletedLessons(prev => prev.filter(id => id !== lessonId));
       } else {
-        await supabase
+        await (supabase as any)
           .from("user_course_progress")
           .insert([{ user_id: user.id, lesson_id: lessonId }]);
         
