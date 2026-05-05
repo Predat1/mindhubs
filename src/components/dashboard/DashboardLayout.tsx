@@ -61,6 +61,7 @@ export const VENDOR_NAV: SidebarItem[] = [
 export const ADMIN_NAV: SidebarItem[] = [
   { label: "Accueil", href: "/admin", icon: Home, group: "main" },
   { label: "Commandes", href: "/admin?tab=orders", icon: ShoppingBag, group: "main" },
+  { label: "Messages", href: "/admin?tab=messages", icon: MessageSquare, group: "main" },
   { label: "Produits", href: "/admin?tab=products", icon: Package, group: "main" },
   { label: "Vendeurs", href: "/admin?tab=vendors", icon: Store, group: "main" },
   { label: "Abonnements", href: "/admin?tab=subscriptions", icon: CreditCard, group: "main" },

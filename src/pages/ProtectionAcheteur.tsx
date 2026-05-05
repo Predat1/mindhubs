@@ -29,8 +29,8 @@ const protections = [
   },
   {
     icon: ShieldCheck,
-    title: "Protection Anti-Fraude",
-    desc: "Nous surveillons activement la plateforme pour détecter toute activité suspecte et protéger votre compte et vos achats."
+    title: "Paiement sous Séquestre",
+    desc: "Afin de garantir une transaction équitable, MindHubs conserve temporairement votre paiement. Les fonds ne sont débloqués au vendeur qu'après votre confirmation de réception ou après un délai de sécurité sans incident."
   },
   {
     icon: Star,

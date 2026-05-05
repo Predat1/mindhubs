@@ -185,3 +185,25 @@ export const useCreateOrGetChat = () => {
     }
   });
 };
+
+export const useAllChats = () => {
+  return useQuery({
+    queryKey: ["admin-chats"],
+    queryFn: async (): Promise<Chat[]> => {
+      const { data, error } = await sb
+        .from("chats")
+        .select(`*, vendor:vendor_id(shop_name, avatar_url)`)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+      
+      return (data || []).map((chat: any) => ({
+        ...chat,
+        customer_name: chat.customer_name || "Client #" + (chat.user_id || "").slice(0, 4).toUpperCase(),
+        customer_avatar: chat.customer_avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.user_id}`,
+        vendor_name: chat.vendor?.shop_name || "Vendeur",
+        vendor_avatar: chat.vendor?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.vendor_id}`
+      }));
+    },
+  });
+};

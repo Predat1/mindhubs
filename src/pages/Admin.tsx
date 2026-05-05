@@ -5,7 +5,7 @@ import {
   Link2, ImageIcon, Upload, Loader2, DollarSign, Users,
   ShieldAlert, Bell, HelpCircle, Sparkles, Edit, Globe, Activity,
   Download, Database, Server, Key, Play, History, Filter, UserCog, Settings as SettingsIcon,
-  Store, Zap, Search, CreditCard
+  Store, Zap, Search, CreditCard, BadgeCheck
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -30,11 +30,12 @@ import AdminAnalyticsTab from "@/components/admin/AdminAnalyticsTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
 import AdminVendorsTab from "@/components/admin/AdminVendorsTab";
 import AdminProductsTab from "@/components/admin/AdminProductsTab";
+import AdminMessagesTab from "@/components/admin/AdminMessagesTab";
 
 // ─── Types ───
 type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | 
            "subscriptions" | "security" | "analytics" | "settings" | "help" | 
-           "api-manager" | "logs" | "users";
+           "api-manager" | "logs" | "users" | "messages";
 
 interface ProductForm {
   id: string; title: string; image_url: string; old_price: string; price: string;
@@ -66,6 +67,8 @@ const statusConfig = {
   pending: { label: "En attente", color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20", icon: Clock },
   completed: { label: "Terminé", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
   shipped: { label: "Expédié", color: "bg-primary/10 text-primary border-primary/20", icon: ExternalLink },
+  delivered: { label: "Livré", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Package },
+  confirmed: { label: "Confirmé", color: "bg-purple-500/10 text-purple-600 border-purple-500/20", icon: BadgeCheck },
   cancelled: { label: "Annulé", color: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
 };
 
@@ -380,22 +383,46 @@ const Admin = () => {
             {/* ─── TAB: PRODUCTS (FULL CONTROL) ─── */}
             {currentTab === "products" && <AdminProductsTab logAction={logAction} />}
 
+            {/* ─── TAB: MESSAGES (SUPERVISION) ─── */}
+            {currentTab === "messages" && <AdminMessagesTab />}
+
             {/* ─── TAB: ORDERS ─── */}
             {currentTab === "orders" && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-black">Commandes Globales</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-3xl font-black">Commandes Globales</h2>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="rounded-xl text-[10px] font-black uppercase" onClick={() => refetchOrders()}>
+                      Actualiser
+                    </Button>
+                  </div>
+                </div>
                 <div className="stat-card rounded-2xl overflow-hidden border-glow">
                    <div className="overflow-x-auto">
                    <table className="w-full text-sm text-left">
                       <thead className="bg-muted/30 border-b border-border">
-                         <tr><th className="p-4 font-black text-[10px] uppercase">Client</th><th className="p-4 font-black text-[10px] uppercase">Total</th><th className="p-4 font-black text-[10px] uppercase">Statut</th><th className="p-4 font-black text-[10px] uppercase text-right">Actions</th></tr>
+                         <tr>
+                            <th className="p-4 font-black text-[10px] uppercase">ID & Date</th>
+                            <th className="p-4 font-black text-[10px] uppercase">Client</th>
+                            <th className="p-4 font-black text-[10px] uppercase">Total</th>
+                            <th className="p-4 font-black text-[10px] uppercase">Statut</th>
+                            <th className="p-4 font-black text-[10px] uppercase text-right">Actions</th>
+                         </tr>
                       </thead>
                       <tbody>
                          {orders.map((o:any) => (
                             <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted/5">
+                               <td className="p-4">
+                                 <p className="font-mono text-[10px] text-primary">#{o.id.slice(0, 8)}</p>
+                                 <p className="text-[9px] text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
+                               </td>
                                <td className="p-4"><p className="font-bold">{o.customer_name}</p><p className="text-[10px] text-muted-foreground">{o.customer_email}</p></td>
-                               <td className="p-4 font-black">{formatCurrency(o.total_price)}</td>
-                               <td className="p-4"><Badge className={statusConfig[o.status as keyof typeof statusConfig]?.color}>{o.status}</Badge></td>
+                               <td className="p-4 font-black text-primary">{formatCurrency(o.total_price)}</td>
+                               <td className="p-4">
+                                 <Badge className={statusConfig[o.status as keyof typeof statusConfig]?.color || "bg-muted"}>
+                                   {statusConfig[o.status as keyof typeof statusConfig]?.label || o.status}
+                                 </Badge>
+                               </td>
                                <td className="p-4 text-right">
                                  <div className="flex items-center justify-end gap-2">
                                    <Button variant="ghost" size="sm" onClick={() => setViewingOrder(o)} className="rounded-xl"><Eye size={16} /></Button>

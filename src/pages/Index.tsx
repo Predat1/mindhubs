@@ -4,6 +4,7 @@ import StatsBar from "@/components/StatsBar";
 import LogoMarquee from "@/components/LogoMarquee";
 import DiscoverySection from "@/components/DiscoverySection";
 import TrustLogosSection from "@/components/TrustLogosSection";
+import TrustFeaturesSection from "@/components/TrustFeaturesSection";
 import NewProductsSection from "@/components/NewProductsSection";
 import ExpertiseSection from "@/components/ExpertiseSection";
 import RecentlyViewedSection from "@/components/RecentlyViewedSection";
@@ -12,7 +13,6 @@ import FAQSection from "@/components/FAQSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import HelpSection from "@/components/HelpSection";
 import FooterSection from "@/components/FooterSection";
-import SEO from "@/components/SEO";
 
 const Index = () => {
   return (
@@ -29,6 +29,7 @@ const Index = () => {
       <DiscoverySection />
       <StatsBar />
       <TrustLogosSection />
+      <TrustFeaturesSection />
       <NewProductsSection />
       <ExpertiseSection />
       <GoogleReviewsSection />
