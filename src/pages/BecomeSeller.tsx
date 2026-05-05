@@ -193,13 +193,13 @@ const BecomeSeller = () => {
 
       const { data: newVendor, error: vendorError } = await supabase
         .from("vendors")
-        .insert({
+        .upsert({
           user_id: userId,
           username: form.username,
           shop_name: form.shopName,
           description: `Niche: ${form.niche} | ${form.bio}`,
           avatar_url: avatarUrl,
-        })
+        }, { onConflict: 'user_id' })
         .select()
         .single();
 
@@ -207,20 +207,20 @@ const BecomeSeller = () => {
       const vendorId = newVendor.id;
 
       // Assign vendor role
-      await supabase.from("user_roles").insert({ user_id: userId, role: "vendor" });
+      await supabase.from("user_roles").upsert({ user_id: userId, role: "vendor" }, { onConflict: 'user_id,role' });
 
       // Create subscription
-      await (supabase as any).from("vendor_subscriptions").insert({
+      await (supabase as any).from("vendor_subscriptions").upsert({
         vendor_id: vendorId,
         plan: selectedPlan,
         status: selectedPlan === 'free' ? 'active' : 'pending'
-      });
+      }, { onConflict: 'vendor_id' });
 
       // Initialize credits with 0
-      await (supabase as any).from("vendor_credits").insert({
+      await (supabase as any).from("vendor_credits").upsert({
         vendor_id: vendorId,
         balance: 0
-      });
+      }, { onConflict: 'vendor_id' });
 
       setSubmitStep("✓ Presque prêt !");
       await queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
