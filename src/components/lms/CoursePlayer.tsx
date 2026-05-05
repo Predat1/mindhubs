@@ -46,7 +46,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
     setLoading(true);
     try {
       // 1. Fetch structure
-      const { data: chaptersData, error: chError } = await supabase
+      const { data: chaptersData, error: chError } = await (supabase as any)
         .from("course_chapters")
         .select(`*, lessons:course_lessons(*)`)
         .eq("course_id", courseId)
