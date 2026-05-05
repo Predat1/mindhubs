@@ -10,7 +10,8 @@ import {
   Clock,
   CheckCircle2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
