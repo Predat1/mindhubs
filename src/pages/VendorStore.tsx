@@ -159,6 +159,15 @@ const VendorStore = () => {
                            {vendor.verified && (
                              <Badge className="bg-accent/10 text-accent border-none font-black hidden md:flex">EXPERT VÉRIFIÉ</Badge>
                            )}
+                           {vendor.plan && vendor.plan !== 'free' && (
+                             <Badge className={`font-black hidden md:flex border-none ${
+                               vendor.plan === 'elite' ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 
+                               vendor.plan === 'pro' ? 'bg-purple-500 text-white' : 
+                               'bg-zinc-500 text-white'
+                             }`}>
+                               {vendor.plan.toUpperCase()}
+                             </Badge>
+                           )}
                         </div>
                         <p className="text-muted-foreground font-medium flex items-center justify-center md:justify-start gap-2">
                            <span className="font-bold" style={{ color: brandColor }}>@{vendor.username}</span>

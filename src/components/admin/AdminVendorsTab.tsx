@@ -39,6 +39,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; label: string; type: 'vendor' | 'product' } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [updatingPlan, setUpdatingPlan] = useState(false);
 
   // ─── Queries ───
   const { data: vendors = [], isLoading: vendorsLoading, refetch } = useQuery({
@@ -135,6 +136,33 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
       refetch();
     } catch (err: any) {
       toast.error("Erreur: " + err.message);
+    }
+  };
+
+  const changePlan = async (vendorId: string, shopName: string, newPlan: string) => {
+    setUpdatingPlan(true);
+    try {
+      // 1. Mettre à jour la table vendor_subscriptions
+      const { error: subError } = await (supabase as any)
+        .from('vendor_subscriptions')
+        .update({ 
+          plan: newPlan,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('vendor_id', vendorId);
+      
+      if (subError) throw subError;
+
+      // 2. Mettre à jour le badge sur le vendeur (optionnel si on utilise la vue, mais bon pour la dénorm)
+      // En fait la vue s'appuie sur vendor_subscriptions.plan donc c'est automatique.
+
+      await logAction('PLAN_CHANGE', `${shopName} → Plan ${newPlan.toUpperCase()}`);
+      toast.success(`Plan mis à jour pour ${shopName}`);
+      refetch();
+    } catch (err: any) {
+      toast.error("Erreur de mise à jour: " + err.message);
+    } finally {
+      setUpdatingPlan(false);
     }
   };
 
@@ -264,9 +292,29 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                <div className="p-10 pt-16 space-y-10">
                   {/* General Info Grid */}
                   <div className="grid grid-cols-2 gap-6">
-                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
-                        <p className="text-[9px] font-black text-muted-foreground uppercase">Abonnement Actuel</p>
-                        <p className="text-lg font-black uppercase text-primary">{selectedVendor.plan}</p>
+                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border relative">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase mb-2">Abonnement Actuel</p>
+                        <div className="flex flex-col gap-3">
+                           <Badge className={`w-fit font-black text-[10px] uppercase ${selectedVendor.plan === 'elite' ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : selectedVendor.plan === 'pro' ? 'bg-purple-500' : 'bg-zinc-500'}`}>
+                              {selectedVendor.plan}
+                           </Badge>
+                           
+                           <div className="space-y-1">
+                              <p className="text-[8px] font-black uppercase text-muted-foreground">Changer de plan :</p>
+                              <div className="flex flex-wrap gap-1">
+                                 {['free', 'starter', 'pro', 'elite'].map((p) => (
+                                    <button
+                                       key={p}
+                                       disabled={updatingPlan || selectedVendor.plan === p}
+                                       onClick={() => changePlan(selectedVendor.vendor_id, selectedVendor.shop_name, p)}
+                                       className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase border transition-all ${selectedVendor.plan === p ? 'bg-primary text-black border-primary' : 'bg-transparent border-white/10 hover:border-primary/50 text-muted-foreground'}`}
+                                    >
+                                       {p}
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+                        </div>
                      </div>
                      <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
                         <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>

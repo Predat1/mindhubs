@@ -16,6 +16,8 @@ export interface Vendor {
   custom_footer_text: string | null;
   verified: boolean;
   created_at: string;
+  plan?: string;
+  badge?: string;
 }
 
 export const useVendor = (username: string | undefined) => {
@@ -23,8 +25,8 @@ export const useVendor = (username: string | undefined) => {
     queryKey: ["vendor", username],
     queryFn: async (): Promise<Vendor | null> => {
       if (!username) return null;
-      const { data, error } = await supabase
-        .from("vendors")
+      const { data, error } = await (supabase as any)
+        .from("vendor_subscription_view")
         .select("*")
         .eq("username", username)
         .maybeSingle();
@@ -40,10 +42,10 @@ export const useVendorById = (id: string | undefined) => {
     queryKey: ["vendor-by-id", id],
     queryFn: async (): Promise<Vendor | null> => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from("vendors")
+      const { data, error } = await (supabase as any)
+        .from("vendor_subscription_view")
         .select("*")
-        .eq("id", id)
+        .eq("vendor_id", id)
         .maybeSingle();
       if (error) throw error;
       return data as unknown as Vendor | null;
@@ -90,8 +92,8 @@ export const useCurrentVendor = () => {
     queryKey: ["current-vendor", user?.id],
     queryFn: async (): Promise<Vendor | null> => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from("vendors")
+      const { data, error } = await (supabase as any)
+        .from("vendor_subscription_view")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
