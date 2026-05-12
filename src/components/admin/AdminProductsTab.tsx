@@ -162,14 +162,17 @@ const AdminProductsTab = ({ logAction }: Props) => {
     };
     
     // If it was a system product, we keep its ID to "override" it in the DB
-    if (isNew) {
-      payload.id = isStatic ? editing.id : `${slug}-${Date.now().toString(36)}`;
+    if (isStatic) {
+      payload.id = editing.id; // Keep static product ID for upsert override
     }
+    // For brand-new admin products (isNew && !isStatic), do NOT set payload.id — let Supabase generate a valid UUID
 
     try {
-      const { error } = (isNew && !isStatic) || (isStatic && isNew)
-        ? await (supabase as any).from("products").upsert([payload]) // Use upsert to handle static override safely
-        : await (supabase as any).from("products").update(payload).eq("id", editing.id);
+      const { error } = isStatic
+        ? await (supabase as any).from("products").upsert([payload]) // Override static product
+        : isNew
+          ? await (supabase as any).from("products").insert([payload]) // New product — DB generates UUID
+          : await (supabase as any).from("products").update(payload).eq("id", editing.id);
       if (error) throw error;
       toast.success(isStatic ? "Produit système importé et modifié ✓" : isNew ? "Produit créé ✨" : "Produit mis à jour ✓");
       setEditing(null);

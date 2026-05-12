@@ -62,7 +62,7 @@ const VendorDashboard = () => {
     enabled: productIds.length > 0,
   });
 
-  const { data: orders = [] } = useVendorOrders(vendor?.id, productIds);
+  const { data: orders = [] } = useVendorOrders(vendor?.id, productIds, commissionRate);
   
   const orderStats = useMemo(() => {
     if (!orders || orders.length === 0) return { revenue: 0, customers: 0, last7: 0 };

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useVendorSubscription } from "./useSubscription";
 
 export interface VendorOrderItem {
   id: string;
@@ -27,10 +26,8 @@ export interface VendorOrder {
  * WHY: Récupère les commandes pertinentes pour le vendeur et calcule ses revenus réels.
  * [MODIF] Utilise maintenant le taux de commission dynamique du plan (5%, 7% ou 10%).
  */
-export const useVendorOrders = (vendorId: string | undefined, productIds: string[]) => {
-  // WHY: On récupère le taux de commission dynamique du plan via le hook de souscription
-  const { commissionRate } = useVendorSubscription(vendorId);
-  const vendorShare = 1 - (commissionRate ?? 0.10);
+export const useVendorOrders = (vendorId: string | undefined, productIds: string[], commissionRate = 0.10) => {
+  const vendorShare = 1 - commissionRate;
 
   return useQuery({
     queryKey: ["vendor-all-orders", vendorId, productIds.join(",")],

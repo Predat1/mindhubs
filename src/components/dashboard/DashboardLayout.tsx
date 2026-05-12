@@ -118,7 +118,7 @@ const useVendorLiveBadges = (enabled: boolean) => {
   const { data: vendor } = useCurrentVendor();
   const { data: products = [] } = useVendorProducts(enabled ? vendor?.id : undefined);
   const productIds = useMemo(() => (Array.isArray(products) ? products.map((p) => p.id) : []), [products]);
-  const { data: orders = [] } = useVendorOrders(enabled && productIds.length > 0 ? vendor?.id : undefined, productIds);
+  const { data: orders = [] } = useVendorOrders(enabled && productIds.length > 0 ? vendor?.id : undefined, productIds, 0.10);
 
   return useMemo(() => {
     const map: Record<string, { badge: string; variant: BadgeVariant; tooltip: string }> = {};
@@ -173,6 +173,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const isVendorVariant = variant === "vendor";
   const { data: currentVendor } = useCurrentVendor();
 
   const baseItems = variant === "vendor" ? VENDOR_NAV : ADMIN_NAV;

@@ -37,7 +37,7 @@ export const useVendorSubscription = (vendorId?: string) => {
         .from('vendor_subscription_view')
         .select('*')
         .eq('vendor_id', vendorId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data as VendorSubscriptionData;
