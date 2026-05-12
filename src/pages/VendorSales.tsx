@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search, ShoppingBag, Eye, Clock, CheckCircle2, Truck, XCircle,
-  TrendingUp, Users, Package, Copy, Phone, Mail, ChevronRight,
+  TrendingUp, Users, Package, Copy, Phone, Mail, ChevronRight, HelpCircle,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -155,7 +156,46 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
         {/* Header */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Vos ventes</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Vos ventes</h2>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                    aria-label="Légende des statuts"
+                  >
+                    <HelpCircle size={14} />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start" className="w-72 p-4">
+                  <p className="text-xs font-bold mb-3 text-foreground">Légende des statuts</p>
+                  <ul className="space-y-2.5">
+                    {STATUS_ORDER.map((s) => {
+                      const cfg = STATUS_CONFIG[s];
+                      const Icon = cfg.icon;
+                      const desc: Record<typeof s, string> = {
+                        pending: "Commande reçue, à confirmer avec le client.",
+                        confirmed: "Paiement validé, prête à expédier.",
+                        delivered: "Produit remis au client, vente finalisée.",
+                        cancelled: "Commande annulée par vous ou le client.",
+                      } as const;
+                      return (
+                        <li key={s} className="flex items-start gap-2.5">
+                          <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${cfg.cls}`}>
+                            <Icon size={11} />
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-foreground leading-tight">{cfg.label}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{desc[s]}</p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </PopoverContent>
+              </Popover>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {orders.length} commande{orders.length > 1 ? "s" : ""} liée{orders.length > 1 ? "s" : ""} à vos produits.
             </p>

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
 import { useVendorOrders } from "@/hooks/useVendorOrders";
+import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 
 export type BadgeVariant = "new" | "hot" | "count";
 
@@ -516,12 +517,15 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
         </div>
       </div>
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav variant={variant} />
+
       {/* Floating Support Button for Vendors */}
       {variant === "vendor" && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-6 z-50 mb-16 lg:mb-0">
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>

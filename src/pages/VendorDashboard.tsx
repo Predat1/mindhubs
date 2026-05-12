@@ -73,17 +73,61 @@ const VendorDashboard = () => {
   const { data: orders = [] } = useVendorOrders(vendor?.id, productIds, commissionRate);
   
   const orderStats = useMemo(() => {
-    if (!orders || orders.length === 0) return { revenue: 0, customers: 0, last7: 0 };
+    if (!orders || orders.length === 0) {
+      return { revenue: 0, customers: 0, last7: 0, prev7: 0, deltaPct: 0, pendingCount: 0 };
+    }
     const valid = orders.filter((o) => o.status !== "cancelled");
-    const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+    const now = Date.now();
+    const day = 24 * 3600 * 1000;
+    const sevenDaysAgo = now - 7 * day;
+    const fourteenDaysAgo = now - 14 * day;
+
+    const last7 = valid
+      .filter((o) => new Date(o.created_at).getTime() > sevenDaysAgo)
+      .reduce((s, o) => s + (o.vendor_revenue || 0), 0);
+    const prev7 = valid
+      .filter((o) => {
+        const t = new Date(o.created_at).getTime();
+        return t > fourteenDaysAgo && t <= sevenDaysAgo;
+      })
+      .reduce((s, o) => s + (o.vendor_revenue || 0), 0);
+    const deltaPct = prev7 > 0 ? Math.round(((last7 - prev7) / prev7) * 100) : last7 > 0 ? 100 : 0;
+    const pendingCount = orders.filter((o) => o.status === "pending").length;
+
     return {
       revenue: valid.reduce((s, o) => s + (o.vendor_revenue || 0), 0),
       customers: new Set(valid.map((o) => o.customer_email)).size,
-      last7: valid
-        .filter((o) => new Date(o.created_at).getTime() > sevenDaysAgo)
-        .reduce((s, o) => s + (o.vendor_revenue || 0), 0),
+      last7,
+      prev7,
+      deltaPct,
+      pendingCount,
     };
   }, [orders]);
+
+  // Contextual greeting based on time + business events
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 5) return "Bonsoir";
+    if (hour < 12) return "Bonjour";
+    if (hour < 18) return "Bon après-midi";
+    return "Bonsoir";
+  }, []);
+
+  const contextualMessage = useMemo(() => {
+    if (orderStats.pendingCount > 0) {
+      return `Vous avez ${orderStats.pendingCount} commande${orderStats.pendingCount > 1 ? "s" : ""} en attente à traiter.`;
+    }
+    if (orderStats.deltaPct >= 20) {
+      return `Vos ventes ont bondi de +${orderStats.deltaPct}% cette semaine 🚀`;
+    }
+    if (orderStats.deltaPct <= -20) {
+      return `Vos ventes sont en baisse. Découvrez nos outils marketing pour rebondir.`;
+    }
+    if (products.length === 0) {
+      return "Commencez par publier votre premier produit pour lancer votre boutique.";
+    }
+    return "Voici l'état actuel de votre business sur MindHubs.";
+  }, [orderStats, products.length]);
 
   const copyLink = (username: string) => {
     const url = `${window.location.origin}/store/${username}`;
@@ -125,10 +169,10 @@ const VendorDashboard = () => {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
             <h2 className="text-3xl font-black text-foreground sm:text-4xl tracking-tighter">
-              Bonjour {firstName} ! <span className="inline-block animate-bounce-slow">👋</span>
+              {greeting} {firstName} ! <span className="inline-block animate-bounce-slow">👋</span>
             </h2>
             <p className="text-sm font-medium text-muted-foreground">
-              Voici l'état actuel de votre business sur MindHubs.
+              {contextualMessage}
             </p>
           </div>
           
@@ -218,7 +262,21 @@ const VendorDashboard = () => {
               color: "text-blue-500 bg-blue-500/10",
               extra: !canAddProduct ? <Link to="/pricing" className="text-[9px] font-black text-destructive hover:underline mt-2 inline-block">Limite atteinte. Upgrader ?</Link> : null
             },
-            { icon: ShoppingBag, label: "7 derniers jours", value: `${last7.toLocaleString()} FCFA`, info: "Revenus cumulés cette semaine", color: "text-primary bg-primary/10" },
+            {
+              icon: ShoppingBag,
+              label: "7 derniers jours",
+              value: `${last7.toLocaleString()} FCFA`,
+              info: "Revenus cumulés cette semaine",
+              color: "text-primary bg-primary/10",
+              extra: orderStats.deltaPct !== 0 ? (
+                <span className={cn(
+                  "inline-flex items-center gap-1 mt-2 text-[10px] font-black uppercase tracking-widest",
+                  orderStats.deltaPct > 0 ? "text-emerald-500" : "text-rose-500"
+                )}>
+                  {orderStats.deltaPct > 0 ? "↑" : "↓"} {Math.abs(orderStats.deltaPct)}% vs semaine préc.
+                </span>
+              ) : null,
+            },
             { icon: Users, label: "Clients totaux", value: customers.toLocaleString(), info: "Clients ayant commandé", color: "text-amber-500 bg-amber-500/10" },
           ].map(({ icon: Icon, label, value, info, color, extra }) => (
             <div key={label} className="group rounded-[2.5rem] border border-border bg-card/50 backdrop-blur-md p-6 transition-all hover:border-primary/20 hover:shadow-xl flex flex-col justify-between">

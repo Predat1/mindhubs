@@ -17,6 +17,7 @@ import {
   BadgeCheck, Zap, Sparkles, Camera
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { compressImage } from "@/lib/imageCompression";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -50,15 +51,17 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
   }, [vendor]);
 
   const handleAvatar = async (file: File) => {
-    if (file.size > 2 * 1024 * 1024) {
-       toast({ title: "Fichier trop lourd", description: "L'image ne doit pas dépasser 2Mo.", variant: "destructive" });
-       return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Fichier trop lourd", description: "L'image ne doit pas dépasser 10Mo (sera ensuite compressée).", variant: "destructive" });
+      return;
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Compress to max 512x512 WebP for avatars
+      const compressed = await compressImage(file, { maxWidth: 512, maxHeight: 512, quality: 0.85 });
+      const ext = compressed.name.split(".").pop();
       const path = `${vendor.user_id}/avatar-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from("product-images").upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (error) throw error;
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => ({ ...f, avatar_url: data.publicUrl }));
@@ -71,15 +74,17 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
   };
 
   const handleBanner = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-       toast({ title: "Fichier trop lourd", description: "La bannière ne doit pas dépasser 5Mo.", variant: "destructive" });
-       return;
+    if (file.size > 15 * 1024 * 1024) {
+      toast({ title: "Fichier trop lourd", description: "La bannière ne doit pas dépasser 15Mo (sera ensuite compressée).", variant: "destructive" });
+      return;
     }
     setUploadingBanner(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Compress to max 1920x600 WebP for banners
+      const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 600, quality: 0.82 });
+      const ext = compressed.name.split(".").pop();
       const path = `${vendor.user_id}/banner-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from("product-images").upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (error) throw error;
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => ({ ...f, banner_url: data.publicUrl }));

@@ -180,6 +180,8 @@ const Inner = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [editPrompt, setEditPrompt] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const [isDirty, setIsDirty] = useState(false);
   const lastSavedRef = useRef<string>("");
 
   // ===== Persistence: load draft from localStorage on mount (only for NEW products)
@@ -218,19 +220,37 @@ const Inner = ({
   // ===== Persistence: save form state to localStorage on every change (debounced)
   useEffect(() => {
     if (isEdit) return;
+    const serialized = JSON.stringify(form);
+    if (serialized !== lastSavedRef.current && lastSavedRef.current !== "") {
+      setSaveState("saving");
+      setIsDirty(true);
+    }
     const t = setTimeout(() => {
       try {
-        const serialized = JSON.stringify(form);
         if (serialized !== lastSavedRef.current) {
           localStorage.setItem(DRAFT_KEY, serialized);
           lastSavedRef.current = serialized;
+          setSaveState("saved");
+          // Reset to idle after 2s for a "saved ✓" → "" transition
+          setTimeout(() => setSaveState("idle"), 2000);
         }
       } catch {
         /* ignore */
       }
-    }, 500);
+    }, 800);
     return () => clearTimeout(t);
   }, [form, isEdit]);
+
+  // ===== Warn before leaving if unsaved changes exist
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   const clearLocalDraft = () => {
     try {
@@ -625,6 +645,7 @@ const Inner = ({
           : undefined,
       );
       clearLocalDraft();
+      setIsDirty(false);
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
       if (justPublished && !isEdit) {
@@ -713,6 +734,25 @@ const Inner = ({
             {draftRestored && !isEdit && (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 <RefreshCw size={9} /> Brouillon restauré
+              </span>
+            )}
+            {!isEdit && saveState !== "idle" && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-opacity ${
+                  saveState === "saving"
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-green-500/10 text-green-600 dark:text-green-400"
+                }`}
+              >
+                {saveState === "saving" ? (
+                  <>
+                    <Loader2 size={9} className="animate-spin" /> Sauvegarde…
+                  </>
+                ) : (
+                  <>
+                    <Check size={9} /> Sauvegardé
+                  </>
+                )}
               </span>
             )}
           </div>

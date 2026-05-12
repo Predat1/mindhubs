@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,12 @@ import { useVendorProductStats } from "@/hooks/useVendorOrders";
 import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);
@@ -19,6 +25,9 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
   const { canAddProduct, maxProducts, plan } = useVendorSubscription(vendorId);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "sales" | "views" | "alpha">("recent");
+  const [filterStatus, setFilterStatus] = useState<"all" | "published" | "draft">("all");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   const statsMap = useMemo(() => {
     const map: Record<string, { views: number; sales: number }> = {};
@@ -35,10 +44,9 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
     return map;
   }, [stats]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.")) return;
-    
-    const { error } = await supabase.from("products").delete().eq("id", id).eq("vendor_id", vendorId);
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("products").delete().eq("id", deleteTarget.id).eq("vendor_id", vendorId);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
@@ -47,6 +55,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
     }
+    setDeleteTarget(null);
   };
 
   const copyLink = (id: string) => {
@@ -55,9 +64,22 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
     toast({ title: "Lien de vente copié ✓", description: "Vous pouvez maintenant le partager." });
   };
 
-  const filtered = (products || []).filter((p) => 
-    p.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const arr = (products || []).filter((p) => {
+      const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = filterStatus === "all" || (p as any).status === filterStatus;
+      return matchSearch && matchStatus;
+    });
+    arr.sort((a, b) => {
+      if (sortBy === "alpha") return a.title.localeCompare(b.title);
+      if (sortBy === "sales") return (statsMap[b.id]?.sales || 0) - (statsMap[a.id]?.sales || 0);
+      if (sortBy === "views") return (statsMap[b.id]?.views || 0) - (statsMap[a.id]?.views || 0);
+      const da = (a as any).created_at ? new Date((a as any).created_at).getTime() : 0;
+      const db = (b as any).created_at ? new Date((b as any).created_at).getTime() : 0;
+      return db - da;
+    });
+    return arr;
+  }, [products, search, filterStatus, sortBy, statsMap]);
 
   return (
     <DashboardLayout variant="vendor" title="Gestion des Produits" shopName={shopName} shopUrl={shopUrl}>
@@ -86,22 +108,42 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
           </div>
         </div>
 
-        <div className="relative max-w-md">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Rechercher une formation..." 
-            className="pl-11 h-12 rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm" 
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher une formation..."
+              className="pl-11 h-12 rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm"
+            />
+          </div>
+          <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
+            <SelectTrigger className="h-12 w-[160px] rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm">
+              <SelectValue placeholder="Statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="published">Publiés</SelectItem>
+              <SelectItem value="draft">Brouillons</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="h-12 w-[180px] rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm">
+              <SlidersHorizontal size={14} className="text-muted-foreground" />
+              <SelectValue placeholder="Trier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Plus récents</SelectItem>
+              <SelectItem value="sales">Plus de ventes</SelectItem>
+              <SelectItem value="views">Plus de vues</SelectItem>
+              <SelectItem value="alpha">Alphabétique</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {productsLoading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-             {[...Array(3)].map((_, i) => (
-               <div key={i} className="h-64 rounded-3xl bg-muted/20 animate-pulse border border-white/5" />
-             ))}
-          </div>
+          <DashboardSkeleton variant="cards" count={3} />
         ) : filtered.length === 0 ? (
           <div className="rounded-[3rem] border-2 border-dashed border-white/5 bg-card/30 py-24 text-center space-y-6">
             <div className="h-20 w-20 bg-muted/40 rounded-full flex items-center justify-center mx-auto text-muted-foreground opacity-50">
@@ -155,7 +197,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                          <Button asChild variant="ghost" size="icon" title="Modifier le produit" className="rounded-xl hover:bg-primary/10 hover:text-primary">
                            <Link to={`/dashboard/edit-product/${p.id}`}><Pencil size={16} /></Link>
                          </Button>
-                         <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} title="Supprimer" className="rounded-xl hover:bg-destructive/10 hover:text-destructive">
+                         <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: p.id, title: p.title })} title="Supprimer" className="rounded-xl hover:bg-destructive/10 hover:text-destructive">
                            <Trash2 size={16} />
                          </Button>
                        </div>
@@ -167,6 +209,23 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce produit ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-semibold text-foreground">{deleteTarget?.title}</span> sera supprimé définitivement. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
