@@ -77,7 +77,8 @@ const MODEL_ROUTING: any = {
     }
   },
   'plan': {
-    primary: 'anthropic/claude-sonnet-4-5',
+    primary: 'anthropic/claude-opus-4',
+    quick: 'anthropic/claude-sonnet-4-5',
     fallback: 'google/gemini-2.5-pro',
     temperature: 0.4,
     max_tokens: 3000,
@@ -99,16 +100,16 @@ const MODEL_ROUTING: any = {
   'chapter-draft': {
     primary: 'anthropic/claude-opus-4',
     quick: 'anthropic/claude-sonnet-4-5',
-    fallback: 'mistral/mistral-large-2411',
+    fallback: 'google/gemini-2.5-pro',
     temperature: 0.7,
     max_tokens: 6000,
     use_tool_calling: false,
     stream: true
   },
   'marketing': {
-    primary: 'mistral/mistral-large-2411',
-    quick: 'mistral/mistral-small-3.1',
-    fallback: 'anthropic/claude-sonnet-4-5',
+    primary: 'anthropic/claude-sonnet-4-5',
+    quick: 'google/gemini-2.5-flash',
+    fallback: 'google/gemini-2.5-pro',
     temperature: 0.85,
     max_tokens: 3000,
     use_tool_calling: true,
@@ -123,8 +124,9 @@ const MODEL_ROUTING: any = {
     }
   },
   'remix': {
-    primary: 'google/gemini-2.5-flash',
-    fallback: 'openai/gpt-4o-mini',
+    primary: 'google/gemini-2.5-pro',
+    quick: 'google/gemini-2.5-flash',
+    fallback: 'anthropic/claude-sonnet-4-5',
     temperature: 0.9,
     max_tokens: 1000,
     use_tool_calling: true,
@@ -140,7 +142,7 @@ const MODEL_ROUTING: any = {
   },
   'pivots': {
     primary: 'google/gemini-2.5-flash',
-    fallback: 'openai/gpt-4o-mini',
+    fallback: 'openai/gpt-4.1-mini',
     temperature: 0.85,
     max_tokens: 800,
     use_tool_calling: true,

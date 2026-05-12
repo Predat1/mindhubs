@@ -27,53 +27,44 @@ CREATE TABLE IF NOT EXISTS messages (
 ALTER TABLE chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
--- Policies for chats
--- Vendors can view/update chats associated with their vendor_id
-CREATE POLICY "Vendors can view their chats" ON chats
-    FOR SELECT USING (
-        vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())
-    );
+-- Policies for chats (idempotent)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Vendors can view their chats' AND tablename = 'chats') THEN
+    CREATE POLICY "Vendors can view their chats" ON chats FOR SELECT USING (vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid()));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Vendors can update their chats' AND tablename = 'chats') THEN
+    CREATE POLICY "Vendors can update their chats" ON chats FOR UPDATE USING (vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid()));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view their chats' AND tablename = 'chats') THEN
+    CREATE POLICY "Users can view their chats" ON chats FOR SELECT USING (user_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can create chats' AND tablename = 'chats') THEN
+    CREATE POLICY "Users can create chats" ON chats FOR INSERT WITH CHECK (user_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update their chats' AND tablename = 'chats') THEN
+    CREATE POLICY "Users can update their chats" ON chats FOR UPDATE USING (user_id = auth.uid());
+  END IF;
+END $$;
 
-CREATE POLICY "Vendors can update their chats" ON chats
-    FOR UPDATE USING (
-        vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())
-    );
+-- Policies for messages (idempotent)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert messages' AND tablename = 'messages') THEN
+    CREATE POLICY "Users can insert messages" ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id AND chat_id IN (SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users and Vendors can read messages' AND tablename = 'messages') THEN
+    CREATE POLICY "Users and Vendors can read messages" ON messages FOR SELECT USING (chat_id IN (SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users and Vendors can update messages' AND tablename = 'messages') THEN
+    CREATE POLICY "Users and Vendors can update messages" ON messages FOR UPDATE USING (chat_id IN (SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())));
+  END IF;
+END $$;
 
--- Users can view/create/update chats they are part of
-CREATE POLICY "Users can view their chats" ON chats
-    FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "Users can create chats" ON chats
-    FOR INSERT WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Users can update their chats" ON chats
-    FOR UPDATE USING (user_id = auth.uid());
-
--- Policies for messages
--- Users can insert messages in their chats
-CREATE POLICY "Users can insert messages" ON messages
-    FOR INSERT WITH CHECK (
-        auth.uid() = sender_id AND 
-        chat_id IN (
-            SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())
-        )
-    );
-
--- Users and Vendors can read messages in their chats
-CREATE POLICY "Users and Vendors can read messages" ON messages
-    FOR SELECT USING (
-        chat_id IN (
-            SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())
-        )
-    );
-
-CREATE POLICY "Users and Vendors can update messages" ON messages
-    FOR UPDATE USING (
-        chat_id IN (
-            SELECT id FROM chats WHERE user_id = auth.uid() OR vendor_id IN (SELECT id FROM vendors WHERE user_id = auth.uid())
-        )
-    );
-
--- Supabase Realtime setup
-ALTER PUBLICATION supabase_realtime ADD TABLE chats;
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+-- Supabase Realtime setup (idempotent)
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE chats;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

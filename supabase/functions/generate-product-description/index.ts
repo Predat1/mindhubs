@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY missing");
 
     const systemPrompt = `Tu es un copywriter expert en vente de produits digitaux en Afrique francophone (Bénin, Côte d'Ivoire, Sénégal, Cameroun…). 
 Tu écris des descriptions de produits irrésistibles, orientées conversion, claires et honnêtes. 
@@ -39,14 +39,16 @@ Format attendu (markdown léger, sans titre principal) :
 
 Reste sous 220 mots. Pas de prix. Pas de promesse irréaliste.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://mindhubs.com",
+        "X-Title": "MindHubs Product Description",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "anthropic/claude-sonnet-4-5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },

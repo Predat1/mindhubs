@@ -34,7 +34,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4-5",
+        model: "anthropic/claude-opus-4",
         messages: [
           { role: "system", content: "Tu es un expert en création de produits digitaux et en copywriting Facebook Ads pour le marché africain francophone. Tu crées du contenu premium, actionnable et orienté résultats. Chaque chapitre doit contenir du contenu riche (150+ mots). Les textes publicitaires doivent être des scroll-stoppers optimisés conversion." },
           { role: "user", content: `Crée un kit business complet pour la niche "${niche}" au ${countryName || "marché africain"}.

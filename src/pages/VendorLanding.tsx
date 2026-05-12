@@ -96,49 +96,137 @@ export default function VendorLanding() {
         </div>
       </section>
 
-      {/* The Power Section */}
-      <section className="py-24 bg-muted/20 relative">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-               <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[10px] uppercase tracking-widest">Technologie de Pointe</Badge>
-               <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">
-                 Le <span className="text-primary">Cinema Studio</span> est votre nouvel employé.
-               </h2>
-               <p className="text-lg text-muted-foreground font-medium leading-relaxed">
-                 Oubliez les monteurs vidéos et les tournages coûteux. Notre IA génère des publicités de 1 minute qui convertissent 10x mieux que des images simples. 
-               </p>
-               
-               <ul className="space-y-4">
-                  {[
-                    "Accès exclusif à Sora & Veo en Afrique",
-                    "Timeline d'édition professionnelle simplifiée",
-                    "Exportation 4K pour Facebook & TikTok",
-                    "Voix-off IA ultra-réalistes incluses"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 font-bold text-sm">
-                       <CheckCircle2 size={18} className="text-primary" /> {item}
-                    </li>
-                  ))}
-               </ul>
+      {/* The Power Section — Cinema Studio Showcase */}
+      <section className="py-28 md:py-36 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-primary/10 blur-[160px]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-fuchsia-500/10 blur-[120px]" />
+
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto mb-16 space-y-5"
+          >
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">
+              <Video size={12} className="mr-1.5 inline" /> Cinema Studio AI
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95]">
+              Votre équipe vidéo <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-primary via-fuchsia-400 to-accent bg-clip-text text-transparent">
+                remplacée par l'IA.
+              </span>
+            </h2>
+            <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto">
+              Des publicités vidéo ultra-réalistes générées en 90 secondes. Plus de caméras, plus de monteurs — juste votre idée et l'IA.
+            </p>
+          </motion.div>
+
+          {/* Bento Grid */}
+          <div className="grid md:grid-cols-12 gap-4 md:gap-6 max-w-6xl mx-auto">
+            {/* Video Card — Large */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="md:col-span-7 relative group"
+            >
+              <div className="absolute inset-0 bg-primary/15 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative rounded-[2rem] border border-white/10 bg-muted/30 dark:bg-white/[0.03] backdrop-blur-xl overflow-hidden aspect-video shadow-2xl">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  src="https://cdn.pixabay.com/video/2023/10/20/185793-876182147_tiny.mp4"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/70">Généré en temps réel</span>
+                  </div>
+                  <p className="text-white font-black text-lg md:text-xl leading-snug">
+                    Pub vidéo Sora · 60s · Qualité 4K
+                  </p>
+                </div>
+                {/* Play overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+                    <Video size={24} className="text-white ml-1" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Stats Stack — Right */}
+            <div className="md:col-span-5 grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-6">
+              {[
+                { value: "10x", label: "Conversion vs images", sub: "Vidéo > Statique", color: "text-primary" },
+                { value: "90s", label: "Temps de génération", sub: "De l'idée au film", color: "text-fuchsia-400" },
+                { value: "4K", label: "Résolution d'export", sub: "Facebook · TikTok · YouTube", color: "text-emerald-400" },
+              ].map((stat, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.15 + idx * 0.1 }}
+                  className="rounded-2xl border border-white/10 bg-muted/30 dark:bg-white/[0.03] backdrop-blur-xl p-5 md:p-6 flex items-center gap-5 hover:border-primary/30 hover:bg-primary/5 transition-all group/stat"
+                >
+                  <div className={`text-3xl md:text-4xl font-black tracking-tighter ${stat.color} group-hover/stat:scale-110 transition-transform`}>
+                    {stat.value}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-black leading-snug truncate">{stat.label}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium truncate">{stat.sub}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
 
-            <div className="relative">
-               <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full" />
-               <div className="relative glass-card rounded-[3rem] border-white/10 aspect-video overflow-hidden shadow-2xl">
-                  <video 
-                    autoPlay 
-                    muted 
-                    loop 
-                    className="w-full h-full object-cover"
-                    src="https://cdn.pixabay.com/video/2023/10/20/185793-876182147_tiny.mp4" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
-                     <p className="text-white font-black italic">"Généré par MindHubs Cinema Studio en 90 secondes"</p>
-                  </div>
-               </div>
-            </div>
+            {/* Feature Pills — Bottom Row */}
+            {[
+              { icon: Sparkles, text: "Accès exclusif Sora & Veo en Afrique", accent: "from-primary/15 to-primary/5 border-primary/20" },
+              { icon: Video, text: "Timeline d'édition pro simplifiée", accent: "from-fuchsia-500/15 to-fuchsia-500/5 border-fuchsia-500/20" },
+              { icon: Globe, text: "Voix-off IA multilingues incluses", accent: "from-emerald-500/15 to-emerald-500/5 border-emerald-500/20" },
+              { icon: Zap, text: "Formats optimisés Reels & TikTok", accent: "from-amber-500/15 to-amber-500/5 border-amber-500/20" },
+            ].map((feat, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.3 + idx * 0.08 }}
+                className={`md:col-span-3 flex items-center gap-3 rounded-2xl border bg-gradient-to-br ${feat.accent} backdrop-blur-xl p-4 hover:scale-[1.03] transition-transform`}
+              >
+                <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <feat.icon size={16} />
+                </div>
+                <span className="text-xs font-bold leading-snug">{feat.text}</span>
+              </motion.div>
+            ))}
           </div>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <Button asChild size="lg" className="h-14 px-10 rounded-2xl bg-primary text-primary-foreground font-black gap-2 shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+              <Link to="/register">
+                Essayer le Cinema Studio <ArrowRight size={18} />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
