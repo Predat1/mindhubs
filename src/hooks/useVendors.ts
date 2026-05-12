@@ -92,14 +92,27 @@ export const useCurrentVendor = () => {
     queryKey: ["current-vendor", user?.id],
     queryFn: async (): Promise<Vendor | null> => {
       if (!user) return null;
-      const { data, error } = await (supabase as any)
-        .from("vendor_subscription_view")
+
+      // Try the enriched view first
+      try {
+        const { data, error } = await (supabase as any)
+          .from("vendor_subscription_view")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!error && data) return data as unknown as Vendor;
+      } catch (_) { /* view may not exist yet */ }
+
+      // Fallback: query vendors table directly
+      const { data: fallback, error: fbErr } = await (supabase as any)
+        .from("vendors")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (error) throw error;
-      return data as unknown as Vendor | null;
+      if (fbErr) throw fbErr;
+      return fallback as unknown as Vendor | null;
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5,
   });
 };

@@ -579,7 +579,7 @@ const Inner = ({
         .replace(/^-+|-+$/g, "")
         .slice(0, 50);
       const productData: Record<string, unknown> = {
-        id: isEdit ? form.id : `${slug}-${Date.now().toString(36)}`,
+        id: isEdit ? form.id : `${slug}-${crypto.randomUUID().slice(0, 8)}`,
         title: form.title.trim(),
         description: form.description.trim() || null,
         category: form.category,

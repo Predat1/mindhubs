@@ -17,14 +17,10 @@ const VendorGuard = ({ children }: Props) => {
       navigate("/mon-compte");
       return;
     }
-    
-    // If we have a user but no vendor yet, and we aren't loading anything, 
-    // we double check before redirecting to prevent accidental "logouts"
-    if (!loading && !vendorLoading && user && !vendor) {
-      // Small timeout to allow any pending auth state to stabilize
-      const t = setTimeout(() => {
-        if (!vendor) navigate("/become-a-seller");
-      }, 500);
+    // vendor===undefined means query still in progress — never redirect yet
+    // vendor===null means query is done and confirmed no vendor profile
+    if (!loading && !vendorLoading && user && vendor === null) {
+      const t = setTimeout(() => navigate("/become-a-seller"), 300);
       return () => clearTimeout(t);
     }
   }, [loading, user, vendor, vendorLoading, navigate]);

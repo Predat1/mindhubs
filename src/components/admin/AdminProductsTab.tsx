@@ -165,8 +165,8 @@ const AdminProductsTab = ({ logAction }: Props) => {
     if (isStatic) {
       payload.id = editing.id; // Keep static product ID for upsert override
     } else if (isNew) {
-      // products.id is TEXT PRIMARY KEY with no default — must supply a value
-      payload.id = `${slug}-${Date.now().toString(36)}`;
+      // products.id is TEXT PRIMARY KEY with no default — use UUID suffix for uniqueness
+      payload.id = `${slug}-${crypto.randomUUID().slice(0, 8)}`;
     }
 
     try {
