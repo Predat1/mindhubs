@@ -553,8 +553,9 @@ const Inner = ({
   const handleSave = async (overrideStatus?: "draft" | "published") => {
     const finalStatus = overrideStatus ?? form.status;
 
-    // Plan Limit Guard for NEW products
-    if (!isEdit && finalStatus === "published" && !canAddProduct) {
+    // Plan Limit Guard for NEW products (admin bypasses this check)
+    const isAdminUser = (await supabase.auth.getUser()).data.user?.email === 'mobifranck94@gmail.com';
+    if (!isEdit && finalStatus === "published" && !canAddProduct && !isAdminUser) {
       toast.error("Limite de plan atteinte", {
         description: `Votre plan ${plan} permet max ${maxProducts} produits. Passez au plan supérieur.`,
         action: { label: "Upgrader", onClick: () => navigate('/pricing') }

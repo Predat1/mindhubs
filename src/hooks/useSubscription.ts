@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type VendorPlan = 'free' | 'starter' | 'pro' | 'elite';
 
@@ -29,6 +30,8 @@ export interface VendorSubscriptionData {
  * Utilise la vue SQL 'vendor_subscription_view' pour agréger les données de plusieurs tables.
  */
 export const useVendorSubscription = (vendorId?: string) => {
+  const { user } = useAuth();
+  const isAdmin = user?.email === 'mobifranck94@gmail.com';
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['vendor-subscription', vendorId],
     enabled: !!vendorId,
@@ -45,16 +48,19 @@ export const useVendorSubscription = (vendorId?: string) => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const canAddProduct = data 
-    ? (data.max_products === -1 || data.product_count < data.max_products) 
-    : false;
+  // Admin bypass: always allow product addition
+  const canAddProduct = isAdmin
+    ? true
+    : data
+      ? (data.max_products === -1 || data.product_count < data.max_products)
+      : false;
 
   return {
     ...data,
     plan: data?.plan ?? 'free',
     status: data?.status ?? 'active',
     creditBalance: data?.credit_balance ?? 0,
-    maxProducts: data?.max_products ?? 1,
+    maxProducts: isAdmin ? -1 : (data?.max_products ?? 5),
     productCount: data?.product_count ?? 0,
     commissionRate: data?.commission_rate ?? 0.10,
     isLoading,
