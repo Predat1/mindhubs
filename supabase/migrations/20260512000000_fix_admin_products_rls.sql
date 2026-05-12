@@ -63,7 +63,7 @@ SELECT
   COALESCE(vs.plan, 'free'::vendor_plan) AS plan,
   COALESCE(vs.status, 'active') AS status,
   COALESCE(vc.balance, 0) AS credit_balance,
-  COALESCE(pl.max_products, 1) AS max_products,
+  COALESCE(pl.max_products, 5) AS max_products,
   COALESCE(pl.monthly_credits, 50) AS monthly_credits,
   COALESCE(pl.commission_rate, 0.10) AS commission_rate,
   COALESCE(pl.price_fcfa_monthly, 0) AS price_fcfa_monthly,
