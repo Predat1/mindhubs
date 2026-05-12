@@ -460,11 +460,16 @@ const Inner = ({
     (Object.values(stepValid).filter(Boolean).length / (form.is_lms ? STEPS.length : STEPS.length - 1)) * 100;
 
   const goNext = () => {
-    if (currentStepIndex < STEPS.length - 1)
-      setStep(STEPS[currentStepIndex + 1].key);
+    let nextIdx = currentStepIndex + 1;
+    // Skip "curriculum" step if this is not an LMS product
+    if (!form.is_lms && STEPS[nextIdx]?.key === "curriculum") nextIdx++;
+    if (nextIdx < STEPS.length) setStep(STEPS[nextIdx].key);
   };
   const goPrev = () => {
-    if (currentStepIndex > 0) setStep(STEPS[currentStepIndex - 1].key);
+    let prevIdx = currentStepIndex - 1;
+    // Skip "curriculum" step if this is not an LMS product
+    if (!form.is_lms && STEPS[prevIdx]?.key === "curriculum") prevIdx--;
+    if (prevIdx >= 0) setStep(STEPS[prevIdx].key);
   };
 
   // ===== Upload helper
@@ -1587,7 +1592,7 @@ const Inner = ({
               </div>
 
               <div className="mt-3 space-y-1">
-                {STEPS.map((s) => (
+                {STEPS.filter(s => form.is_lms || s.key !== "curriculum").map((s) => (
                   <div
                     key={s.key}
                     className="flex items-center justify-between text-[10px]"

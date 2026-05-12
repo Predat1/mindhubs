@@ -33,12 +33,14 @@ interface CourseBuilderProps {
 
 const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!courseId);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (courseId) {
       fetchCourseStructure();
+    } else {
+      setLoading(false);
     }
   }, [courseId]);
 
