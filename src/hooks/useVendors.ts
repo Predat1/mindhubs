@@ -100,7 +100,10 @@ export const useCurrentVendor = () => {
           .select("*")
           .eq("user_id", user.id)
           .maybeSingle();
-        if (!error && data) return data as unknown as Vendor;
+        if (!error && data) {
+          // vendor_subscription_view uses "vendor_id" — normalize to "id"
+          return { ...data, id: data.vendor_id ?? data.id } as unknown as Vendor;
+        }
       } catch (_) { /* view may not exist yet */ }
 
       // Fallback: query vendors table directly
