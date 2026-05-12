@@ -38,15 +38,23 @@ const VendorDashboard = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!loading && !user) navigate("/mon-compte");
-    if (!loading && !vendorLoading && user && !vendor) navigate("/become-a-seller");
+    if (!loading && !user) {
+      navigate("/mon-compte");
+      return;
+    }
+    // Only redirect to become-a-seller when both auth AND vendor query are fully settled
+    // vendor === null (not undefined) means the query completed and truly found nothing
+    if (!loading && !vendorLoading && user && vendor === null) {
+      navigate("/become-a-seller");
+    }
   }, [loading, user, vendor, vendorLoading, navigate]);
 
   // Aggregate stats
   const productIds = useMemo(() => products.map((p) => p.id), [products]);
-  
+  const productIdsKey = useMemo(() => productIds.join(","), [productIds]);
+
   const { data: stats } = useQuery({
-    queryKey: ["vendor-stats", vendor?.id, productIds.join(",")],
+    queryKey: ["vendor-stats", vendor?.id, productIdsKey],
     queryFn: async () => {
       if (productIds.length === 0) return { views: 0, purchases: 0, raw: [] };
       const { data } = await supabase

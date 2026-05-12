@@ -29,8 +29,9 @@ export interface VendorOrder {
 export const useVendorOrders = (vendorId: string | undefined, productIds: string[], commissionRate = 0.10) => {
   const vendorShare = 1 - commissionRate;
 
+  const productIdsKey = productIds.join(",");
   return useQuery({
-    queryKey: ["vendor-all-orders", vendorId, productIds.join(",")],
+    queryKey: ["vendor-all-orders", vendorId, productIdsKey],
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
 
