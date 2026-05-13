@@ -114,7 +114,7 @@ export default function Pricing() {
       />
       <Navbar />
 
-      <main className="pt-32 pb-24 px-4 overflow-hidden relative">
+      <main className="pt-28 pb-20 px-4 overflow-hidden relative">
         {/* Gradients adaptatifs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50 dark:opacity-20" />
         <div className="absolute top-1/2 right-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full pointer-events-none opacity-30 dark:opacity-10" />
@@ -127,10 +127,10 @@ export default function Pricing() {
               <Badge variant="outline" className="px-4 py-1.5 border-primary/20 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest mb-4">
                 Tarification transparente
               </Badge>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-none mb-6">
                 Propulsez votre business <br /> <span className="text-gradient-primary">au niveau supérieur.</span>
               </h1>
-              <p className="text-xl text-muted-foreground font-medium">
+              <p className="text-lg text-muted-foreground font-medium">
                 Du créateur solo à l'empire digital, choisissez le plan parfait pour votre croissance en Afrique.
               </p>
             </motion.div>
@@ -284,7 +284,7 @@ export default function Pricing() {
           <div className="pt-24 space-y-12">
             <div className="text-center space-y-4">
                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}>
-                  <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Besoin de <span className="text-gradient-primary">plus de puissance ?</span></h2>
+                  <h2 className="text-2xl md:text-4xl font-extrabold tracking-tighter">Besoin de <span className="text-gradient-primary">plus de puissance ?</span></h2>
                   <p className="text-muted-foreground max-w-2xl mx-auto mt-4 font-medium">
                     Rechargez votre compte à la carte pour vos générations IA. Valable 90 jours.
                   </p>
@@ -293,7 +293,7 @@ export default function Pricing() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {CREDIT_PACKS.map((pack, i) => (
-                <div key={i} className="bg-card p-8 rounded-[2rem] border border-border hover:border-primary/30 transition-all group relative overflow-hidden shadow-sm">
+                <div key={i} className="bg-card p-6 rounded-2xl border border-border hover:border-primary/30 transition-all group relative overflow-hidden shadow-sm">
                   {pack.badge && (
                     <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded shadow-md">
                       {pack.badge}

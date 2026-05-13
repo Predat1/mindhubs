@@ -184,7 +184,7 @@ const MonCompte = () => {
       <div className="min-h-screen bg-background aurora-bg">
         <SEO title="Espace Membre Mindhubs" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" keywords="compte mindhub, espace membre, mes achats formations, profil expert, connexion mindhubs" />
         <Navbar />
-        <main className="pt-32 pb-24">
+        <main className="pt-28 pb-20">
           <div className="container mx-auto px-4 max-w-4xl space-y-8">
             
             {/* Profile Header Card */}
@@ -400,17 +400,17 @@ const MonCompte = () => {
     <div className="min-h-screen bg-background aurora-bg">
       <SEO title="Connexion Expert – Mindhubs" description="Connectez-vous ou créez votre compte MindHub." path="/mon-compte" />
       <Navbar />
-      <main className="pt-32 pb-24 flex items-center min-h-[90vh]">
+      <main className="pt-28 pb-20 flex items-center min-h-[90vh]">
         <div className="container mx-auto px-4 max-w-lg">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center mb-8 space-y-4"
           >
-             <div className="h-16 w-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-primary-foreground mx-auto shadow-2xl shadow-primary/20">
-                <Zap size={32} fill="currentColor" />
+             <div className="h-14 w-14 bg-primary rounded-xl flex items-center justify-center text-primary-foreground mx-auto shadow-2xl shadow-primary/20">
+                <Zap size={28} fill="currentColor" />
              </div>
-             <h1 className="text-4xl font-black tracking-tighter">VOTRE PORTAIL <span className="text-primary italic">EXPERT</span></h1>
+             <h1 className="text-3xl font-extrabold tracking-tighter">VOTRE PORTAIL <span className="text-primary italic">EXPERT</span></h1>
           </motion.div>
 
           <motion.div 

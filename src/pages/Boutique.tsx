@@ -52,7 +52,7 @@ const Boutique = () => {
       <Navbar />
 
       {/* Header Section */}
-      <section className="pt-32 pb-12">
+      <section className="pt-28 pb-10">
         <div className="container mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -63,7 +63,7 @@ const Boutique = () => {
                <Badge className="bg-primary/20 text-primary border-none px-3 py-1 font-black text-[10px] tracking-widest">BOUTIQUE EXPERT</Badge>
                <Badge variant="outline" className="border-white/10 text-muted-foreground px-3 py-1 font-black text-[10px] tracking-widest uppercase">Paiement Sécurisé</Badge>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-foreground">
               Développez vos <br /> <span className="text-gradient-primary italic">Compétences Digitales</span>
             </h1>
             <p className="text-muted-foreground font-medium max-w-xl mx-auto">

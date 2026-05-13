@@ -159,7 +159,7 @@ const Checkout = () => {
       <SEO title="Checkout Elite" description="Finalisez votre commande MindHub" path="/checkout" />
       <Navbar />
 
-      <section className="pt-32 pb-24 container mx-auto px-4">
+      <section className="pt-28 pb-20 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -169,7 +169,7 @@ const Checkout = () => {
             <Link to="/panier" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
               <ArrowLeft size={14} /> Retour au Panier
             </Link>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mt-4">Finaliser la <span className="text-gradient-primary italic">Commande</span></h1>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mt-4">Finaliser la <span className="text-gradient-primary italic">Commande</span></h1>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="grid lg:grid-cols-5 gap-8 items-start">

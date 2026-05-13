@@ -57,14 +57,14 @@ const CartPage = () => {
       <SEO title="Panier" description="Votre panier MindHub. Finalisez vos achats de formations digitales premium." path="/panier" keywords="panier mindhub, achat formation, checkout mindhubs, valider commande" />
       <Navbar />
 
-      <section className="pt-32 pb-12">
+      <section className="pt-28 pb-10">
         <div className="container mx-auto px-4">
            <motion.div 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              className="max-w-5xl mx-auto flex items-center justify-between"
            >
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter">Mon <span className="text-gradient-primary italic">Panier</span></h1>
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter">Mon <span className="text-gradient-primary italic">Panier</span></h1>
               <Badge className="bg-primary/20 text-primary border-none font-black px-4 py-1.5">{items.length} Article{items.length > 1 ? "s" : ""}</Badge>
            </motion.div>
         </div>

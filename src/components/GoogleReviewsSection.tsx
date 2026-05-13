@@ -34,9 +34,9 @@ const GoogleReviewsSection = () => {
         <AnimateOnScroll>
           <div className="flex justify-center gap-2 mb-4">
              <BadgeCheck className="text-primary w-5 h-5" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Avis Clients Vérifiés</span>
+             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Avis Clients Vérifiés</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mb-4">
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-foreground mb-4">
             Nos clients parlent <span className="text-primary italic">de</span> nous
           </h2>
           <div className="flex flex-col items-center gap-2">
@@ -52,11 +52,11 @@ const GoogleReviewsSection = () => {
 
       {/* Google Trust Header */}
       <div className="container mx-auto px-4 mb-12">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 glass-card p-8 rounded-[3rem] border-white/5">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 glass-card p-6 rounded-2xl border-white/5">
            <div className="flex flex-col items-center md:items-start gap-1">
-              <p className="text-foreground font-black text-xs uppercase tracking-widest">EXCELLENT SUR</p>
+              <p className="text-foreground font-bold text-xs uppercase tracking-widest">EXCELLENT SUR</p>
               <div className="flex items-center gap-2">
-                <span className="text-3xl font-black" style={{ color: "#4285F4" }}>G</span>
+                <span className="text-2xl font-extrabold" style={{ color: "#4285F4" }}>G</span>
                 <span className="text-2xl font-bold" style={{ color: "#EA4335" }}>o</span>
                 <span className="text-2xl font-bold" style={{ color: "#FBBC05" }}>o</span>
                 <span className="text-2xl font-bold" style={{ color: "#4285F4" }}>g</span>
@@ -67,15 +67,15 @@ const GoogleReviewsSection = () => {
            <div className="hidden md:block h-12 w-px bg-white/10" />
            <div className="flex items-center gap-6">
               <div className="text-center">
-                 <p className="text-2xl font-black">4.9</p>
+                 <p className="text-xl font-extrabold">4.9</p>
                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Score Expert</p>
               </div>
               <div className="text-center">
-                 <p className="text-2xl font-black">100%</p>
+                 <p className="text-xl font-extrabold">100%</p>
                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Satisfaction</p>
               </div>
               <div className="text-center">
-                 <p className="text-2xl font-black">24/7</p>
+                 <p className="text-xl font-extrabold">24/7</p>
                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Support</p>
               </div>
            </div>
@@ -97,15 +97,15 @@ const GoogleReviewsSection = () => {
           {[...reviews, ...reviews].map((review, i) => (
             <div 
               key={i} 
-              className="w-[350px] shrink-0 glass-card rounded-[2.5rem] p-6 text-left space-y-4 border-white/10 hover:border-primary/50 transition-colors shadow-2xl relative"
+              className="w-[340px] shrink-0 glass-card rounded-2xl p-5 text-left space-y-3 border-white/10 hover:border-primary/50 transition-colors shadow-2xl relative"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+                <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shadow-lg">
                   <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-foreground text-sm font-black tracking-tight">{review.name}</p>
+                    <p className="text-foreground text-sm font-bold tracking-tight">{review.name}</p>
                     <CheckCircle2 size={12} className="text-primary" />
                   </div>
                   <div className="flex gap-0.5">
@@ -114,7 +114,7 @@ const GoogleReviewsSection = () => {
                     ))}
                   </div>
                 </div>
-                <div className="text-xl font-black opacity-20" style={{ color: "#4285F4" }}>G</div>
+                <div className="text-lg font-bold opacity-20" style={{ color: "#4285F4" }}>G</div>
               </div>
               <p className="text-muted-foreground text-sm font-medium leading-relaxed italic whitespace-normal">
                 "{review.text}"
@@ -129,7 +129,7 @@ const GoogleReviewsSection = () => {
 
       <AnimateOnScroll delay={500}>
         <div className="mt-12 text-center">
-          <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/5 font-black text-xs uppercase tracking-widest h-12 px-8">
+          <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/5 font-bold text-xs uppercase tracking-widest h-10 px-7">
             Rejoindre les +2,500 clients satisfaits →
           </Button>
         </div>

@@ -49,15 +49,15 @@ const ProtectionAcheteur = () => {
       />
       <Navbar />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-28 pb-16">
         <div className="container mx-auto px-4 max-w-5xl">
           
           <AnimateOnScroll>
             <div className="text-center mb-16 space-y-4">
-              <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
-                <ShieldCheck size={32} />
+              <div className="h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary mx-auto mb-6">
+                <ShieldCheck size={28} />
               </div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter">Votre confiance est notre <span className="text-primary italic">priorité.</span></h1>
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter">Votre confiance est notre <span className="text-primary italic">priorité.</span></h1>
               <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                 Acheter sur MindHubs, c'est l'assurance d'un contenu de qualité, d'un paiement sécurisé et d'un support dédié à votre réussite.
               </p>

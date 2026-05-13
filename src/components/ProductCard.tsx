@@ -52,16 +52,16 @@ const ProductCard = ({ product }: { product: Product }) => {
         className="h-full"
       >
         <Link to={`/produit/${product.id}`} className="block group h-full">
-          <div className="glass-card-hover rounded-[2rem] overflow-hidden h-full flex flex-col relative border-glass bg-white/40 dark:bg-card/40">
+          <div className="glass-card-hover rounded-2xl overflow-hidden h-full flex flex-col relative border-glass bg-white/40 dark:bg-card/40">
             
             {/* Image Container */}
             <div className="relative aspect-square overflow-hidden">
               {isBestSeller ? (
-                <Badge className="absolute top-4 left-4 z-10 bg-primary/90 text-white border-none px-3 py-1 font-black text-[10px] tracking-widest gap-1.5 shadow-xl">
-                   <Flame size={12} className="animate-pulse" /> TOP VENTE
+                <Badge className="absolute top-3 left-3 z-10 bg-primary/90 text-white border-none px-2.5 py-0.5 font-bold text-[10px] tracking-widest gap-1.5 shadow-lg">
+                   <Flame size={11} className="animate-pulse" /> TOP VENTE
                 </Badge>
               ) : (
-                <Badge className="absolute top-4 left-4 z-10 bg-emerald-500/90 text-white border-none px-3 py-1 font-black text-[10px] tracking-widest gap-1.5 shadow-xl">
+                <Badge className="absolute top-3 left-3 z-10 bg-emerald-500/90 text-white border-none px-2.5 py-0.5 font-bold text-[10px] tracking-widest gap-1.5 shadow-lg">
                    <Sparkles size={12} /> NOUVEAU
                 </Badge>
               )}
@@ -77,10 +77,10 @@ const ProductCard = ({ product }: { product: Product }) => {
             </div>
 
             {/* Content Container */}
-            <div className="p-5 flex flex-col flex-1 space-y-4">
+            <div className="p-4 flex flex-col flex-1 space-y-3">
               
               <div className="space-y-2">
-                <h3 className="font-black text-foreground text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                   {product.title}
                 </h3>
                 {product.rating && <StarRating rating={product.rating} />}
@@ -103,12 +103,12 @@ const ProductCard = ({ product }: { product: Product }) => {
               <div className="flex items-center justify-between pt-4 border-t border-glass">
                  <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground line-through font-bold">{formatCurrency(product.oldPrice)}</span>
-                    <span className="text-lg font-black text-foreground">{formatCurrency(product.price)}</span>
+                    <span className="text-base font-extrabold text-foreground">{formatCurrency(product.price)}</span>
                  </div>
                  <button
                    onClick={handleBuy}
                    aria-label={`Acheter ${product.title}`}
-                   className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
+                   className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
                  >
                     <ShoppingBag size={18} />
                  </button>

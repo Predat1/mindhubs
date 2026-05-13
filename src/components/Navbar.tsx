@@ -78,14 +78,14 @@ const Navbar = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500">
         <div className="container mx-auto px-4 py-2">
-          <div className="glass-card rounded-[2rem] px-6 py-3 flex items-center justify-between border-black/5 dark:border-white/10 shadow-2xl">
+          <div className="glass-card rounded-2xl px-5 py-2.5 flex items-center justify-between border-black/5 dark:border-white/10 shadow-2xl">
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-               <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover:rotate-12">
-                  <Zap size={22} fill="currentColor" />
+               <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover:rotate-12">
+                  <Zap size={20} fill="currentColor" />
                </div>
-               <span className="text-xl font-black tracking-tighter hidden sm:block">
+               <span className="text-lg font-extrabold tracking-tighter hidden sm:block">
                  MIND<span className="text-primary italic">HUBS</span>
                </span>
             </Link>
@@ -96,7 +96,7 @@ const Navbar = () => {
                 <Link
                   key={link.label}
                   to={link.href}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all flex items-center gap-2 ${
                     location.pathname === link.href
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-white/5"
@@ -112,7 +112,7 @@ const Navbar = () => {
               
               {/* Search Bar (Desktop) */}
               <div ref={searchRef} className="relative hidden md:block">
-                 <div className={`flex items-center bg-muted/40 rounded-2xl border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-10"}`}>
+                 <div className={`flex items-center bg-muted/40 rounded-xl border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-9"}`}>
                     <button 
                       onClick={() => {
                         if (searchOpen && searchQuery.trim()) {
@@ -121,7 +121,7 @@ const Navbar = () => {
                           setSearchOpen(!searchOpen);
                         }
                       }}
-                      className="h-10 w-10 shrink-0 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                      className="h-9 w-9 shrink-0 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
                     >
                        <Search size={18} />
                     </button>

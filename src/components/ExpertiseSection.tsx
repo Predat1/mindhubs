@@ -28,7 +28,7 @@ const ExpertiseSection = () => {
           <p className="text-center text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
             Notre approche
           </p>
-          <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-6 sm:mb-8">
+          <h2 className="text-center text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-6 sm:mb-8">
             <span className="heading-accent">Votre passage vers l'expertise numérique</span>
           </h2>
           <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto mb-10 sm:mb-14">
@@ -40,7 +40,7 @@ const ExpertiseSection = () => {
           {features.map((f, i) => (
             <AnimateOnScroll key={f.title} delay={i * 120}>
               <div className="card-premium rounded-xl sm:rounded-2xl p-5 sm:p-7 text-center cursor-default group">
-                <div className="mx-auto mb-4 sm:mb-5 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                <div className="mx-auto mb-4 sm:mb-5 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg sm:rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                   <f.icon className="text-primary" size={22} />
                 </div>
                 <h3 className="text-sm sm:text-base font-bold text-foreground mb-2">{f.title}</h3>

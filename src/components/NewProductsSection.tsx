@@ -18,7 +18,7 @@ const NewProductsSection = () => {
               <Sparkles size={14} className="animate-pulse" />
               Nouveautés
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-foreground mb-6">
               <span className="heading-accent">Fraîchement ajoutés</span>
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">

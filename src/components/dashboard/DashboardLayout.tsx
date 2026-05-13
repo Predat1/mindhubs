@@ -212,7 +212,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
 
   const Sidebar = (
     <aside 
-      className={`relative flex h-full flex-col border-r border-border/80 bg-gradient-to-b from-card via-card to-background/40 overflow-hidden backdrop-blur-xl transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[80px]' : 'w-[260px]'}`}
+      className={`relative flex h-full flex-col border-r border-border/80 bg-gradient-to-b from-card via-card to-background/40 overflow-hidden backdrop-blur-xl transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[72px]' : 'w-[240px]'}`}
     >
       {/* Decorative ambient glows */}
       <div className="pointer-events-none absolute -top-32 -left-16 h-56 w-56 rounded-full bg-primary/10 blur-[80px]" />
@@ -220,8 +220,8 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
 
       {/* Brand */}
-      <div className={`relative flex h-16 items-center gap-2 border-b border-border/50 px-5 ${isCollapsed ? 'justify-center px-0' : ''}`}>
-        <Link to="/" className="group flex items-center gap-1.5 text-base font-bold tracking-tight transition">
+      <div className={`relative flex h-14 items-center gap-2 border-b border-border/50 px-4 ${isCollapsed ? 'justify-center px-0' : ''}`}>
+        <Link to="/" className="group flex items-center gap-1.5 text-sm font-bold tracking-tight transition">
           {!isCollapsed && <span className="text-foreground group-hover:text-primary transition-colors">MIND</span>}
           <span className="text-gradient-brand animate-pulse drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]">✦</span>
           {!isCollapsed && <span className="text-accent group-hover:text-primary transition-colors">HUB</span>}
@@ -239,7 +239,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
           onClick={() => shopUrl && navigate(shopUrl)}
           className={`group relative mx-3 mt-3 flex items-center gap-2.5 rounded-xl border border-border/70 bg-muted/20 dark:bg-background/50 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-background hover:shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.25)] hover:-translate-y-px ${isCollapsed ? 'justify-center mx-2 p-1.5' : ''}`}
         >
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground shadow-md ring-1 ring-primary/20">
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-[11px] font-bold text-primary-foreground shadow-md ring-1 ring-primary/20">
             {shopName.slice(0, 2).toUpperCase()}
             <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500 shadow-[0_0_6px_hsl(142_76%_45%/0.6)]" />
           </div>
@@ -330,24 +330,24 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                       <Link
                         to={item.href}
                         onClick={() => setMobileOpen(false)}
-                        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                        className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-200 ${
                           active
                             ? "bg-gradient-to-r from-primary/20 via-accent/10 to-transparent text-foreground font-semibold shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]"
                             : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:translate-x-0.5"
                         } ${isCollapsed ? 'justify-center px-2' : ''}`}
                       >
                         {active && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
                         )}
                         <span
-                          className={`relative flex h-7 w-7 items-center justify-center rounded-md transition-all ${
+                          className={`relative flex h-6 w-6 items-center justify-center rounded-md transition-all ${
                             active
                               ? "bg-primary/15 text-primary"
                               : "text-muted-foreground/80 group-hover:bg-muted group-hover:text-foreground"
                           }`}
                         >
                           <Icon
-                            size={15}
+                            size={14}
                             className={`transition-transform duration-200 ${
                               active ? "scale-110" : "group-hover:scale-110"
                             }`}
@@ -430,7 +430,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
         {/* Main */}
         <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
           {/* Topbar */}
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/95 dark:bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-6">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border/60 bg-background/95 dark:bg-background/80 px-3 backdrop-blur-xl sm:gap-3 sm:px-5">
             <button
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setMobileOpen(true)}
@@ -441,7 +441,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
 
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2">
-                <h1 className="truncate text-base font-bold text-foreground sm:text-lg leading-tight">
+                <h1 className="truncate text-sm font-bold text-foreground sm:text-base leading-tight">
                   {pageTitle}
                 </h1>
                 {variant === "admin" && (
@@ -497,7 +497,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Système Opérationnel</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500/80">Système Opérationnel</span>
               </div>
               
               {variant === "admin" ? (
@@ -517,7 +517,7 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
         </div>
       </div>
       {/* Mobile bottom navigation */}
@@ -533,12 +533,12 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
                   href="https://wa.me/2250000000000" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-110 active:scale-95 transition-all group"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-110 active:scale-95 transition-all group"
                 >
-                  <MessageSquare size={24} className="group-hover:animate-pulse" />
+                  <MessageSquare size={20} className="group-hover:animate-pulse" />
                 </a>
               </TooltipTrigger>
-              <TooltipContent side="left" className="bg-popover border-border text-popover-foreground font-black uppercase text-[10px] px-4 py-2 shadow-xl">
+              <TooltipContent side="left" className="bg-popover border-border text-popover-foreground font-bold uppercase text-[10px] px-3 py-1.5 shadow-xl">
                 Besoin d'aide ? WhatsApp
               </TooltipContent>
             </Tooltip>

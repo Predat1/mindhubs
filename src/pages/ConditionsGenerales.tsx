@@ -11,7 +11,7 @@ const ConditionsGenerales = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <AnimateOnScroll>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-8">Conditions Générales de Vente</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-8">Conditions Générales de Vente</h1>
             <p className="text-muted-foreground mb-6">Dernière mise à jour : {new Date().toLocaleDateString("fr-FR")}</p>
           </AnimateOnScroll>
 

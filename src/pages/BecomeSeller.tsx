@@ -258,7 +258,7 @@ const BecomeSeller = () => {
       <SEO title="Devenir Vendeur – Créez Votre Boutique Digitale" description="Devenez vendeur sur MindHub et créez votre boutique de produits digitaux en 3 étapes. Formations, e-books, kits business. Outils IA inclus. Commissions jusqu'à 90%. Afrique francophone." path="/become-a-seller" keywords="devenir vendeur en ligne Afrique, créer boutique digitale, vendre formations en ligne, vendre e-books Afrique, revenus passifs digital, plateforme vendeur Bénin Sénégal Côte d'Ivoire" />
       <Navbar />
 
-      <main className="pt-32 pb-24 container mx-auto px-4">
+      <main className="pt-28 pb-20 container mx-auto px-4">
         <StepIndicator />
 
         <AnimatePresence mode="wait">
@@ -272,7 +272,7 @@ const BecomeSeller = () => {
               className="max-w-5xl mx-auto space-y-12"
             >
               <div className="text-center space-y-4">
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter">Quel créateur êtes-vous ?</h1>
+                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter">Quel créateur êtes-vous ?</h1>
                 <p className="text-muted-foreground text-lg">Choisissez votre plan — vous pouvez upgrader à tout moment.</p>
               </div>
 

@@ -42,7 +42,7 @@ const AvatarStack = () => (
     {AVATAR_SEEDS.map((name, i) => (
       <div
         key={name}
-        className="relative h-10 w-10 rounded-2xl border-2 border-background overflow-hidden shadow-xl"
+        className="relative h-8 w-8 rounded-xl border-2 border-background overflow-hidden shadow-lg"
         style={{ zIndex: AVATAR_SEEDS.length - i }}
       >
         <img
@@ -66,8 +66,8 @@ const HeroSection = () => {
       
       {/* Decorative Elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 bg-accent/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/4 left-1/4 h-72 w-72 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 h-72 w-72 bg-accent/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
@@ -90,7 +90,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1] tracking-tighter max-w-5xl px-6"
+          className="text-center text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tighter max-w-4xl px-6"
         >
           Passez de l'idée au <br />
           <span className="text-gradient-primary italic">profit immédiat.</span>
@@ -101,7 +101,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 text-center text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl px-6 leading-relaxed font-medium"
+          className="mt-8 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl px-6 leading-relaxed font-medium"
         >
           La première usine à produits digitaux conçue pour l'Afrique. 
           Apprenez, créez et vendez vos compétences avec l'IA.
@@ -116,14 +116,14 @@ const HeroSection = () => {
         >
           <Link
             to="/boutique"
-            className="btn-glow group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg bg-primary text-primary-foreground transition-all duration-500"
+            className="btn-glow group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base bg-primary text-primary-foreground transition-all duration-500"
           >
             Explorer la Boutique
             <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-2" />
           </Link>
           <Link
             to="/dashboard/factory"
-            className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-lg border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-xl hover:bg-muted/30 dark:hover:bg-white/10 transition-all duration-500"
+            className="group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-xl hover:bg-muted/30 dark:hover:bg-white/10 transition-all duration-500"
           >
             <Zap size={20} className="text-primary" />
             Lancer l'AI Factory
@@ -137,14 +137,14 @@ const HeroSection = () => {
           transition={{ delay: 0.5 }}
           className="mt-20 w-full max-w-4xl px-6"
         >
-          <div className="glass-card p-1 rounded-[2.5rem]">
-            <div className="bg-card/40 rounded-[2.4rem] px-8 py-8 md:py-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+          <div className="glass-card p-1 rounded-2xl">
+            <div className="bg-card/40 rounded-xl px-6 py-6 flex flex-col lg:flex-row items-center justify-between gap-10">
               
               {/* Left: Buyers */}
               <div className="flex flex-col items-center lg:items-start gap-4">
                 <AvatarStack />
                 <div className="space-y-1 text-center lg:text-left">
-                  <p className="text-2xl md:text-3xl font-black">
+                  <p className="text-xl md:text-2xl font-extrabold">
                     <AnimatedCount target={buyers} suffix="+" />
                   </p>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Étudiants Visionnaires</p>
@@ -161,11 +161,11 @@ const HeroSection = () => {
 
               {/* Center: Vendors */}
               <div className="flex flex-col items-center gap-4 text-center">
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <Users size={28} />
+                <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <Users size={22} />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-2xl md:text-3xl font-black">
+                  <p className="text-xl md:text-2xl font-extrabold">
                     <AnimatedCount target={vendors} suffix="+" />
                   </p>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Experts Actifs</p>
@@ -176,11 +176,11 @@ const HeroSection = () => {
 
               {/* Right: Growth */}
               <div className="flex flex-col items-center gap-4 text-center">
-                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                  <TrendingUp size={28} />
+                <div className="h-11 w-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                  <TrendingUp size={22} />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-2xl md:text-3xl font-black">70% ROI</p>
+                  <p className="text-xl md:text-2xl font-extrabold">70% ROI</p>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Moyenne Constatée</p>
                 </div>
               </div>

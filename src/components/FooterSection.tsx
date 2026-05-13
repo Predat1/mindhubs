@@ -25,12 +25,12 @@ const FooterSection = () => {
   return (
     <footer className="relative mt-16 sm:mt-24">
       {/* Main CTA / Contact Block */}
-      <div className="mx-4 sm:mx-8 lg:mx-16 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 overflow-hidden">
-        <div className="px-6 sm:px-10 lg:px-16 py-10 sm:py-16">
+      <div className="mx-4 sm:mx-8 lg:mx-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 overflow-hidden">
+        <div className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
           <p className="text-primary font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4 flex items-center gap-2">
             <span className="text-primary">✦</span> Contactez-nous
           </p>
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-2xl">
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight max-w-2xl">
             Intéressé par nos produits,{" "}
             <span className="text-muted-foreground">
               une question ou simplement en savoir plus ?

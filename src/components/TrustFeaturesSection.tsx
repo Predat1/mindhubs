@@ -3,32 +3,32 @@ import AnimateOnScroll from "./AnimateOnScroll";
 
 const features = [
   {
-    icon: <Zap className="w-8 h-8 text-primary" />,
+    icon: <Zap className="w-6 h-6 text-primary" />,
     title: "Livraison en temps réel",
     description: "Accès immédiat à vos formations après paiement sans attente. Commencez à apprendre instantanément."
   },
   {
-    icon: <ShieldCheck className="w-8 h-8 text-primary" />,
+    icon: <ShieldCheck className="w-6 h-6 text-primary" />,
     title: "Garantie de Remboursement",
     description: "Nous offrons une protection aux acheteurs avec une politique de remboursement claire et rapide."
   },
   {
-    icon: <Lock className="w-8 h-8 text-primary" />,
+    icon: <Lock className="w-6 h-6 text-primary" />,
     title: "Sécurité SSL",
     description: "Vos transactions sont protégées par un cryptage SSL de niveau bancaire pour une sécurité totale."
   },
   {
-    icon: <Headphones className="w-8 h-8 text-primary" />,
+    icon: <Headphones className="w-6 h-6 text-primary" />,
     title: "Service Client 24/7",
     description: "Une équipe dédiée disponible jour et nuit pour répondre à vos questions et vous guider."
   },
   {
-    icon: <Tag className="w-8 h-8 text-primary" />,
+    icon: <Tag className="w-6 h-6 text-primary" />,
     title: "Prix Premium Abordable",
     description: "Accédez à des contenus de haute qualité à des prix défiant toute concurrence sur le marché."
   },
   {
-    icon: <RotateCcw className="w-8 h-8 text-primary" />,
+    icon: <RotateCcw className="w-6 h-6 text-primary" />,
     title: "Mises à jour à vie",
     description: "Achetez une fois, profitez des mises à jour régulières du contenu sans frais supplémentaires."
   }
@@ -64,24 +64,24 @@ const TrustFeaturesSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               Pourquoi de plus en plus de personnes utilisent <span className="text-primary">MindHubs</span> ?
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            <p className="text-muted-foreground max-w-2xl mx-auto text-base">
               Nous nous engageons à fournir la meilleure expérience d'apprentissage avec une sécurité et un support de classe mondiale.
             </p>
           </AnimateOnScroll>
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {features.map((feature, index) => (
             <AnimateOnScroll key={index} delay={index * 100}>
-              <div className="bg-background p-8 rounded-2xl border border-border hover:border-primary/30 transition-all duration-300 shadow-sm hover:shadow-md group">
+              <div className="bg-background p-6 rounded-xl border border-border hover:border-primary/30 transition-all duration-300 shadow-sm hover:shadow-md group">
                 <div className="mb-4 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-foreground">{feature.title}</h3>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">{feature.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
@@ -99,7 +99,7 @@ const TrustFeaturesSection = () => {
                   <Star key={star} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <span className="font-bold text-xl">98% des utilisateurs satisfaits</span>
+              <span className="font-bold text-lg">98% des utilisateurs satisfaits</span>
             </div>
           </AnimateOnScroll>
 
