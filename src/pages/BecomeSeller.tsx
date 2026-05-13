@@ -255,7 +255,7 @@ const BecomeSeller = () => {
 
   return (
     <div className="min-h-screen bg-background aurora-bg selection:bg-primary/30">
-      <SEO title="Devenir Vendeur — MindHubs" description="Créez votre boutique digitale en 3 étapes." path="/become-a-seller" />
+      <SEO title="Devenir Vendeur – Créez Votre Boutique Digitale" description="Devenez vendeur sur MindHub et créez votre boutique de produits digitaux en 3 étapes. Formations, e-books, kits business. Outils IA inclus. Commissions jusqu'à 90%. Afrique francophone." path="/become-a-seller" keywords="devenir vendeur en ligne Afrique, créer boutique digitale, vendre formations en ligne, vendre e-books Afrique, revenus passifs digital, plateforme vendeur Bénin Sénégal Côte d'Ivoire" />
       <Navbar />
 
       <main className="pt-32 pb-24 container mx-auto px-4">

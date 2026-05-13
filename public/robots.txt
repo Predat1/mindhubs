@@ -2,5 +2,32 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /dashboard
+Disallow: /mon-compte
+Disallow: /mes-achats
+Disallow: /panier
+Disallow: /checkout
+Disallow: /reset-password
+Disallow: /login
+Disallow: /formation/
+
+# Priority crawlers
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Block AI scrapers that add no SEO value
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
 
 Sitemap: https://mindhubs.fun/sitemap.xml
+Host: https://mindhubs.fun

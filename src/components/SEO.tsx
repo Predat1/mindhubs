@@ -1,5 +1,10 @@
 import { useEffect } from "react";
 
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
@@ -8,13 +13,31 @@ interface SEOProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   keywords?: string;
   type?: "website" | "article" | "product" | "profile";
+  noindex?: boolean;
+  faq?: FAQItem[];
 }
 
 const SITE_NAME = "MindHub";
 const BASE_URL = "https://mindhubs.fun";
 const DEFAULT_IMAGE = "/og-image.png";
 
-const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website" }: SEOProps) => {
+const SEGMENT_LABELS: Record<string, string> = {
+  boutique: "Boutique",
+  "a-propos": "À propos",
+  contact: "Contact",
+  faq: "FAQ",
+  pricing: "Tarifs",
+  experts: "Experts",
+  "become-a-seller": "Devenir Vendeur",
+  "conditions-generales": "CGV",
+  "politique-confidentialite": "Confidentialité",
+  "politique-remboursement": "Remboursement",
+  "politique-livraison": "Livraison",
+  "protection-acheteur": "Protection Acheteur",
+  produit: "Produit",
+};
+
+const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website", noindex = false, faq }: SEOProps) => {
   const fullTitle = `${title} | ${SITE_NAME} – Formations Digitales Premium Afrique`;
   const url = `${BASE_URL}${path}`;
   const ogImage = image ? (image.startsWith("http") ? image : `${BASE_URL}${image}`) : `${BASE_URL}${DEFAULT_IMAGE}`;
@@ -32,8 +55,23 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       el.setAttribute("content", content);
     };
 
+    const setLink = (rel: string, href: string, extra?: Record<string, string>) => {
+      const selector = extra
+        ? `link[rel="${rel}"]${Object.entries(extra).map(([k, v]) => `[${k}="${v}"]`).join("")}`
+        : `link[rel="${rel}"]`;
+      let el = document.querySelector(selector) as HTMLLinkElement | null;
+      if (!el) {
+        el = document.createElement("link");
+        el.setAttribute("rel", rel);
+        if (extra) Object.entries(extra).forEach(([k, v]) => el!.setAttribute(k, v));
+        document.head.appendChild(el);
+      }
+      el.setAttribute("href", href);
+    };
+
+    // Core meta
     setMeta("name", "description", description);
-    setMeta("name", "robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+    setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
     if (keywords) setMeta("name", "keywords", keywords);
     setMeta("name", "author", "MindHub");
     setMeta("name", "publisher", "MindHub");
@@ -59,14 +97,10 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("name", "twitter:image", ogImage);
     setMeta("name", "twitter:image:alt", title);
 
-    // Canonical
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", url);
+    // Canonical + hreflang
+    setLink("canonical", url);
+    setLink("alternate", url, { hreflang: "fr" });
+    setLink("alternate", url, { hreflang: "x-default" });
 
     // Breadcrumbs
     const pathSegments = path.split("/").filter(Boolean);
@@ -74,50 +108,46 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Accueil",
-          item: BASE_URL,
-        },
+        { "@type": "ListItem", position: 1, name: "Accueil", item: BASE_URL },
         ...pathSegments.map((segment, index) => ({
           "@type": "ListItem",
           position: index + 2,
-          name: segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
+          name: SEGMENT_LABELS[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
           item: `${BASE_URL}/${pathSegments.slice(0, index + 1).join("/")}`,
         })),
       ],
     };
 
-    // Organization LD
-    const orgLd = {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: BASE_URL,
-      logo: `${BASE_URL}/favicon.svg`,
-      description: "Plateforme N°1 de formations digitales premium en Afrique. Paiement unique, accès illimité à vie.",
-      contactPoint: {
-        "@type": "ContactPoint",
-        email: "contact@mindhub.com",
-        contactType: "customer service",
-        availableLanguage: "French",
-      },
-    };
+    // Build structured data array
+    const ldItems: Record<string, unknown>[] = [];
 
-    const combinedLd = [
-      ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [{
+    // Custom page-level JSON-LD
+    if (Array.isArray(jsonLd)) {
+      ldItems.push(...jsonLd);
+    } else if (jsonLd) {
+      ldItems.push(jsonLd);
+    }
+
+    // Breadcrumbs (always)
+    ldItems.push(breadcrumbLd);
+
+    // FAQ Schema (if provided)
+    if (faq && faq.length > 0) {
+      ldItems.push({
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: SITE_NAME,
-        url: BASE_URL,
-        description,
-        inLanguage: "fr-FR",
-      }]),
-      orgLd,
-      breadcrumbLd
-    ];
+        "@type": "FAQPage",
+        mainEntity: faq.map(item => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      });
+    }
 
+    // Inject JSON-LD
     const ldId = "seo-json-ld";
     let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;
     if (!ldScript) {
@@ -126,14 +156,13 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       ldScript.type = "application/ld+json";
       document.head.appendChild(ldScript);
     }
-    ldScript.textContent = JSON.stringify(combinedLd);
+    ldScript.textContent = JSON.stringify(ldItems);
 
     return () => {
-      // Keep it or remove it? Usually better to remove to avoid duplicates on route changes
       const el = document.getElementById(ldId);
       if (el) el.remove();
     };
-  }, [fullTitle, description, url, ogImage, jsonLd, keywords, type, path]);
+  }, [fullTitle, description, url, ogImage, jsonLd, keywords, type, path, noindex, faq]);
 
   return null;
 };

@@ -44,10 +44,10 @@ const Boutique = () => {
   return (
     <div className="min-h-screen bg-background aurora-bg">
       <SEO
-        title="Boutique Elite – Formations & E-books Premium"
-        description="Le catalogue N°1 de formations digitales premium en Afrique. E-books, kits business et expertises IA. Accès illimité à vie."
+        title="Boutique – Formations Digitales & E-books Premium Afrique"
+        description="Catalogue N°1 de formations digitales premium en Afrique francophone. E-books, kits business, marketing digital, IA créative. Paiement Mobile Money. Accès illimité à vie. Bénin, Sénégal, Côte d'Ivoire."
         path="/boutique"
-        keywords="boutique formation, e-books business, formation marketing digital, vente formation en ligne, MindHub boutique, kits business Afrique"
+        keywords="acheter formation digitale Afrique, e-books business Afrique, formation marketing digital Bénin, Sénégal, Côte d'Ivoire, kit business en ligne, formation e-commerce Afrique, mobile money formation, MindHub boutique, produits digitaux Afrique"
       />
       <Navbar />
 

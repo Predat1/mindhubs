@@ -54,7 +54,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Contact" description="Contactez l'équipe MindHub. Email, téléphone, WhatsApp — nous sommes là pour vous aider." path="/contact" keywords="contact mindhub, support formation, aide mindhubs, WhatsApp mindhub, service client" />
+      <SEO title="Contactez MindHub – Support Client" description="Contactez l'équipe MindHub par email, WhatsApp ou formulaire. Support client réactif pour vos formations digitales. Assistance Bénin, Sénégal, Côte d'Ivoire et toute l'Afrique francophone." path="/contact" keywords="contact MindHub, support client formation, aide MindHub, WhatsApp MindHub, service client Afrique, assistance formation en ligne, email mindhubs" />
       <Navbar />
 
       {/* Hero */}

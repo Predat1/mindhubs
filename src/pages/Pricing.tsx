@@ -107,8 +107,10 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background text-foreground font-outfit transition-colors duration-300">
       <SEO 
-        title="Tarifs | MindHubs" 
-        description="Choisissez le plan qui correspond à votre ambition de créateur sur MindHubs." 
+        title="Tarifs – Plans Vendeur MindHub" 
+        description="Découvrez nos tarifs vendeur MindHub : plan Starter gratuit, Pro et Expert. Créez votre boutique digitale, vendez des formations et e-books en Afrique francophone. Outils IA, commissions jusqu'à 90%."
+        path="/pricing"
+        keywords="tarifs MindHub, prix vendeur en ligne, plan formation Afrique, coût boutique digitale, commission vendeur e-books, abonnement plateforme formation"
       />
       <Navbar />
 

@@ -28,7 +28,7 @@ const milestones = [
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="À propos" description="Découvrez l'histoire de MindHub, notre mission et notre équipe dédiée à l'éducation digitale en Afrique." path="/a-propos" keywords="qui sommes-nous, mission mindhub, équipe formation, éducation digitale Afrique, histoire mindhubs" />
+      <SEO title="À propos de MindHub – Notre Mission en Afrique" description="Découvrez l'histoire de MindHub, plateforme N°1 de formations digitales en Afrique francophone. Notre mission : démocratiser l'accès aux compétences digitales au Bénin, Sénégal, Côte d'Ivoire et dans toute l'Afrique." path="/a-propos" keywords="à propos MindHub, mission éducation digitale Afrique, plateforme formation Bénin, formation en ligne Sénégal, équipe MindHub, histoire mindhubs, éducation Afrique francophone" />
       <Navbar />
 
       {/* Hero */}
