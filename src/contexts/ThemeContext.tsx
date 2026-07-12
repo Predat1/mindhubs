@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode } from "react";
 
-type Theme = "dark" | "light";
+type Theme = "light";
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,56 +10,20 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+/** Chariow Bright Commerce is intentionally light-only. */
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme") as Theme | null;
-      if (saved) return saved;
-      
-      // Default to light as requested
-      return "light";
-    }
-    return "light";
-  });
-
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if user hasn't manually set a preference in this session
-      // (Simplified: we follow system if no local storage or if we want real-time sync)
-      // The user said "adapte automatiquement selon l'appareil", so we sync.
-      if (!localStorage.getItem("theme_manually_set")) {
-        setThemeState(e.matches ? "dark" : "light");
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("light");
+    localStorage.removeItem("theme");
+    localStorage.removeItem("theme_manually_set");
   }, []);
 
-  const toggleTheme = () => {
-    setThemeState((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("theme_manually_set", "true");
-      return next;
-    });
-  };
-
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-    localStorage.setItem("theme_manually_set", "true");
-  };
+  const setTheme = () => undefined;
+  const toggleTheme = () => undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: "light", toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

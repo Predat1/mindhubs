@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, Sun, Moon, Store, LayoutDashboard, User, LogOut, Zap, Sparkles, ChevronRight } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, LayoutDashboard, User, LogOut, Zap, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSearchProducts } from "@/hooks/useProducts";
 import { NotificationBell } from "@/components/NotificationBell";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,8 +33,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const { totalItems, cartBounce } = useCart();
-  const { theme, toggleTheme } = useTheme();
+  const { totalItems } = useCart();
   const { data: currentVendor } = useCurrentVendor();
   const { user, signOut } = useAuth();
   
@@ -78,14 +76,14 @@ const Navbar = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500">
         <div className="container mx-auto px-4 py-2">
-          <div className="glass-card rounded-2xl px-5 py-2.5 flex items-center justify-between border-black/5 dark:border-white/10 shadow-2xl">
+          <div className="glass-card rounded-xl px-5 py-2.5 flex items-center justify-between">
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-               <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover:rotate-12">
+               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground transition-transform group-hover:rotate-12">
                   <Zap size={20} fill="currentColor" />
                </div>
-               <span className="text-lg font-extrabold tracking-tighter hidden sm:block">
+               <span className="text-lg font-bold tracking-tight hidden sm:block">
                  MIND<span className="text-primary italic">HUBS</span>
                </span>
             </Link>
@@ -96,10 +94,10 @@ const Navbar = () => {
                 <Link
                   key={link.label}
                   to={link.href}
-                  className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all flex items-center gap-2 ${
+                    className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${
                     location.pathname === link.href
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                      ? "bg-primary/20 text-secondary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {link.label}
@@ -112,7 +110,7 @@ const Navbar = () => {
               
               {/* Search Bar (Desktop) */}
               <div ref={searchRef} className="relative hidden md:block">
-                 <div className={`flex items-center bg-muted/40 rounded-xl border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-9"}`}>
+                 <div className={`flex items-center bg-muted rounded-full border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-9"}`}>
                     <button 
                       onClick={() => {
                         if (searchOpen && searchQuery.trim()) {
@@ -145,7 +143,7 @@ const Navbar = () => {
               </div>
 
               {/* Cart */}
-              <Link to="/panier" className="relative h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-glass">
+              <Link to="/panier" className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center text-secondary hover:text-primary transition-all border border-glass">
                 <ShoppingCart size={18} />
                 <AnimatePresence>
                   {totalItems > 0 && (
@@ -161,15 +159,6 @@ const Navbar = () => {
                 </AnimatePresence>
               </Link>
 
-              {/* Theme Toggle */}
-              <button 
-                onClick={toggleTheme}
-                className="h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-glass"
-                title={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
-              >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-
               {/* Auth / Profile */}
               {user ? (
                 <DropdownMenu>
@@ -178,7 +167,7 @@ const Navbar = () => {
                        {userInitials}
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-2xl mt-2 bg-card/80 backdrop-blur-xl border-white/10">
+                  <DropdownMenuContent align="end" className="w-56 rounded-lg mt-2 bg-surface border-border">
                     <DropdownMenuLabel className="font-bold p-4">
                        <p className="text-sm truncate">{user.user_metadata?.full_name || "Utilisateur"}</p>
                        <p className="text-[10px] text-muted-foreground font-medium truncate">{user.email}</p>
@@ -205,7 +194,7 @@ const Navbar = () => {
               )}
 
               {/* Mobile Menu Toggle */}
-              <button className="lg:hidden h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-foreground" onClick={() => setOpen(!open)}>
+              <button className="lg:hidden h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground" onClick={() => setOpen(!open)}>
                  {open ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
@@ -219,7 +208,7 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-card/90 backdrop-blur-3xl border-t border-glass overflow-hidden"
+              className="lg:hidden bg-surface border-t border-glass overflow-hidden"
             >
               <div className="container mx-auto px-6 py-8 space-y-4">
                 {navLinks.map((link) => (
@@ -227,7 +216,7 @@ const Navbar = () => {
                     key={link.label}
                     to={link.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-white/5 text-lg font-black hover:bg-primary/10 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg bg-muted text-lg font-medium hover:bg-primary/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                        {link.label}

@@ -15,7 +15,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Outfit", "sans-serif"],
+        sans: ["Poppins", "sans-serif"],
+        display: ["Poppins", "sans-serif"],
+        ui: ["Euclid Circular B", "Poppins", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -23,6 +25,10 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        tertiary: "var(--color-tertiary)",
+        neutral: "var(--color-neutral)",
+        surface: "var(--color-surface)",
+        outline: "var(--color-outline)",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

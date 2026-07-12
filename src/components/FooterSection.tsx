@@ -25,7 +25,7 @@ const FooterSection = () => {
   return (
     <footer className="relative mt-16 sm:mt-24">
       {/* Main CTA / Contact Block */}
-      <div className="mx-4 sm:mx-8 lg:mx-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 overflow-hidden">
+      <div className="mx-4 sm:mx-8 lg:mx-16 rounded-xl sm:rounded-2xl bg-neutral border border-outline overflow-hidden">
         <div className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
           <p className="text-primary font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4 flex items-center gap-2">
             <span className="text-primary">✦</span> Contactez-nous
@@ -62,7 +62,7 @@ const FooterSection = () => {
 
         {/* Big brand name */}
         <div className="px-6 sm:px-10 lg:px-16 pb-6 sm:pb-10 flex justify-center">
-          <span className="text-[4rem] sm:text-[7rem] lg:text-[10rem] font-black tracking-tighter leading-none select-none text-foreground/5">
+            <span className="text-[4rem] sm:text-[7rem] lg:text-[10rem] font-bold tracking-tight leading-none select-none text-foreground/10">
             MIND✦HUB
           </span>
         </div>

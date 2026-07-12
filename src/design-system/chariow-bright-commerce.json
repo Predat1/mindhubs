@@ -1,0 +1,38 @@
+{
+  "version": "alpha",
+  "name": "Chariow Bright Commerce",
+  "description": "A clean, friendly creator-commerce system with bold yellow accents and spacious, low-noise layouts.",
+  "colors": {
+    "primary": "#FFCC00",
+    "secondary": "#3A3C3F",
+    "tertiary": "#20252B",
+    "neutral": "#F5F6F6",
+    "surface": "#FFFFFF",
+    "onSurface": "#000000",
+    "muted": "#E5E7EB",
+    "outline": "#D1D5DB",
+    "error": "#D92D20"
+  },
+  "typography": {
+    "headlineDisplay": { "fontFamily": "Poppins", "fontSize": "48px", "fontWeight": 700, "lineHeight": 1.1, "letterSpacing": "0px" },
+    "headlineLarge": { "fontFamily": "Poppins", "fontSize": "32px", "fontWeight": 700, "lineHeight": "38px", "letterSpacing": "0px" },
+    "headlineMedium": { "fontFamily": "Poppins", "fontSize": "24px", "fontWeight": 700, "lineHeight": "29px", "letterSpacing": "0px" },
+    "headlineSmall": { "fontFamily": "Poppins", "fontSize": "20px", "fontWeight": 600, "lineHeight": "24px", "letterSpacing": "0px" },
+    "bodyLarge": { "fontFamily": "Poppins", "fontSize": "18px", "fontWeight": 400, "lineHeight": 1.5, "letterSpacing": "0px" },
+    "bodyMedium": { "fontFamily": "Poppins", "fontSize": "16px", "fontWeight": 400, "lineHeight": 1.5, "letterSpacing": "0px" },
+    "bodySmall": { "fontFamily": "Poppins", "fontSize": "14px", "fontWeight": 400, "lineHeight": 1.5, "letterSpacing": "0px" },
+    "labelLarge": { "fontFamily": "Euclid Circular B", "fontSize": "16px", "fontWeight": 400, "lineHeight": 1.3, "letterSpacing": "0px" },
+    "labelMedium": { "fontFamily": "Euclid Circular B", "fontSize": "10px", "fontWeight": 400, "lineHeight": 1.2, "letterSpacing": "0px" },
+    "caption": { "fontFamily": "Poppins", "fontSize": "12px", "fontWeight": 400, "lineHeight": 1.4, "letterSpacing": "0px" }
+  },
+  "rounded": { "none": "0px", "sm": "4px", "md": "8px", "lg": "16px", "xl": "24px", "full": "9999px" },
+  "spacing": { "xs": "8px", "sm": "16px", "md": "24px", "lg": "40px", "xl": "64px", "xxl": "96px" },
+  "components": {
+    "buttonPrimary": { "backgroundColor": "{colors.primary}", "textColor": "{colors.secondary}", "rounded": "{rounded.full}", "padding": "8px 16px", "height": "42px" },
+    "buttonSecondary": { "backgroundColor": "{colors.surface}", "textColor": "{colors.tertiary}", "rounded": "{rounded.full}", "padding": "8px 16px", "height": "42px" },
+    "card": { "backgroundColor": "{colors.neutral}", "textColor": "{colors.onSurface}", "rounded": "{rounded.sm}", "padding": "16px" },
+    "cardElevated": { "backgroundColor": "{colors.surface}", "textColor": "{colors.onSurface}", "rounded": "{rounded.xl}", "padding": "24px" },
+    "input": { "backgroundColor": "{colors.surface}", "textColor": "{colors.onSurface}", "rounded": "{rounded.full}", "padding": "8px 16px", "height": "42px" },
+    "chip": { "backgroundColor": "{colors.neutral}", "textColor": "{colors.onSurface}", "rounded": "{rounded.full}", "padding": "8px 12px" }
+  }
+}

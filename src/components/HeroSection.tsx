@@ -62,13 +62,7 @@ const HeroSection = () => {
   const vendors = Math.max(stats?.totalVendors ?? 0, 48);
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden aurora-bg">
-      
-      {/* Decorative Elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 h-72 w-72 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 h-72 w-72 bg-accent/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
+    <section className="relative min-h-screen flex flex-col items-center justify-center pt-36 pb-24 overflow-hidden aurora-bg">
 
       <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
         
@@ -76,7 +70,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-md px-4 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase text-primary shadow-xl"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-outline bg-muted px-4 py-2 text-[10px] sm:text-xs font-medium tracking-wide uppercase text-secondary"
         >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -90,7 +84,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tighter max-w-4xl px-6"
+          className="text-center text-3xl sm:text-5xl md:text-[60px] font-bold leading-[1.1] tracking-tight max-w-4xl px-6"
         >
           Passez de l'idée au <br />
           <span className="text-gradient-primary italic">profit immédiat.</span>
@@ -101,7 +95,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl px-6 leading-relaxed font-medium"
+          className="mt-8 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl px-6 leading-relaxed"
         >
           La première usine à produits digitaux conçue pour l'Afrique. 
           Apprenez, créez et vendez vos compétences avec l'IA.
@@ -116,14 +110,14 @@ const HeroSection = () => {
         >
           <Link
             to="/boutique"
-            className="btn-glow group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base bg-primary text-primary-foreground transition-all duration-500"
+            className="btn-glow group relative inline-flex items-center gap-2.5 px-8 h-[42px] rounded-full font-medium text-base"
           >
             Explorer la Boutique
             <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-2" />
           </Link>
           <Link
             to="/dashboard/factory"
-            className="group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base border border-black/5 dark:border-white/10 bg-muted/20 dark:bg-white/5 backdrop-blur-xl hover:bg-muted/30 dark:hover:bg-white/10 transition-all duration-500"
+            className="group relative inline-flex items-center gap-2.5 px-8 h-[42px] rounded-full font-medium text-base border border-outline bg-surface hover:bg-muted transition-all duration-500"
           >
             <Zap size={20} className="text-primary" />
             Lancer l'AI Factory
@@ -137,8 +131,8 @@ const HeroSection = () => {
           transition={{ delay: 0.5 }}
           className="mt-20 w-full max-w-4xl px-6"
         >
-          <div className="glass-card p-1 rounded-2xl">
-            <div className="bg-card/40 rounded-xl px-6 py-6 flex flex-col lg:flex-row items-center justify-between gap-10">
+          <div className="glass-card p-6 rounded-xl">
+            <div className="px-0 flex flex-col lg:flex-row items-center justify-between gap-10">
               
               {/* Left: Buyers */}
               <div className="flex flex-col items-center lg:items-start gap-4">
@@ -189,7 +183,7 @@ const HeroSection = () => {
           </div>
 
           {/* Trust Line */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12 text-muted-foreground">
             {[
               { icon: ShieldCheck, text: "Transactions Sécurisées" },
               { icon: BookOpen, text: "Contenus Certifiés" },
