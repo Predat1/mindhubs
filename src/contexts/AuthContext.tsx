@@ -1,11 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { DEMO_USER_EMAIL, DEMO_USER_ID, isDemoMode } from "@/lib/demoMode";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isDemo: boolean;
+  canMutate: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
@@ -15,6 +18,17 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const DEMO_USER = {
+  id: DEMO_USER_ID,
+  aud: "authenticated",
+  role: "authenticated",
+  email: DEMO_USER_EMAIL,
+  app_metadata: { provider: "demo" },
+  user_metadata: { full_name: "Vendeur Démo" },
+  created_at: "2026-01-01T00:00:00.000Z",
+  confirmed_at: "2026-01-01T00:00:00.000Z",
+} as unknown as User;
 
 // Translate common Supabase auth errors to French
 export const translateAuthError = (message: string): string => {
@@ -34,11 +48,13 @@ export const translateAuthError = (message: string): string => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(isDemoMode ? DEMO_USER : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemoMode);
 
   useEffect(() => {
+    if (isDemoMode) return;
+
     let mounted = true;
 
     // Initial session check
@@ -76,6 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    if (isDemoMode) return { error: new Error("Le mode démo ne permet pas de créer un compte.") };
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -91,11 +108,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
+    if (isDemoMode) return { error: new Error("Le mode démo est déjà ouvert.") };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error ? new Error(translateAuthError(error.message)) : null };
   };
 
   const signInWithGoogle = async () => {
+    if (isDemoMode) return { error: new Error("Le mode démo est déjà ouvert.") };
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -116,10 +135,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    if (isDemoMode) return;
     await supabase.auth.signOut();
   };
 
   const resetPassword = async (email: string) => {
+    if (isDemoMode) return { error: new Error("La récupération de compte est désactivée en mode démo.") };
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
@@ -127,6 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resendConfirmation = async (email: string) => {
+    if (isDemoMode) return { error: new Error("La confirmation email est désactivée en mode démo.") };
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
@@ -138,7 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
-        user, session, loading,
+        user, session, loading, isDemo: isDemoMode, canMutate: !isDemoMode,
         signUp, signIn, signInWithGoogle, signOut, resetPassword, resendConfirmation,
       }}
     >

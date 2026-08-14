@@ -123,6 +123,10 @@ interface FormState {
   image_urls: string[];
   payment_link: string;
   key_features: string[];
+  product_mode: "digital" | "physical" | "hybrid";
+  sku: string;
+  inventory_quantity: string;
+  shipping_notes: string;
   status: "draft" | "published";
   is_lms: boolean;
 }
@@ -138,6 +142,10 @@ const emptyForm: FormState = {
   image_urls: [],
   payment_link: "",
   key_features: [],
+  product_mode: "digital",
+  sku: "",
+  inventory_quantity: "",
+  shipping_notes: "",
   status: "published",
   is_lms: false,
 };
@@ -455,6 +463,10 @@ const Inner = ({
             image_urls: (data.image_urls as string[]) || [],
             payment_link: data.payment_link || "",
             key_features: data.key_features || [],
+            product_mode: ((data as Record<string, unknown>).product_mode as FormState["product_mode"]) || "digital",
+            sku: ((data as Record<string, unknown>).sku as string) || "",
+            inventory_quantity: ((data as Record<string, unknown>).inventory_quantity as number | null)?.toString() || "",
+            shipping_notes: ((data as Record<string, unknown>).shipping_notes as string) || "",
             status:
               ((data as Record<string, unknown>).status as "draft" | "published") || "published",
             is_lms: (data as any).is_lms || false,
@@ -615,6 +627,10 @@ const Inner = ({
         image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         payment_link: form.payment_link.trim() || null,
         key_features: form.key_features,
+        product_mode: form.product_mode,
+        sku: form.sku.trim() || null,
+        inventory_quantity: form.inventory_quantity ? Number(form.inventory_quantity) : null,
+        shipping_notes: form.shipping_notes.trim() || null,
         vendor_id: vendorId,
         status: finalStatus,
         is_lms: form.is_lms,
@@ -973,6 +989,28 @@ const Inner = ({
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+                    <div>
+                      <Label>Type d’offre</Label>
+                      <p className="mt-1 text-[10px] text-muted-foreground">Ce choix adapte la livraison et la gestion du produit.</p>
+                    </div>
+                    <Select value={form.product_mode} onValueChange={(value: FormState["product_mode"]) => setForm({ ...form, product_mode: value })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="digital">Produit digital — livraison instantanée</SelectItem>
+                        <SelectItem value="physical">Produit physique — stock & livraison</SelectItem>
+                        <SelectItem value="hybrid">Offre hybride — physique + digital</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(form.product_mode === "physical" || form.product_mode === "hybrid") && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Input value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} placeholder="SKU facultatif" />
+                        <Input type="number" min="0" value={form.inventory_quantity} onChange={(event) => setForm({ ...form, inventory_quantity: event.target.value })} placeholder="Stock disponible" />
+                        <Textarea value={form.shipping_notes} onChange={(event) => setForm({ ...form, shipping_notes: event.target.value })} placeholder="Zones, délais ou conditions de livraison" className="sm:col-span-2" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5 pt-2">

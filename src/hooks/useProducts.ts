@@ -19,6 +19,10 @@ export interface DbProduct {
   key_features: string[] | null;
   vendor_id: string | null;
   is_lms: boolean;
+  product_mode?: "digital" | "physical" | "hybrid";
+  sku?: string | null;
+  inventory_quantity?: number | null;
+  shipping_notes?: string | null;
   vendor?: {
     shop_name: string;
     avatar_url: string | null;
@@ -42,6 +46,10 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   vendorId: db.vendor_id ?? undefined,
   vendor: db.vendor,
   is_lms: db.is_lms || false,
+  productMode: db.product_mode || "digital",
+  sku: db.sku ?? undefined,
+  inventoryQuantity: db.inventory_quantity ?? undefined,
+  shippingNotes: db.shipping_notes ?? undefined,
 });
 
 export const useProducts = () => {

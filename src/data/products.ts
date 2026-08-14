@@ -44,6 +44,10 @@ export interface Product {
     verified: boolean;
   };
   is_lms?: boolean;
+  productMode?: "digital" | "physical" | "hybrid";
+  sku?: string;
+  inventoryQuantity?: number;
+  shippingNotes?: string;
 }
 
 export const allProducts: Product[] = [

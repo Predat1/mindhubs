@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Search, Lightbulb, PenTool, Megaphone, RotateCcw } from "lucide-react";
+import { Sparkles, Search, Lightbulb, PenTool, Megaphone, RotateCcw, Rocket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WinningProductSpy from "@/components/creator-lab/WinningProductSpy";
 import IdeaSandbox from "@/components/creator-lab/IdeaSandbox";
@@ -13,6 +14,8 @@ import PipelineDock from "@/components/creator-lab/PipelineDock";
 import CreditsHUD from "@/components/creator-lab/CreditsHUD";
 import QuickRecipes from "@/components/creator-lab/QuickRecipes";
 import CommandBar from "@/components/creator-lab/CommandBar";
+import CreatorSetupPanel from "@/components/creator-lab/CreatorSetupPanel";
+import PublishHub from "@/components/creator-lab/PublishHub";
 import type { PipelineStepId } from "@/contexts/CreatorLabContext";
 import { CreatorLabProvider, useCreatorLab } from "@/contexts/CreatorLabContext";
 
@@ -146,7 +149,7 @@ const CreatorLabContent = () => {
           {/* ═══ Modules ═══ */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Tab triggers — premium glass */}
-            <TabsList className="bg-white/[0.03] backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl h-auto grid grid-cols-2 md:grid-cols-5 gap-1.5 w-full">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 backdrop-blur-xl md:grid-cols-6">
               <TabsTrigger
                 value="home"
                 className="rounded-xl py-2.5 gap-2 text-xs font-bold data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_0_18px_hsl(var(--primary)/0.4)]"
@@ -177,6 +180,12 @@ const CreatorLabContent = () => {
               >
                 <Megaphone size={15} /> Co-Pilot
               </TabsTrigger>
+              <TabsTrigger
+                value="publish"
+                className="rounded-xl py-2.5 gap-2 text-xs font-bold data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_0_18px_hsl(var(--primary)/0.4)]"
+              >
+                <Rocket size={15} /> Lancer
+              </TabsTrigger>
             </TabsList>
 
             <AnimatePresence mode="wait">
@@ -188,7 +197,10 @@ const CreatorLabContent = () => {
                 transition={{ duration: 0.3 }}
               >
                 <TabsContent value="home" className="mt-0">
-                  <QuickRecipes onStart={handleRecipeStart} />
+                  <div className="space-y-8">
+                    <CreatorSetupPanel />
+                    <QuickRecipes onStart={handleRecipeStart} />
+                  </div>
                 </TabsContent>
                 <TabsContent value="spy" className="mt-0">
                   <WinningProductSpy onRemix={() => setActiveTab("sandbox")} />
@@ -197,10 +209,13 @@ const CreatorLabContent = () => {
                   <IdeaSandbox onValidate={() => setActiveTab("architect")} />
                 </TabsContent>
                 <TabsContent value="architect" className="mt-0">
-                  <ProductArchitect onRedact={() => setActiveTab("marketing")} />
+                  <ProductArchitect onRedact={() => setActiveTab("marketing")} onPublish={() => setActiveTab("publish")} />
                 </TabsContent>
                 <TabsContent value="marketing" className="mt-0">
                   <MarketingCoPilot />
+                </TabsContent>
+                <TabsContent value="publish" className="mt-0">
+                  <PublishHub />
                 </TabsContent>
               </motion.div>
             </AnimatePresence>
@@ -214,7 +229,7 @@ const CreatorLabContent = () => {
 export default function CreatorLab() {
   return (
     <CreatorLabProvider>
-      <CreatorLabContent />
+      <VendorGuard>{() => <CreatorLabContent />}</VendorGuard>
     </CreatorLabProvider>
   );
 }

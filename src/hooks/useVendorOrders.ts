@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoMode } from "@/lib/demoMode";
 
 export interface VendorOrderItem {
   id: string;
@@ -34,6 +35,7 @@ export const useVendorOrders = (vendorId: string | undefined, productIds: string
     queryKey: ["vendor-all-orders", vendorId, productIdsKey],
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
+      if (isDemoMode) return [];
 
       const orFilter = productIds.map(id => `items.cs.[{"id":"${id}"}]`).join(',');
       
@@ -84,6 +86,7 @@ export const useVendorProductStats = (productIds: string[]) => {
     queryKey: ["vendor-product-stats", productIds.join(",")],
     queryFn: async () => {
       if (!productIds || productIds.length === 0) return [];
+      if (isDemoMode) return [];
 
       const { data, error } = await supabase
         .from("product_stats")

@@ -38,10 +38,9 @@ const generatePlaceholderSVG = (title: string, niche: string) => {
 
 const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
   const navigate = useNavigate();
-  const { setCurrentIdea, selectedMarkets, setSelectedMarkets, credits, spend, updatePipelineStatus } = useCreatorLab();
+  const { setCurrentIdea, selectedMarkets, setSelectedMarkets, credits, spend, updatePipelineStatus, researchResults, setResearchResults } = useCreatorLab();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<any[]>([]);
   const [remixProduct, setRemixProduct] = useState<any | null>(null);
   const [remixAngles, setRemixAngles] = useState<any[]>([]);
   const [isRemixing, setIsRemixing] = useState(false);
@@ -76,7 +75,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
         body: { idea: searchTerm, type: 'spy-research', markets: selectedMarkets }
       });
       if (error) throw error;
-      setResults(data.result.products || []);
+      setResearchResults(data.result.products || []);
       updatePipelineStatus('spy', 'done');
       updatePipelineStatus('sandbox', 'active');
       setCurrentIdea(searchTerm);
@@ -149,7 +148,7 @@ const WinningProductSpy = ({ onRemix }: { onRemix: () => void }) => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence>
-          {results.map((p, idx) => (
+          {researchResults.map((p, idx) => (
             <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} className="group glass-card rounded-[2rem] overflow-hidden border border-white/5 hover:border-primary/50 transition-all">
               <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                 <img src={generatePlaceholderSVG(p.title, searchTerm)} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />

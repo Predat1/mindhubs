@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 // 2. Intégration de l'Architecte avec le nouveau système de routing intelligent d'AI Creator.
 // 3. Amélioration de l'UX de rédaction : affichage progressif du texte (typewriter effect).
 
-const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
+const ProductArchitect = ({ onRedact, onPublish }: { onRedact: () => void; onPublish: () => void }) => {
   const navigate = useNavigate();
   const { currentIdea, setCurrentIdea, credits, spend, updatePipelineStatus, chapters, setChapters, productType, setProductInfo } = useCreatorLab();
   const [step, setStep] = useState(1);
@@ -222,7 +222,7 @@ const ProductArchitect = ({ onRedact }: { onRedact: () => void }) => {
                   <div className="flex items-center gap-3 text-emerald-500 font-black text-xs uppercase"><CheckCircle2 size={16} /> Droits de revente inclus</div>
                   <div className="flex items-center gap-3 text-emerald-500 font-black text-xs uppercase"><CheckCircle2 size={16} /> Optimisé Mobile Money</div>
                </div>
-               <Button className="w-full h-16 rounded-2xl bg-primary font-black text-xl gap-4 shadow-xl shadow-primary/20">PUBLIER SUR MINDHUBS <Rocket size={24} /></Button>
+               <Button onClick={onPublish} className="w-full h-16 rounded-2xl bg-primary font-black text-xl gap-4 shadow-xl shadow-primary/20">PRÉPARER LA PUBLICATION <Rocket size={24} /></Button>
             </div>
           </motion.div>
         )}

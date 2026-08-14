@@ -170,7 +170,7 @@ const useVendorLiveBadges = (enabled: boolean) => {
 const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: DashboardLayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false); // New state for collapse
-  const { signOut, user } = useAuth();
+  const { signOut, user, isDemo } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -517,7 +517,15 @@ const DashboardLayout = ({ variant, title, shopName, shopUrl, children }: Dashbo
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6 animate-fade-in [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">
+            {isDemo && (
+              <div className="mx-auto mb-4 flex max-w-6xl items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-foreground" role="status">
+                <span><strong>Mode démo.</strong> Les données sont fictives et les actions sensibles sont désactivées.</span>
+                <span className="hidden shrink-0 font-bold text-primary sm:inline">Lecture seule</span>
+              </div>
+            )}
+            {children}
+          </main>
         </div>
       </div>
       {/* Mobile bottom navigation */}

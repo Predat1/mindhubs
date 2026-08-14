@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Product } from "@/data/products";
+import { allProducts as catalogProducts, type Product } from "@/data/products";
+import { DEMO_VENDOR_ID, isDemoMode } from "@/lib/demoMode";
 
 export interface Vendor {
   id: string;
@@ -19,6 +20,23 @@ export interface Vendor {
   plan?: string;
   badge?: string;
 }
+
+export const DEMO_VENDOR: Vendor = {
+  id: DEMO_VENDOR_ID,
+  user_id: "00000000-0000-0000-0000-000000000001",
+  username: "vendeur-demo",
+  shop_name: "MindHubs Demo Store",
+  description: "Boutique de démonstration MindHubs.",
+  avatar_url: null,
+  banner_url: null,
+  primary_color: "#FFCC00",
+  standalone_mode: false,
+  custom_footer_text: null,
+  verified: true,
+  created_at: "2026-01-01T00:00:00.000Z",
+  plan: "pro",
+  badge: "Démo",
+};
 
 export const useVendor = (username: string | undefined) => {
   return useQuery({
@@ -59,6 +77,9 @@ export const useVendorProducts = (vendorId: string | undefined) => {
     queryKey: ["vendor-products", vendorId],
     queryFn: async (): Promise<Product[]> => {
       if (!vendorId) return [];
+      if (isDemoMode && vendorId === DEMO_VENDOR_ID) {
+        return catalogProducts.slice(0, 8).map((product) => ({ ...product, vendorId: DEMO_VENDOR_ID }));
+      }
       const { data, error } = await supabase
         .from("products")
         .select("*")
@@ -92,6 +113,7 @@ export const useCurrentVendor = () => {
     queryKey: ["current-vendor", user?.id],
     queryFn: async (): Promise<Vendor | null> => {
       if (!user) return null;
+      if (isDemoMode) return DEMO_VENDOR;
 
       // Try the enriched view first
       try {

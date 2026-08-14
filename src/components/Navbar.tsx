@@ -112,6 +112,7 @@ const Navbar = () => {
               <div ref={searchRef} className="relative hidden md:block">
                  <div className={`flex items-center bg-muted rounded-full border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-9"}`}>
                     <button 
+                      aria-label={searchOpen ? "Lancer la recherche" : "Ouvrir la recherche"}
                       onClick={() => {
                         if (searchOpen && searchQuery.trim()) {
                           handleSearchSubmit();
@@ -143,7 +144,7 @@ const Navbar = () => {
               </div>
 
               {/* Cart */}
-              <Link to="/panier" className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center text-secondary hover:text-primary transition-all border border-glass">
+              <Link to="/panier" aria-label={`Panier${totalItems > 0 ? `, ${totalItems} article${totalItems > 1 ? "s" : ""}` : " vide"}`} className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center text-secondary hover:text-primary transition-all border border-glass">
                 <ShoppingCart size={18} />
                 <AnimatePresence>
                   {totalItems > 0 && (
@@ -163,7 +164,7 @@ const Navbar = () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="h-10 w-10 rounded-2xl bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-black text-sm hover:scale-105 transition-transform">
+                    <button aria-label={`Ouvrir le profil de ${user.user_metadata?.full_name || user.email || "l'utilisateur"}`} className="h-10 w-10 rounded-2xl bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-black text-sm hover:scale-105 transition-transform">
                        {userInitials}
                     </button>
                   </DropdownMenuTrigger>
@@ -194,7 +195,7 @@ const Navbar = () => {
               )}
 
               {/* Mobile Menu Toggle */}
-              <button className="lg:hidden h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground" onClick={() => setOpen(!open)}>
+              <button aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open} className="lg:hidden h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground" onClick={() => setOpen(!open)}>
                  {open ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>

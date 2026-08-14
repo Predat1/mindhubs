@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { isDemoMode, DEMO_VENDOR_ID } from "@/lib/demoMode";
 
 export type VendorPlan = 'free' | 'starter' | 'pro' | 'elite';
 
@@ -32,9 +33,27 @@ export interface VendorSubscriptionData {
 export const useVendorSubscription = (vendorId?: string) => {
   const { user } = useAuth();
   const isAdmin = user?.email === 'mobifranck94@gmail.com';
+  const demoData: VendorSubscriptionData | undefined = isDemoMode && vendorId === DEMO_VENDOR_ID ? {
+    vendor_id: DEMO_VENDOR_ID,
+    user_id: user?.id ?? "",
+    plan: "pro",
+    status: "active",
+    credit_balance: 1000,
+    max_products: -1,
+    monthly_credits: 1000,
+    commission_rate: 0.10,
+    price_fcfa_monthly: 14999,
+    price_fcfa_yearly: 149990,
+    ads_studio: true,
+    creator_lab_full: true,
+    priority_placement: true,
+    whatsapp_support: true,
+    badge: "Démo",
+    product_count: 8,
+  } : undefined;
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['vendor-subscription', vendorId],
-    enabled: !!vendorId,
+    enabled: !!vendorId && !isDemoMode,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('vendor_subscription_view')
@@ -49,24 +68,27 @@ export const useVendorSubscription = (vendorId?: string) => {
   });
 
   // Admin bypass: always allow product addition
-  const canAddProduct = isAdmin
+  const sourceData = demoData ?? data;
+  const canAddProduct = isDemoMode
+    ? false
+    : isAdmin
     ? true
-    : data
-      ? (data.max_products === -1 || data.product_count < data.max_products)
+      : sourceData
+      ? (sourceData.max_products === -1 || sourceData.product_count < sourceData.max_products)
       : false;
 
   return {
-    ...data,
-    plan: data?.plan ?? 'free',
-    status: data?.status ?? 'active',
-    creditBalance: data?.credit_balance ?? 0,
-    maxProducts: isAdmin ? -1 : (data?.max_products ?? 5),
-    productCount: data?.product_count ?? 0,
-    commissionRate: data?.commission_rate ?? 0.10,
+    ...sourceData,
+    plan: sourceData?.plan ?? 'free',
+    status: sourceData?.status ?? 'active',
+    creditBalance: sourceData?.credit_balance ?? 0,
+    maxProducts: isAdmin ? -1 : (sourceData?.max_products ?? 5),
+    productCount: sourceData?.product_count ?? 0,
+    commissionRate: sourceData?.commission_rate ?? 0.10,
     isLoading,
     canAddProduct,
     refetch,
     // Helper pour vérifier l'accès à une fonctionnalité spécifique
-    canUseFeature: (feature: keyof VendorSubscriptionData) => !!data?.[feature],
+    canUseFeature: (feature: keyof VendorSubscriptionData) => !!sourceData?.[feature],
   };
 };

@@ -238,6 +238,10 @@ export type Database = {
           key_features: string[] | null
           old_price: string
           payment_link: string | null
+          product_mode: string
+          sku: string | null
+          inventory_quantity: number | null
+          shipping_notes: string | null
           price: string
           rating: number | null
           sort_order: number
@@ -257,6 +261,10 @@ export type Database = {
           key_features?: string[] | null
           old_price: string
           payment_link?: string | null
+          product_mode?: string
+          sku?: string | null
+          inventory_quantity?: number | null
+          shipping_notes?: string | null
           price: string
           rating?: number | null
           sort_order?: number
@@ -276,6 +284,10 @@ export type Database = {
           key_features?: string[] | null
           old_price?: string
           payment_link?: string | null
+          product_mode?: string
+          sku?: string | null
+          inventory_quantity?: number | null
+          shipping_notes?: string | null
           price?: string
           rating?: number | null
           sort_order?: number

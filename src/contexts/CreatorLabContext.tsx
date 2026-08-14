@@ -9,6 +9,8 @@ import { useCurrentVendor } from "@/hooks/useVendors";
 
 export type PipelineStepId = 'spy' | 'sandbox' | 'architect' | 'marketing' | 'publish';
 export type StepStatus = 'locked' | 'active' | 'done';
+export type SellerExperience = 'beginner' | 'expert';
+export type ProductMode = 'digital' | 'physical' | 'hybrid';
 
 export interface Chapter {
   id: number;
@@ -17,6 +19,14 @@ export interface Chapter {
 }
 
 interface CreatorLabState {
+  sellerExperience: SellerExperience;
+  productMode: ProductMode;
+  sessionName: string;
+  lastSavedAt: string | null;
+  researchResults: any[];
+  validationReport: any | null;
+  pivots: any[];
+  marketingScripts: any[];
   currentIdea: string;
   selectedMarkets: string[];
   validationScore: number | null;
@@ -27,6 +37,13 @@ interface CreatorLabState {
 }
 
 interface CreatorLabContextType extends CreatorLabState {
+  setSellerExperience: (experience: SellerExperience) => void;
+  setProductMode: (mode: ProductMode) => void;
+  setSessionName: (name: string) => void;
+  setResearchResults: (results: any[]) => void;
+  setValidationReport: (report: any | null) => void;
+  setPivots: (pivots: any[]) => void;
+  setMarketingScripts: (scripts: any[]) => void;
   setCurrentIdea: (idea: string) => void;
   setSelectedMarkets: (markets: string[]) => void;
   setValidationScore: (score: number | null) => void;
@@ -46,6 +63,24 @@ const DEFAULT_STATUS: Record<PipelineStepId, StepStatus> = {
   publish: 'locked',
 };
 
+const DEFAULT_STATE: CreatorLabState = {
+  sellerExperience: 'beginner',
+  productMode: 'digital',
+  sessionName: 'Nouveau projet',
+  lastSavedAt: null,
+  researchResults: [],
+  validationReport: null,
+  pivots: [],
+  marketingScripts: [],
+  currentIdea: "",
+  selectedMarkets: [],
+  validationScore: null,
+  productTitle: "",
+  productType: "",
+  chapters: [],
+  pipelineStatus: DEFAULT_STATUS,
+};
+
 const CreatorLabContext = createContext<CreatorLabContextType | undefined>(undefined);
 
 export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
@@ -54,20 +89,12 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem('cl_session');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return { ...DEFAULT_STATE, ...JSON.parse(saved) };
       } catch (e) {
         console.error("Failed to restore session", e);
       }
     }
-    return {
-      currentIdea: "",
-      selectedMarkets: [],
-      validationScore: null,
-      productTitle: "",
-      productType: "",
-      chapters: [],
-      pipelineStatus: DEFAULT_STATUS,
-    };
+    return DEFAULT_STATE;
   });
 
   const { data: vendor } = useCurrentVendor();
@@ -75,11 +102,19 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
 
   // WHY: Persistance automatique à chaque mutation
   useEffect(() => {
-    localStorage.setItem('cl_session', JSON.stringify(state));
+    const nextState = { ...state, lastSavedAt: new Date().toISOString() };
+    localStorage.setItem('cl_session', JSON.stringify(nextState));
   }, [state]);
 
   const setCurrentIdea = (currentIdea: string) => setState(s => ({ ...s, currentIdea }));
   const setSelectedMarkets = (selectedMarkets: string[]) => setState(s => ({ ...s, selectedMarkets }));
+  const setSellerExperience = (sellerExperience: SellerExperience) => setState(s => ({ ...s, sellerExperience }));
+  const setProductMode = (productMode: ProductMode) => setState(s => ({ ...s, productMode }));
+  const setSessionName = (sessionName: string) => setState(s => ({ ...s, sessionName: sessionName || 'Nouveau projet' }));
+  const setResearchResults = (researchResults: any[]) => setState(s => ({ ...s, researchResults }));
+  const setValidationReport = (validationReport: any | null) => setState(s => ({ ...s, validationReport }));
+  const setPivots = (pivots: any[]) => setState(s => ({ ...s, pivots }));
+  const setMarketingScripts = (marketingScripts: any[]) => setState(s => ({ ...s, marketingScripts }));
   const setValidationScore = (validationScore: number | null) => setState(s => ({ ...s, validationScore }));
   const setProductInfo = (productTitle: string, productType: string) => setState(s => ({ ...s, productTitle, productType }));
   const setChapters = (chapters: Chapter[]) => setState(s => ({ ...s, chapters }));
@@ -98,20 +133,19 @@ export const CreatorLabProvider = ({ children }: { children: ReactNode }) => {
 
   const resetSession = () => {
     localStorage.removeItem('cl_session');
-    setState({
-      currentIdea: "",
-      selectedMarkets: [],
-      validationScore: null,
-      productTitle: "",
-      productType: "",
-      chapters: [],
-      pipelineStatus: DEFAULT_STATUS,
-    });
+    setState(DEFAULT_STATE);
   };
 
   return (
     <CreatorLabContext.Provider value={{
       ...state, 
+      setSellerExperience,
+      setProductMode,
+      setSessionName,
+      setResearchResults,
+      setValidationReport,
+      setPivots,
+      setMarketingScripts,
       setCurrentIdea, 
       setSelectedMarkets, 
       setValidationScore, 

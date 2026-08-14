@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isDemoMode } from "@/lib/demoMode";
 
 export interface CreditTransaction {
   id: string;
@@ -31,7 +32,7 @@ export const useCredits = (vendorId?: string) => {
   // 1. Récupération du solde
   const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['vendor-credits', vendorId],
-    enabled: !!vendorId,
+    enabled: !!vendorId && !isDemoMode,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('vendor_credits')
@@ -47,7 +48,7 @@ export const useCredits = (vendorId?: string) => {
   // 2. Historique des transactions
   const { data: transactions = [], isLoading: txLoading } = useQuery({
     queryKey: ['vendor-credit-transactions', vendorId],
-    enabled: !!vendorId,
+    enabled: !!vendorId && !isDemoMode,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('credit_transactions')
@@ -72,6 +73,7 @@ export const useCredits = (vendorId?: string) => {
       description: string; 
       featureType: string 
     }): Promise<SpendResult> => {
+      if (isDemoMode) throw new Error("Les générations IA sont désactivées en mode démo.");
       if (!vendorId) throw new Error("ID Vendeur requis pour l'action");
       
       const { data, error } = await (supabase as any).rpc('spend_credits', {
@@ -100,9 +102,9 @@ export const useCredits = (vendorId?: string) => {
   });
 
   return {
-    balance: balanceData ?? 0,
-    transactions,
-    isLoading: balanceLoading || txLoading,
+    balance: isDemoMode ? 1000 : (balanceData ?? 0),
+    transactions: isDemoMode ? [] : transactions,
+    isLoading: isDemoMode ? false : balanceLoading || txLoading,
     spend: spendMutation.mutateAsync,
     isSpending: spendMutation.isPending,
   };

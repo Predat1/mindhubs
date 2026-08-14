@@ -18,9 +18,8 @@ import { useNavigate } from "react-router-dom";
 
 const MarketingCoPilot = () => {
   const navigate = useNavigate();
-  const { currentIdea, selectedMarkets, credits, spend, updatePipelineStatus } = useCreatorLab();
+  const { currentIdea, selectedMarkets, credits, spend, updatePipelineStatus, marketingScripts, setMarketingScripts } = useCreatorLab();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scripts, setScripts] = useState<any[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showInsufficient, setShowInsufficient] = useState(false);
 
@@ -53,7 +52,7 @@ const MarketingCoPilot = () => {
       });
       if (error) throw error;
       
-      setScripts(data.result.scripts || []);
+      setMarketingScripts(data.result.scripts || []);
       updatePipelineStatus('marketing', 'done');
       updatePipelineStatus('publish', 'active');
     } catch (err) {
@@ -91,7 +90,7 @@ const MarketingCoPilot = () => {
 
       <div className="grid md:grid-cols-2 gap-8">
         <AnimatePresence>
-          {scripts.map((script, idx) => (
+          {marketingScripts.map((script, idx) => (
             <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.1 }} className="stat-card p-6 rounded-[2rem] border-glow space-y-6 flex flex-col h-full">
               <div className="flex justify-between items-start">
                 <Badge className="bg-primary/10 text-primary font-black px-4 py-1">{script.platform}</Badge>

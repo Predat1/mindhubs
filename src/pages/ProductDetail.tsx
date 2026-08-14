@@ -11,6 +11,7 @@ import SEO from "@/components/SEO";
 import CountdownTimer from "@/components/CountdownTimer";
 import TrustBlock from "@/components/TrustBlock";
 import ProductReviewsSection from "@/components/ProductReviewsSection";
+import { ProductContentRenderer } from "@/components/products/ProductContentRenderer";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
@@ -32,6 +33,7 @@ import payWave from "@/assets/pay-wave.png";
 import payVisa from "@/assets/pay-visa.png";
 import payMastercard from "@/assets/pay-mastercard.png";
 import { formatCurrency } from "@/lib/currency";
+import { contentToPlainText, parseProductContent } from "@/lib/productContent";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -144,12 +146,14 @@ const ProductDetail = () => {
   const discountPct = oldPriceNum > 0 ? Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100) : 0;
   const allImages = [product.image, ...(product.imageUrls || [])].filter(Boolean);
   const keyFeatures = (product.keyFeatures && product.keyFeatures.length > 0) ? product.keyFeatures : extractFeatures(product.description);
+  const contentBlocks = parseProductContent(product.description);
+  const seoDescription = contentBlocks ? contentToPlainText(contentBlocks).slice(0, 160) : product.description;
 
   return (
     <div className="min-h-screen bg-background aurora-bg">
       <SEO 
         title={product.title} 
-        description={product.description} 
+        description={seoDescription}
         path={`/produit/${product.id}`}
         type="product"
         image={allImages[0]}
@@ -300,22 +304,22 @@ const ProductDetail = () => {
 
       {/* Tabs Section */}
       <section className="container mx-auto px-4 py-12">
-         <div className="max-w-4xl mx-auto">
+         <div className="mx-auto max-w-5xl">
             <div className="flex gap-2 mb-4">
                <button 
                  onClick={() => setActiveTab("description")}
-                 className={`px-8 py-4 rounded-t-[2rem] font-black text-xs uppercase tracking-widest transition-all ${activeTab === "description" ? "bg-card/40 backdrop-blur-xl border-t border-x border-white/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                 className={`rounded-t-2xl px-6 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === "description" ? "border-x border-t border-outline bg-white text-primary" : "text-muted-foreground hover:text-foreground"}`}
                >
                   Détails & Programme
                </button>
                <button 
                  onClick={() => setActiveTab("avis")}
-                 className={`px-8 py-4 rounded-t-[2rem] font-black text-xs uppercase tracking-widest transition-all ${activeTab === "avis" ? "bg-card/40 backdrop-blur-xl border-t border-x border-white/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                 className={`rounded-t-2xl px-6 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === "avis" ? "border-x border-t border-outline bg-white text-primary" : "text-muted-foreground hover:text-foreground"}`}
                >
                   Avis Experts ({reviews.length})
                </button>
             </div>
-            <div className="glass-card rounded-b-[3rem] rounded-tr-[3rem] p-8 md:p-12">
+            <div className="rounded-3xl border border-outline bg-white p-6 shadow-sm md:p-10">
                 {activeTab === "description" ? (
                   <div className="space-y-12">
                      {product.is_lms && chapters.length > 0 && (
@@ -323,7 +327,7 @@ const ProductDetail = () => {
                          <h3 className="text-2xl font-black flex items-center gap-3"><BookOpen className="text-primary" /> Programme de la formation</h3>
                          <Accordion type="multiple" defaultValue={[chapters[0]?.id]} className="space-y-4">
                            {chapters.map((chapter: any, idx: number) => (
-                             <AccordionItem key={chapter.id} value={chapter.id} className="border border-white/5 rounded-[2rem] overflow-hidden bg-white/5 px-6">
+                             <AccordionItem key={chapter.id} value={chapter.id} className="overflow-hidden rounded-2xl border border-outline bg-neutral px-6">
                                <AccordionTrigger className="hover:no-underline py-6">
                                  <div className="flex items-center gap-4 text-left">
                                    <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-sm">{idx + 1}</div>
@@ -336,7 +340,7 @@ const ProductDetail = () => {
                                <AccordionContent className="pb-6">
                                  <div className="space-y-3 pl-14">
                                    {chapter.lessons?.map((lesson: any) => (
-                                     <div key={lesson.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-colors">
+                                     <div key={lesson.id} className="group flex items-center justify-between rounded-xl border border-outline bg-white p-3 transition-colors hover:border-primary/30">
                                        <div className="flex items-center gap-3">
                                           <div className="h-2 w-2 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
                                           <span className="text-sm font-medium">{lesson.title}</span>
@@ -361,7 +365,7 @@ const ProductDetail = () => {
                           <h3 className="text-2xl font-black flex items-center gap-3"><Sparkles className="text-primary" /> Ce que vous allez maîtriser</h3>
                           <div className="space-y-4">
                              {keyFeatures.map((f, i) => (
-                               <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                               <div key={i} className="flex items-start gap-4 rounded-2xl border border-outline bg-neutral p-4">
                                   <div className="h-6 w-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5"><Zap size={14} fill="currentColor" /></div>
                                   <p className="text-sm font-medium leading-relaxed">{f}</p>
                                </div>
@@ -370,7 +374,7 @@ const ProductDetail = () => {
                        </div>
                        <div className="space-y-6">
                            <h3 className="text-2xl font-black flex items-center gap-3"><ShieldCheck className="text-primary" /> Paiement & Sécurité</h3>
-                           <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10 space-y-6">
+                           <div className="space-y-6 rounded-3xl border border-primary/20 bg-primary/5 p-6">
                               <div className="flex flex-wrap gap-3 justify-center">
                                  <img src={payMtn} className="h-8 w-auto rounded shadow-sm" alt="MTN" />
                                  <img src={payMoov} className="h-8 w-auto rounded shadow-sm" alt="Moov" />
@@ -388,7 +392,7 @@ const ProductDetail = () => {
                        </div>
                     </div>
                     
-                    <div className="prose prose-invert max-w-none prose-p:text-muted-foreground prose-p:font-medium prose-p:leading-relaxed prose-strong:text-foreground prose-strong:font-black">
+                    {contentBlocks ? <ProductContentRenderer blocks={contentBlocks} /> : <div className="prose max-w-none prose-p:font-medium prose-p:leading-relaxed prose-p:text-muted-foreground prose-strong:font-black prose-strong:text-foreground">
                        <h3 className="text-2xl font-black text-foreground mb-6">Description Complète</h3>
                        {product.description?.split("\n\n").map((block, idx) => (
                          <div key={idx} className="mb-6">
@@ -399,7 +403,7 @@ const ProductDetail = () => {
                             ))}
                          </div>
                        ))}
-                    </div>
+                    </div>}
                  </div>
                ) : (
                  <ProductReviewsSection productId={product.id} />
