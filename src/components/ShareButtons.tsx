@@ -10,7 +10,7 @@ interface ShareButtonsProps {
 
 const SITE_URL = "https://snap-clone-wonder.lovable.app";
 
-const ShareButtons = ({ url, title = "MindHub – Formations Digitales Premium", compact = false }: ShareButtonsProps) => {
+const ShareButtons = ({ url, title = "MindHubs – Produits et formations digitales", compact = false }: ShareButtonsProps) => {
   const [open, setOpen] = useState(false);
   const shareUrl = url ? `${SITE_URL}${url}` : SITE_URL;
   const encodedUrl = encodeURIComponent(shareUrl);

@@ -23,10 +23,10 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "sale": return <ShoppingBag size={14} className="text-emerald-500" />;
-      case "payout": return <CreditCard size={14} className="text-blue-500" />;
-      case "system": return <Info size={14} className="text-amber-500" />;
-      case "subscription": return <CheckCircle size={14} className="text-purple-500" />;
+      case "sale": return <ShoppingBag size={14} className="text-success" />;
+      case "payout": return <CreditCard size={14} className="text-info" />;
+      case "system": return <Info size={14} className="text-warning" />;
+      case "subscription": return <CheckCircle size={14} className="text-brand-magenta" />;
       default: return <Bell size={14} className="text-muted-foreground" />;
     }
   };
@@ -34,17 +34,17 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <button className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-          <Bell size={20} className="text-zinc-400" />
+        <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-accent transition-colors">
+          <Bell size={20} className="text-muted-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-zinc-950">
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0 glass-card border-white/10 text-white rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+      <PopoverContent align="end" className="w-80 p-0 glass-card border-border text-foreground rounded-2xl overflow-hidden shadow-2xl">
+        <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
           <h3 className="text-xs font-black uppercase tracking-widest">Notifications</h3>
           {unreadCount > 0 && (
             <button 
@@ -60,7 +60,7 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
           {isLoading ? (
             <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-primary" size={20} /></div>
           ) : notifications.length === 0 ? (
-            <div className="p-12 text-center text-zinc-500 space-y-2">
+            <div className="p-12 text-center text-muted-foreground space-y-2">
               <Bell size={32} className="mx-auto opacity-20" />
               <p className="text-[10px] font-black uppercase tracking-widest">Aucune notification</p>
             </div>
@@ -73,22 +73,22 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
                   markAsRead(n.id);
                   setIsOpen(false);
                 }}
-                className={`flex gap-4 p-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 ${!n.read ? 'bg-primary/5' : ''}`}
+                className={`flex gap-4 p-4 hover:bg-muted/50 transition-colors border-b border-border last:border-0 ${!n.read ? 'bg-primary/5' : ''}`}
               >
-                <div className={`mt-1 w-8 h-8 rounded-lg shrink-0 flex items-center justify-center bg-white/5 border border-white/5`}>
+                <div className="mt-1 w-8 h-8 rounded-lg shrink-0 flex items-center justify-center bg-muted/50 border border-border">
                   {getIcon(n.type)}
                 </div>
                 <div className="space-y-1">
                   <p className="text-[11px] font-black leading-tight">{n.title}</p>
-                  <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">{n.message}</p>
-                  <p className="text-[9px] text-zinc-500 font-black uppercase tracking-tighter">{getRelativeTime(n.created_at)}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">{n.message}</p>
+                  <p className="text-[9px] text-subtle font-black uppercase tracking-tighter">{getRelativeTime(n.created_at)}</p>
                 </div>
               </Link>
             ))
           )}
         </div>
 
-        <div className="p-2 bg-white/5 border-t border-white/5">
+        <div className="p-2 bg-muted/30 border-t border-border">
            <Button asChild variant="ghost" className="w-full h-8 text-[9px] font-black uppercase tracking-widest">
               <Link to="/dashboard/messages">Voir les messages</Link>
            </Button>

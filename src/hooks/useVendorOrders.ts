@@ -13,7 +13,13 @@ export interface VendorOrderItem {
 export interface VendorOrder {
   id: string;
   created_at: string;
-  status: "pending" | "confirmed" | "delivered" | "cancelled";
+  status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
+  payment_status?: "pending" | "paid" | "failed" | "refunded" | "cancelled";
+  source_channel?: "marketplace" | "storefront" | "direct" | "social" | "external" | "other";
+  fulfillment_id?: string;
+  tracking_carrier?: string | null;
+  tracking_number?: string | null;
+  shipping_address?: Record<string, string> | null;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
@@ -39,18 +45,32 @@ export const useVendorOrders = (vendorId: string | undefined, productIds: string
 
       const orFilter = productIds.map(id => `items.cs.[{"id":"${id}"}]`).join(',');
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("orders")
-        .select("id, created_at, status, customer_name, customer_email, customer_phone, items")
+        .select("id, created_at, status, payment_status, source_channel, shipping_address, customer_name, customer_email, customer_phone, items")
         .or(orFilter)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      const orderIds = (data || []).map((order: any) => order.id);
+      let fulfillmentByOrder: Record<string, any> = {};
+      if (orderIds.length > 0) {
+        const fulfillmentResult = await (supabase as any)
+          .from("vendor_order_fulfillments")
+          .select("id, order_id, status, tracking_carrier, tracking_number, shipping_address")
+          .eq("vendor_id", vendorId)
+          .in("order_id", orderIds);
+        if (!fulfillmentResult.error) {
+          fulfillmentByOrder = Object.fromEntries((fulfillmentResult.data || []).map((fulfillment: any) => [fulfillment.order_id, fulfillment]));
+        }
+      }
+
       return (data || [])
         .map((o: any) => {
           const items: VendorOrderItem[] = Array.isArray(o.items) ? o.items : [];
           const vendorItems = items.filter((i) => productIds.includes(i.id));
+          const fulfillment = fulfillmentByOrder[o.id];
 
           if (vendorItems.length === 0) return null;
 
@@ -63,7 +83,13 @@ export const useVendorOrders = (vendorId: string | undefined, productIds: string
           return {
             id: o.id,
             created_at: o.created_at,
-            status: o.status,
+            status: fulfillment?.status || o.status,
+            payment_status: o.payment_status || (o.status === "confirmed" || o.status === "delivered" ? "paid" : "pending"),
+            source_channel: o.source_channel || "marketplace",
+            fulfillment_id: fulfillment?.id,
+            tracking_carrier: fulfillment?.tracking_carrier,
+            tracking_number: fulfillment?.tracking_number,
+            shipping_address: fulfillment?.shipping_address || o.shipping_address,
             customer_name: o.customer_name || "Client",
             customer_email: o.customer_email || "",
             customer_phone: o.customer_phone || "",

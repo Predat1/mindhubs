@@ -7,7 +7,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, ShieldCheck, Zap } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import SEO from "@/components/SEO";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
@@ -24,25 +24,25 @@ const CartPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background aurora-bg">
-        <SEO title="Panier" description="Votre panier MindHub. Finalisez vos achats de formations digitales premium." path="/panier" keywords="panier mindhub, achat formation, checkout mindhubs, valider commande" />
+      <div className="min-h-screen bg-background">
+        <SEO title="Panier" description="Votre panier MindHubs. Finalisez vos achats de produits digitaux et physiques." path="/panier" keywords="panier mindhubs, achat produit digital, checkout mindhubs, valider commande" />
         <Navbar />
         <section className="pt-48 pb-20">
           <div className="container mx-auto px-4 text-center">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass-card rounded-[3rem] py-20 px-8 max-w-xl mx-auto space-y-8"
+              className="glass-card rounded-2xl py-16 px-8 max-w-xl mx-auto space-y-8"
             >
               <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
                  <ShoppingBag size={48} />
               </div>
               <div className="space-y-2">
                  <h1 className="text-3xl font-black">Votre panier est vide</h1>
-                 <p className="text-muted-foreground font-medium">Découvrez nos formations et commencez votre transformation.</p>
+                 <p className="text-muted-foreground font-medium">Découvrez les produits de la marketplace et commencez votre projet.</p>
               </div>
-              <Button asChild className="h-14 rounded-2xl px-10 btn-glow font-black text-lg">
-                 <Link to="/boutique">Explorer la Boutique</Link>
+              <Button asChild className="h-12 rounded-lg px-8 btn-glow font-semibold">
+                 <Link to="/boutique">Explorer la marketplace</Link>
               </Button>
             </motion.div>
           </div>
@@ -53,8 +53,8 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background aurora-bg">
-      <SEO title="Panier" description="Votre panier MindHub. Finalisez vos achats de formations digitales premium." path="/panier" keywords="panier mindhub, achat formation, checkout mindhubs, valider commande" />
+    <div className="min-h-screen bg-background">
+      <SEO title="Panier" description="Votre panier MindHubs. Finalisez vos achats de produits digitaux et physiques." path="/panier" keywords="panier mindhubs, achat produit digital, checkout mindhubs, valider commande" />
       <Navbar />
 
       <section className="pt-28 pb-10">
@@ -83,9 +83,9 @@ const CartPage = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="glass-card rounded-[2rem] p-4 flex gap-6 items-center border-white/5 bg-card/40"
+                  className="glass-card rounded-xl p-4 flex gap-4 items-center bg-card"
                 >
-                   <Link to={`/produit/${item.product.id}`} className="shrink-0 h-24 w-24 rounded-2xl overflow-hidden border border-white/5">
+                   <Link to={`/produit/${item.product.id}`} className="shrink-0 h-24 w-24 rounded-xl overflow-hidden border border-border">
                       <img src={item.product.image} alt={item.product.title} className="h-full w-full object-cover" />
                    </Link>
                    
@@ -99,12 +99,12 @@ const CartPage = () => {
                       </div>
                       
                       <div className="flex items-center gap-4 pt-1">
-                        <div className="flex items-center bg-muted/30 rounded-xl p-1 border border-white/5">
-                           <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-muted-foreground transition-colors">
+                        <div className="flex items-center bg-muted/50 rounded-lg p-1 border border-border">
+                           <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground transition-colors" aria-label="Diminuer la quantité">
                              <Minus size={14} />
                            </button>
                            <span className="text-foreground font-black text-sm w-8 text-center">{item.quantity}</span>
-                           <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-muted-foreground transition-colors">
+                           <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground transition-colors" aria-label="Augmenter la quantité">
                              <Plus size={14} />
                            </button>
                         </div>
@@ -127,11 +127,11 @@ const CartPage = () => {
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass-card rounded-[2.5rem] p-8 space-y-8 sticky top-24 border-primary/20 shadow-primary/5"
+              className="glass-card rounded-2xl p-6 md:p-8 space-y-8 sticky top-24 border-border"
             >
               <h2 className="text-xl font-black">Récapitulatif</h2>
               
-              <div className="space-y-4 border-b border-white/5 pb-6">
+              <div className="space-y-4 border-b border-border pb-6">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex justify-between gap-4">
                     <span className="text-xs font-medium text-muted-foreground truncate flex-1">{item.product.title}</span>
@@ -152,8 +152,8 @@ const CartPage = () => {
               </div>
 
               <div className="space-y-4">
-                 <Button asChild className="w-full h-14 rounded-2xl btn-glow font-black text-lg gap-3">
-                    <Link to="/checkout">Paiement Sécurisé <Zap size={20} fill="currentColor" /></Link>
+                 <Button asChild className="w-full h-12 rounded-lg btn-glow font-semibold gap-3">
+                    <Link to="/checkout">Passer au paiement <Zap size={18} fill="currentColor" /></Link>
                  </Button>
                  <Link to="/boutique" className="flex items-center justify-center gap-2 text-xs font-black text-muted-foreground hover:text-primary uppercase tracking-widest transition-colors">
                     <ArrowLeft size={14} /> Continuer mes achats
@@ -162,10 +162,10 @@ const CartPage = () => {
 
               <div className="pt-4 flex flex-col gap-3">
                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                    <ShieldCheck size={14} className="text-emerald-500" /> Transactions cryptées SSL
+                    <ShieldCheck size={14} className="text-success" /> Transactions cryptées SSL
                  </div>
                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                    <Zap size={14} className="text-amber-500" /> Accès immédiat après achat
+                    <Zap size={14} className="text-warning" /> Accès immédiat après achat
                  </div>
               </div>
             </motion.div>
@@ -180,7 +180,7 @@ const CartPage = () => {
           <div className="max-w-5xl mx-auto space-y-8">
             <div className="flex items-center gap-4">
                <h2 className="text-xl font-black">Vous pourriez aussi aimer...</h2>
-               <div className="flex-1 h-px bg-white/5" />
+               <div className="flex-1 h-px bg-border" />
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
               {crossSell.map((p) => (

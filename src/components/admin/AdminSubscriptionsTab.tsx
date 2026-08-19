@@ -214,16 +214,16 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
 
   const getPlanBadge = (plan: string) => {
     switch (plan) {
-      case 'elite': return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-black">ELITE</Badge>;
-      case 'pro': return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 font-black">PRO</Badge>;
-      case 'starter': return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 font-black">STARTER</Badge>;
+      case 'elite': return <Badge className="bg-brand-magenta/10 text-brand-magenta border-brand-magenta/20 font-black">ELITE</Badge>;
+      case 'pro': return <Badge className="bg-primary/10 text-primary border-primary/20 font-black">PRO</Badge>;
+      case 'starter': return <Badge className="bg-info/10 text-info border-info/20 font-black">STARTER</Badge>;
       default: return <Badge variant="outline" className="text-muted-foreground font-black">FREE</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-emerald-500/10 text-emerald-500 font-black border-emerald-500/20">ACTIF</Badge>;
+      case 'active': return <Badge className="bg-success/10 text-success font-black border-success/20">ACTIF</Badge>;
       case 'past_due': return <Badge className="bg-orange-500/10 text-orange-500 font-black border-orange-500/20">RETARD</Badge>;
       case 'cancelled': return <Badge className="bg-destructive/10 text-destructive font-black border-destructive/20">ANNULÉ</Badge>;
       default: return <Badge variant="outline">{status?.toUpperCase()}</Badge>;
@@ -236,9 +236,9 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "MRR Abonnements", value: stats ? formatCurrency(stats.mrr) : "...", icon: CreditCard, color: "text-primary" },
-          { label: "Vendeurs Payants", value: stats?.activePaying ?? "...", icon: Users, color: "text-emerald-500" },
-          { label: "Plans Pro", value: stats?.proCount ?? "...", icon: Star, color: "text-purple-500" },
-          { label: "Plans Elite", value: stats?.eliteCount ?? "...", icon: Zap, color: "text-amber-500" },
+          { label: "Vendeurs Payants", value: stats?.activePaying ?? "...", icon: Users, color: "text-success" },
+          { label: "Plans Pro", value: stats?.proCount ?? "...", icon: Star, color: "text-primary" },
+          { label: "Plans Elite", value: stats?.eliteCount ?? "...", icon: Zap, color: "text-brand-magenta" },
         ].map((s, i) => (
           <div key={i} className="stat-card rounded-2xl p-5 border-glow">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-muted/50 mb-3 ${s.color}`}><s.icon size={18} /></div>
@@ -326,7 +326,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger className="w-full flex items-center px-2 py-1.5 text-xs font-bold gap-2 hover:bg-muted/30 outline-none">
-                             <RefreshCw size={14} className="text-blue-500" /> Changer plan <ChevronRight size={12} className="ml-auto" />
+                             <RefreshCw size={14} className="text-info" /> Changer plan <ChevronRight size={12} className="ml-auto" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side="left" className="glass-card border-border">
                              {['free', 'starter', 'pro', 'elite'].map(plan => (
@@ -342,7 +342,7 @@ const AdminSubscriptionsTab = ({ logAction }: AdminSubscriptionsTabProps) => {
                             <XCircle size={14} /> Annuler
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer text-emerald-500" onClick={() => handleReactivateSub(sub.vendor_id, sub.shop_name)}>
+                          <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer text-success" onClick={() => handleReactivateSub(sub.vendor_id, sub.shop_name)}>
                             <CheckCircle2 size={14} /> Réactiver
                           </DropdownMenuItem>
                         )}

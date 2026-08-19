@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { allProducts as catalogProducts, type Product } from "@/data/products";
 import { DEMO_VENDOR_ID, isDemoMode } from "@/lib/demoMode";
+import { DEFAULT_VENDOR_BRAND_COLOR } from "@/lib/design-tokens";
 
 export interface Vendor {
   id: string;
@@ -29,7 +30,7 @@ export const DEMO_VENDOR: Vendor = {
   description: "Boutique de démonstration MindHubs.",
   avatar_url: null,
   banner_url: null,
-  primary_color: "#FFCC00",
+  primary_color: DEFAULT_VENDOR_BRAND_COLOR,
   standalone_mode: false,
   custom_footer_text: null,
   verified: true,
@@ -38,11 +39,34 @@ export const DEMO_VENDOR: Vendor = {
   badge: "Démo",
 };
 
+const mapVendorProduct = (db: any): Product => ({
+  id: db.id,
+  title: db.title,
+  image: db.image_url,
+  oldPrice: db.old_price,
+  price: db.price,
+  category: db.category,
+  rating: db.rating ?? undefined,
+  tag: db.tag ?? undefined,
+  description: db.description ?? undefined,
+  paymentLink: db.payment_link ?? undefined,
+  imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
+  keyFeatures: db.key_features ?? [],
+  vendorId: db.vendor_id ?? undefined,
+  productMode: db.product_mode || "digital",
+  sku: db.sku ?? undefined,
+  inventoryQuantity: db.inventory_quantity ?? undefined,
+  shippingNotes: db.shipping_notes ?? undefined,
+  status: db.status ?? undefined,
+  created_at: db.created_at,
+});
+
 export const useVendor = (username: string | undefined) => {
   return useQuery({
     queryKey: ["vendor", username],
     queryFn: async (): Promise<Vendor | null> => {
       if (!username) return null;
+      if (isDemoMode && username === DEMO_VENDOR.username) return DEMO_VENDOR;
       const { data, error } = await (supabase as any)
         .from("vendor_subscription_view")
         .select("*")
@@ -86,24 +110,40 @@ export const useVendorProducts = (vendorId: string | undefined) => {
         .eq("vendor_id", vendorId)
         .order("sort_order");
       if (error) throw error;
-      return (data || []).map((db: any) => ({
-        id: db.id,
-        title: db.title,
-        image: db.image_url,
-        oldPrice: db.old_price,
-        price: db.price,
-        category: db.category,
-        rating: db.rating ?? undefined,
-        tag: db.tag ?? undefined,
-        description: db.description ?? undefined,
-        paymentLink: db.payment_link ?? undefined,
-        imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
-        keyFeatures: db.key_features ?? [],
-        vendorId: db.vendor_id ?? undefined,
-        created_at: db.created_at,
-      }));
+      return (data || []).map(mapVendorProduct);
     },
     enabled: !!vendorId,
+  });
+};
+
+export const usePublishedVendorProducts = (vendorId: string | undefined, channel: "storefront" | "marketplace" = "storefront") => {
+  return useQuery({
+    queryKey: ["published-vendor-products", vendorId, channel],
+    queryFn: async (): Promise<Product[]> => {
+      if (!vendorId) return [];
+      if (isDemoMode && vendorId === DEMO_VENDOR_ID) {
+        return catalogProducts.slice(0, 8).map((product) => ({ ...product, vendorId: DEMO_VENDOR_ID }));
+      }
+
+      const { data, error } = await (supabase as any)
+        .from("product_publications")
+        .select("product:products(*)")
+        .eq("vendor_id", vendorId)
+        .eq("channel", channel)
+        .eq("status", "published")
+        .order("sort_order");
+
+      if (!error && Array.isArray(data)) {
+        return data.filter((row: any) => row.product).map((row: any) => mapVendorProduct(row.product));
+      }
+
+      // Keep existing storefronts readable until the distribution migration is deployed.
+      const fallback = await supabase.from("products").select("*").eq("vendor_id", vendorId).eq("status", "published").order("sort_order");
+      if (fallback.error) throw fallback.error;
+      return (fallback.data || []).map(mapVendorProduct);
+    },
+    enabled: !!vendorId,
+    staleTime: 60_000,
   });
 };
 

@@ -19,7 +19,7 @@ const stats = [
 ];
 
 const milestones = [
-  { year: "2021", title: "Création de MindHub", desc: "Lancement de la plateforme avec 5 formations initiales." },
+  { year: "2021", title: "Création de MindHubs", desc: "Lancement de la plateforme avec 5 formations initiales." },
   { year: "2022", title: "100 étudiants", desc: "Cap des 100 étudiants franchi avec expansion en Afrique de l'Ouest." },
   { year: "2023", title: "Partenariats stratégiques", desc: "Collaboration avec des experts internationaux et diversification des formations." },
   { year: "2024", title: "500+ étudiants", desc: "Plus de 500 étudiants formés et lancement des packs professionnels." },
@@ -28,7 +28,7 @@ const milestones = [
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="À propos de MindHub – Notre Mission en Afrique" description="Découvrez l'histoire de MindHub, plateforme N°1 de formations digitales en Afrique francophone. Notre mission : démocratiser l'accès aux compétences digitales au Bénin, Sénégal, Côte d'Ivoire et dans toute l'Afrique." path="/a-propos" keywords="à propos MindHub, mission éducation digitale Afrique, plateforme formation Bénin, formation en ligne Sénégal, équipe MindHub, histoire mindhubs, éducation Afrique francophone" />
+      <SEO title="À propos de MindHubs – Notre Mission en Afrique" description="Découvrez l'histoire de MindHubs, plateforme de produits et formations digitales en Afrique francophone. Notre mission : démocratiser l'accès aux compétences digitales au Bénin, au Sénégal, en Côte d'Ivoire et dans toute l'Afrique." path="/a-propos" keywords="à propos MindHubs, mission éducation digitale Afrique, plateforme formation Bénin, formation en ligne Sénégal, équipe MindHubs, histoire MindHubs, éducation Afrique francophone" />
       <Navbar />
 
       {/* Hero */}
@@ -43,7 +43,7 @@ const About = () => {
             </AnimateOnScroll>
             <AnimateOnScroll delay={100}>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
-                À propos de <span className="text-gradient-brand">MindHub</span>
+                À propos de <span className="text-gradient-brand">MindHubs</span>
               </h1>
             </AnimateOnScroll>
             <AnimateOnScroll delay={200}>
@@ -62,7 +62,7 @@ const About = () => {
             <div className="space-y-4 sm:space-y-6">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Notre Mission</h2>
               <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                MindHub est née de la conviction que l'éducation de qualité ne devrait pas être un privilège. Notre mission est de démocratiser l'accès aux compétences digitales en Afrique francophone.
+                MindHubs est née de la conviction que l'éducation de qualité ne devrait pas être un privilège. Notre mission est de démocratiser l'accès aux compétences digitales en Afrique francophone.
               </p>
               <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                 Nous créons des formations pratiques, conçues par des experts, pour permettre à chacun de développer les compétences nécessaires pour réussir dans l'économie numérique.

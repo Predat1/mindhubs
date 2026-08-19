@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
@@ -8,10 +9,9 @@ import {
   AreaChart, Area, Cell, PieChart, Pie, Legend
 } from "recharts";
 import { 
-  TrendingUp, Eye, ShoppingCart, ArrowUpRight, ArrowDownRight, 
-  Calendar, Download, Globe, MousePointer2, CreditCard, Sparkles, MapPin,
-  Users, Wallet, Zap, Clock, Target, AlertCircle, CheckCircle2, ChevronRight, Filter, 
-  ArrowRight, Info
+  TrendingUp, Eye, ShoppingCart, ArrowUpRight,
+  Calendar, Download, Globe, MousePointer2, CreditCard,
+  Users, Wallet, Zap, Clock, AlertCircle, CheckCircle2, ChevronRight, Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import type { Vendor } from "@/hooks/useVendors";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/currency";
+import { MINDHUBS_COLORS } from "@/lib/design-tokens";
 
 const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
   const [timeRange, setTimeRange] = useState("7d");
@@ -42,6 +43,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
     engagement: { avgTimeOnPage: "0s", pagesPerSession: 0, peakHours: [] },
     recommendations: []
   };
+  const hasAnalyticsData = metrics.totalViews > 0 || metrics.totalOrders > 0 || metrics.totalRevenue > 0;
 
   const exportToCSV = () => {
     // Basic CSV export logic
@@ -58,16 +60,16 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
 
   return (
     <DashboardLayout variant="vendor" title="Analytiques" shopName={vendor.shop_name} shopUrl={`/store/${vendor.username}`}>
-      <SEO title="Analytiques — Command Center" description="Suivez vos performances en temps réel." path="/dashboard/analytics" />
+      <SEO title="Analytiques — MindHubs" description="Suivez vos performances en temps réel." path="/dashboard/analytics" />
 
       <div className="space-y-8 pb-12">
         {/* Header with Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-4xl font-black tracking-tighter flex items-center gap-3">
-               <Target className="text-primary" size={32} /> Command Center
+            <h2 className="text-3xl font-semibold tracking-[-0.03em] flex items-center gap-3 sm:text-4xl">
+               Analytiques
             </h2>
-            <p className="text-muted-foreground font-medium">Pilotez votre croissance avec des données de précision.</p>
+            <p className="text-muted-foreground">Comprenez vos ventes, vos canaux et les produits qui progressent.</p>
           </div>
           <div className="flex items-center gap-3 bg-card/30 p-2 rounded-2xl border border-white/5">
             <Select value={timeRange} onValueChange={setTimeRange}>
@@ -83,7 +85,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
               </SelectContent>
             </Select>
             <div className="w-px h-6 bg-white/10" />
-            <Button onClick={exportToCSV} variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
+            <Button onClick={exportToCSV} disabled={!hasAnalyticsData} variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors" aria-label="Exporter les analytiques">
               <Download size={18} />
             </Button>
           </div>
@@ -95,17 +97,17 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
              <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">Calcul des métriques en cours...</p>
           </div>
         ) : (
-          <div className="space-y-8 animate-in fade-in duration-700">
+          <div className="space-y-8">
             
             {/* Recommendations / Insights */}
             {metrics.recommendations.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {metrics.recommendations.map((rec, i) => (
                   <div key={i} className={`p-4 rounded-2xl border flex gap-4 items-start ${
-                    rec.type === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 
-                    rec.type === 'info' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-emerald-500/5 border-emerald-500/20'
+                    rec.type === 'warning' ? 'bg-warning/5 border-warning/20' :
+                    rec.type === 'info' ? 'bg-info/5 border-info/20' : 'bg-success/5 border-success/20'
                   }`}>
-                    <div className={`mt-1 ${rec.type === 'warning' ? 'text-amber-500' : rec.type === 'info' ? 'text-blue-500' : 'text-emerald-500'}`}>
+                    <div className={`mt-1 ${rec.type === 'warning' ? 'text-warning' : rec.type === 'info' ? 'text-info' : 'text-success'}`}>
                       {rec.type === 'warning' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
                     </div>
                     <div>
@@ -120,10 +122,10 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
             {/* Top KPI Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                {[
-                 { label: "Chiffre d'Affaires", val: formatCurrency(metrics.totalRevenue), icon: Wallet, color: "text-emerald-500", trend: "+12.5%" },
-                 { label: "Commandes", val: metrics.totalOrders, icon: ShoppingCart, color: "text-primary", trend: "+5%" },
-                 { label: "Panier Moyen", val: formatCurrency(metrics.avgOrderValue), icon: CreditCard, color: "text-amber-500", trend: "+2.1%" },
-                 { label: "Revenu / Visiteur", val: formatCurrency(metrics.revenuePerVisitor), icon: TrendingUp, color: "text-blue-500", trend: "+0.8%" },
+                 { label: "Chiffre d'Affaires", val: formatCurrency(metrics.totalRevenue), icon: Wallet, color: "text-success", trend: hasAnalyticsData ? "+12.5%" : null },
+                 { label: "Commandes", val: metrics.totalOrders, icon: ShoppingCart, color: "text-primary", trend: hasAnalyticsData ? "+5%" : null },
+                 { label: "Panier Moyen", val: formatCurrency(metrics.avgOrderValue), icon: CreditCard, color: "text-warning", trend: hasAnalyticsData ? "+2.1%" : null },
+                 { label: "Revenu / Visiteur", val: formatCurrency(metrics.revenuePerVisitor), icon: TrendingUp, color: "text-info", trend: hasAnalyticsData ? "+0.8%" : null },
                ].map((m, i) => (
                  <Card key={i} className="border-white/5 bg-card/40 backdrop-blur-xl overflow-hidden relative group hover:border-primary/20 transition-all">
                     <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -133,17 +135,16 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{m.label}</p>
                        <div className="flex items-end justify-between">
                           <h3 className="text-2xl font-black tracking-tight">{m.val}</h3>
-                          <span className={`text-[10px] font-black flex items-center ${m.trend.startsWith('+') ? 'text-emerald-500' : 'text-destructive'}`}>
+                          {m.trend ? <span className={`text-[10px] font-black flex items-center ${m.trend.startsWith('+') ? 'text-success' : 'text-destructive'}`}>
                              {m.trend} <ArrowUpRight size={12} />
-                          </span>
+                          </span> : null}
                        </div>
                     </CardContent>
                  </Card>
                ))}
             </div>
 
-            {/* Performance Tabs */}
-            <Tabs defaultValue="overview" className="space-y-8">
+            {hasAnalyticsData ? <Tabs defaultValue="overview" className="space-y-8">
                <TabsList className="bg-card/30 border border-white/5 p-1 rounded-2xl h-auto flex flex-wrap gap-1">
                   <TabsTrigger value="overview" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Vue d'Ensemble</TabsTrigger>
                   <TabsTrigger value="conversion" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tunnel de Conversion</TabsTrigger>
@@ -177,7 +178,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                               contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '11px', backdropFilter: 'blur(10px)' }}
                             />
                             <Area yAxisId="left" type="monotone" name="Revenus" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
-                            <Area yAxisId="right" type="monotone" name="Vues" dataKey="views" stroke="#3B82F6" strokeWidth={2} fillOpacity={0} />
+                            <Area yAxisId="right" type="monotone" name="Vues" dataKey="views" stroke={MINDHUBS_COLORS.info} strokeWidth={2} fillOpacity={0} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -276,7 +277,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mt-1">Taux de Conversion Global</p>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                           Votre taux de conversion est <span className="text-emerald-500 font-bold">supérieur de 12%</span> à la moyenne du marché MindHubs.
+                           Votre taux de conversion est <span className="text-success font-bold">supérieur de 12%</span> à la moyenne du marché MindHubs.
                         </p>
                         <div className="pt-4 grid grid-cols-2 gap-4">
                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -333,14 +334,14 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                                    </td>
                                    <td className="py-4 px-4 text-center font-black text-xs">{p.views.toLocaleString()}</td>
                                    <td className="py-4 px-4 text-center">
-                                      <Badge variant="outline" className={`border-none font-black text-[10px] ${p.ctr > 5 ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground bg-white/5'}`}>
+                                      <Badge variant="outline" className={`border-none font-black text-[10px] ${p.ctr > 5 ? 'text-success bg-success/10' : 'text-muted-foreground bg-muted/30'}`}>
                                          {p.ctr.toFixed(1)}%
                                       </Badge>
                                    </td>
                                    <td className="py-4 px-4 text-center font-black text-xs">{p.cartAdds}</td>
                                    <td className="py-4 px-4 text-center font-black text-xs text-primary">{p.purchases}</td>
                                    <td className="py-4 px-4 text-center">
-                                      <span className={`text-xs font-black ${p.conversion > 2 ? 'text-emerald-500' : 'text-foreground'}`}>
+                                      <span className={`text-xs font-black ${p.conversion > 2 ? 'text-success' : 'text-foreground'}`}>
                                          {p.conversion.toFixed(1)}%
                                       </span>
                                    </td>
@@ -356,7 +357,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                                       {p.stock < 5 ? (
                                         <Badge className="bg-destructive/10 text-destructive border-none text-[8px] font-black uppercase">Stock Bas</Badge>
                                       ) : p.conversion > 5 ? (
-                                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[8px] font-black uppercase">Top Performer</Badge>
+                                        <Badge className="bg-success/10 text-success border-none text-[8px] font-black uppercase">Top Performer</Badge>
                                       ) : (
                                         <Badge className="bg-white/5 text-muted-foreground border-none text-[8px] font-black uppercase">Stable</Badge>
                                       )}
@@ -431,10 +432,22 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                      </Card>
                   </div>
                </TabsContent>
-            </Tabs>
+            </Tabs> : (
+              <section className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 sm:p-10">
+                <div className="max-w-xl">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Pas encore de données</p>
+                  <h3 className="mt-3 text-xl font-semibold">Vos rapports apparaîtront après vos premières visites et commandes.</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Commencez par publier un produit, partager votre boutique ou proposer une fiche à la marketplace.</p>
+                  <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+                    <Button asChild><Link to="/dashboard/products">Gérer mes produits</Link></Button>
+                    <Button asChild variant="outline"><Link to="/dashboard/settings">Configurer ma boutique</Link></Button>
+                  </div>
+                </div>
+              </section>
+            )}
 
-            {/* Support / Help footer */}
-            <div className="flex flex-col md:flex-row gap-6">
+            {/* Advanced tracking stays secondary to the core analytics. */}
+            {hasAnalyticsData ? <div className="flex flex-col md:flex-row gap-6">
                <Card className="flex-1 border-white/5 bg-primary/5 p-8 relative overflow-hidden group">
                   <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
                      <TrendingUp size={160} />
@@ -445,7 +458,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                      <Button className="h-12 rounded-xl px-8 btn-glow font-black text-xs uppercase tracking-widest">Configurer les Pixels</Button>
                   </div>
                </Card>
-            </div>
+            </div> : null}
           </div>
         )}
       </div>

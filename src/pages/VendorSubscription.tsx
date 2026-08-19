@@ -5,7 +5,7 @@ import { useVendorSubscription } from "@/hooks/useSubscription";
 import { useCredits } from "@/hooks/useCredits";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { useVendorOrders } from "@/hooks/useVendorOrders";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { 
   CreditCard, Zap, Check, AlertCircle, ArrowUpRight, 
   History, Wallet, ShieldCheck, ChevronRight, Package,
@@ -87,7 +87,7 @@ export default function VendorSubscription() {
              <h1 className="text-4xl font-black tracking-tighter">Gestion de l'Abonnement</h1>
              <p className="text-zinc-400">Gérez vos limites de produits et votre puissance de création IA.</p>
           </div>
-          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-4 py-2 font-black uppercase text-[10px] tracking-widest">
+          <Badge className="bg-success/10 text-success border-success/20 px-4 py-2 font-black uppercase text-[10px] tracking-widest">
             Compte Vendeur Vérifié
           </Badge>
         </header>
@@ -115,7 +115,7 @@ export default function VendorSubscription() {
                     </div>
                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                       <p className="text-[9px] font-black text-zinc-500 uppercase mb-1">Status</p>
-                      <p className="text-xl font-black text-emerald-500 capitalize">{sub.status}</p>
+                      <p className="text-xl font-black text-success capitalize">{sub.status}</p>
                     </div>
                   </div>
 
@@ -139,7 +139,7 @@ export default function VendorSubscription() {
                     </Button>
                   )}
                   {sub.plan === 'free' && (
-                    <Button asChild className="w-full h-12 bg-primary text-black font-black uppercase tracking-widest text-[10px] rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                    <Button asChild className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] rounded-xl shadow-[0_0_20px_rgba(24,220,255,0.18)]">
                       <Link to="/pricing">Upgrader Maintenant</Link>
                     </Button>
                   )}
@@ -156,7 +156,7 @@ export default function VendorSubscription() {
                         <span className="text-[10px] font-black uppercase tracking-widest">Solde de Crédits IA</span>
                      </div>
                      <h3 className="text-6xl font-black">{credits.balance}</h3>
-                     <p className="text-xs text-zinc-500 font-bold">Valables sur tous les outils du Creator Lab</p>
+                     <p className="text-xs text-zinc-500 font-bold">Valables sur les fonctionnalités IA disponibles dans votre plan</p>
                   </div>
                   <Button onClick={() => handleBuyCredits(null)} className="w-full h-12 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-xl">
                     Recharger des crédits
@@ -168,11 +168,11 @@ export default function VendorSubscription() {
                   {sub.plan !== 'elite' ? (
                     <div className="space-y-4">
                       <p className="text-sm text-zinc-300 leading-relaxed font-medium">
-                        Passez au plan <span className="text-primary font-black uppercase">Elite</span> et économisez <span className="text-emerald-500 font-black">{(sub.commissionRate - 0.05) * 100}%</span> de commission.
+                        Passez au plan <span className="text-primary font-black uppercase">Elite</span> et économisez <span className="text-success font-black">{(sub.commissionRate - 0.05) * 100}%</span> de commission.
                       </p>
-                      <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                         <p className="text-[9px] font-black text-emerald-500/80 uppercase mb-1">Économie estimée / mois</p>
-                         <p className="text-2xl font-black text-emerald-500">
+                      <div className="p-4 rounded-2xl bg-success/10 border border-success/20">
+                         <p className="text-[9px] font-black text-success/80 uppercase mb-1">Économie estimée / mois</p>
+                         <p className="text-2xl font-black text-success">
                            + {Math.round(vendorRevenue30d * (sub.commissionRate - 0.05)).toLocaleString()} FCFA
                          </p>
                       </div>
@@ -225,15 +225,15 @@ export default function VendorSubscription() {
                            <td className="py-4 px-2 text-zinc-400 font-medium">{getRelativeTime(tx.created_at)}</td>
                            <td className="py-4 px-2">
                              <Badge className={`text-[9px] font-black uppercase ${
-                               tx.type === 'spend' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                               tx.type === 'monthly_grant' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                               'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                               tx.type === 'spend' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                               tx.type === 'monthly_grant' ? 'bg-success/10 text-success border-success/20' :
+                               'bg-info/10 text-info border-info/20'
                              }`}>
                                {tx.type === 'spend' ? 'Débit' : tx.type === 'monthly_grant' ? 'Allocation' : 'Achat'}
                              </Badge>
                            </td>
                            <td className="py-4 px-2 font-bold text-zinc-300">{tx.description}</td>
-                           <td className={`py-4 px-2 font-black ${tx.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                           <td className={`py-4 px-2 font-black ${tx.amount < 0 ? 'text-destructive' : 'text-success'}`}>
                              {tx.amount > 0 ? '+' : ''}{tx.amount}
                            </td>
                            <td className="py-4 px-2 font-black text-white">{tx.balance_after}</td>
@@ -258,7 +258,7 @@ export default function VendorSubscription() {
                         className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-primary transition-all cursor-pointer group relative overflow-hidden"
                      >
                         {pack.badge && (
-                          <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded">
+                          <div className="absolute top-2 right-2 bg-success text-success-foreground text-[8px] font-black uppercase px-1.5 py-0.5 rounded">
                             {pack.badge}
                           </div>
                         )}
@@ -331,7 +331,7 @@ export default function VendorSubscription() {
                </div>
             </div>
 
-            <div className="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+            <div className="space-y-3 p-4 rounded-2xl bg-warning/10 border border-warning/20 text-warning">
                <div className="flex gap-2">
                  <AlertCircle size={14} className="mt-0.5 shrink-0" />
                  <p className="text-[10px] font-bold leading-relaxed">

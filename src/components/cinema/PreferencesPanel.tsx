@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, Save, Palette, Globe, Megaphone, MessageSquare, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DEFAULT_VENDOR_BRAND_COLOR } from "@/lib/design-tokens";
 
 interface PreferencesPanelProps {
   vendorId: string;
@@ -74,7 +75,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newColor, setNewColor] = useState("#8B5CF6");
+  const [newColor, setNewColor] = useState(DEFAULT_VENDOR_BRAND_COLOR);
 
   useEffect(() => {
     if (!open || !vendorId) return;
@@ -169,7 +170,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                         onClick={() => setPrefs(p => ({ ...p, preferred_style: s.value }))}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
                           prefs.preferred_style === s.value
-                            ? "bg-violet-500/15 border-violet-500/30 text-violet-300"
+                            ? "bg-primary/15 border-primary/30 text-primary"
                             : "border-white/5 hover:border-white/15 text-muted-foreground"
                         }`}
                       >
@@ -191,7 +192,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                         onClick={() => setPrefs(prev => ({ ...prev, target_platforms: toggleArray(prev.target_platforms, p.value) }))}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                           prefs.target_platforms.includes(p.value)
-                            ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
+                            ? "bg-info/15 border-info/30 text-info"
                             : "border-white/5 hover:border-white/15 text-muted-foreground"
                         }`}
                       >
@@ -213,7 +214,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                         onClick={() => setPrefs(prev => ({ ...prev, target_countries: toggleArray(prev.target_countries, c.value) }))}
                         className={`px-2.5 py-1.5 rounded-full text-xs font-medium transition-all border ${
                           prefs.target_countries.includes(c.value)
-                            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                            ? "bg-success/15 border-success/30 text-success"
                             : "border-white/5 hover:border-white/15 text-muted-foreground"
                         }`}
                       >
@@ -272,7 +273,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                         onClick={() => setPrefs(p => ({ ...p, tone: t.value }))}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                           prefs.tone === t.value
-                            ? "bg-fuchsia-500/15 border-fuchsia-500/30 text-fuchsia-300"
+                            ? "bg-brand-magenta/15 border-brand-magenta/30 text-brand-magenta"
                             : "border-white/5 hover:border-white/15 text-muted-foreground"
                         }`}
                       >
@@ -292,7 +293,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                     onChange={e => setPrefs(p => ({ ...p, custom_instructions: e.target.value }))}
                     placeholder="Ex: Toujours inclure le logo en bas à droite, utiliser un ton proche du client..."
                     rows={3}
-                    className="w-full resize-none rounded-xl bg-muted/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-violet-500/30 transition-colors"
+                    className="w-full resize-none rounded-xl bg-muted/40 border border-border px-3 py-2 text-sm outline-none focus:border-primary/30 transition-colors"
                   />
                 </section>
 
@@ -300,7 +301,7 @@ const PreferencesPanel = ({ vendorId, open, onClose }: PreferencesPanelProps) =>
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold gap-2"
+                  className="w-full h-11 rounded-xl bg-primary hover:bg-brand-cyan-strong text-primary-foreground font-bold gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Sauvegarder les préférences

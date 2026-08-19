@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
@@ -57,6 +57,7 @@ import {
   Scissors,
   Crop,
   AlertCircle,
+  Store,
 } from "lucide-react";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import CourseBuilder from "@/components/vendor/lms/CourseBuilder";
@@ -164,7 +165,6 @@ const Inner = ({
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -189,6 +189,10 @@ const Inner = ({
   const [editPrompt, setEditPrompt] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const [distribution, setDistribution] = useState({
+    storefront: true,
+    marketplace: false,
+  });
   const [isDirty, setIsDirty] = useState(false);
   const lastSavedRef = useRef<string>("");
 
@@ -196,14 +200,6 @@ const Inner = ({
   useEffect(() => {
     if (isEdit) return;
     
-    // Check for prefill from Factory
-    const state = location.state as { prefill?: Partial<FormState> };
-    if (state?.prefill) {
-      setForm(prev => ({ ...prev, ...state.prefill }));
-      toast.success("Données de la Factory chargées !");
-      return;
-    }
-
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
@@ -223,7 +219,7 @@ const Inner = ({
     } catch {
       /* ignore */
     }
-  }, [isEdit, location.state]);
+  }, [isEdit]);
 
   // ===== Persistence: save form state to localStorage on every change (debounced)
   useEffect(() => {
@@ -445,35 +441,47 @@ const Inner = ({
   // ===== Load product if editing
   useEffect(() => {
     if (!isEdit || !id) return;
-    supabase
-      .from("products")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setForm({
-            id: data.id,
-            title: data.title,
-            description: data.description || "",
-            category: data.category,
-            price: data.price,
-            old_price: data.old_price,
-            image_url: data.image_url,
-            image_urls: (data.image_urls as string[]) || [],
-            payment_link: data.payment_link || "",
-            key_features: data.key_features || [],
-            product_mode: ((data as Record<string, unknown>).product_mode as FormState["product_mode"]) || "digital",
-            sku: ((data as Record<string, unknown>).sku as string) || "",
-            inventory_quantity: ((data as Record<string, unknown>).inventory_quantity as number | null)?.toString() || "",
-            shipping_notes: ((data as Record<string, unknown>).shipping_notes as string) || "",
-            status:
-              ((data as Record<string, unknown>).status as "draft" | "published") || "published",
-            is_lms: (data as any).is_lms || false,
+    (async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (data) {
+        setForm({
+          id: data.id,
+          title: data.title,
+          description: data.description || "",
+          category: data.category,
+          price: data.price,
+          old_price: data.old_price,
+          image_url: data.image_url,
+          image_urls: (data.image_urls as string[]) || [],
+          payment_link: data.payment_link || "",
+          key_features: data.key_features || [],
+          product_mode: ((data as Record<string, unknown>).product_mode as FormState["product_mode"]) || "digital",
+          sku: ((data as Record<string, unknown>).sku as string) || "",
+          inventory_quantity: ((data as Record<string, unknown>).inventory_quantity as number | null)?.toString() || "",
+          shipping_notes: ((data as Record<string, unknown>).shipping_notes as string) || "",
+          status:
+            ((data as Record<string, unknown>).status as "draft" | "published") || "published",
+          is_lms: (data as any).is_lms || false,
+        });
+
+        const { data: publications } = await (supabase as any)
+          .from("product_publications")
+          .select("channel, status")
+          .eq("product_id", id)
+          .eq("vendor_id", vendorId);
+        if (Array.isArray(publications) && publications.length > 0) {
+          setDistribution({
+            storefront: publications.some((p: any) => p.channel === "storefront" && p.status !== "hidden" && p.status !== "archived"),
+            marketplace: publications.some((p: any) => p.channel === "marketplace" && p.status !== "hidden" && p.status !== "archived"),
           });
         }
-      });
-  }, [id, isEdit]);
+      }
+    })();
+  }, [id, isEdit, vendorId]);
 
   // ===== Step validation
   const stepValid = useMemo(
@@ -635,40 +643,47 @@ const Inner = ({
         status: finalStatus,
         is_lms: form.is_lms,
       };
+      const productId = productData.id as string;
       const { error } = isEdit
         ? await (supabase as any).from("products").update(productData).eq("id", form.id).eq("vendor_id", vendorId)
         : await (supabase as any).from("products").insert(productData);
       if (error) throw error;
+
+      // Channel publication is deliberately independent: a seller can keep a product
+      // in their own store while hiding it from marketplace discovery.
+      try {
+        const publicationStatus = (enabled: boolean, channel: "storefront" | "marketplace") => {
+          if (!enabled) return "hidden";
+          if (finalStatus === "draft") return "draft";
+          return channel === "marketplace" ? "pending_review" : "published";
+        };
+        const { error: publicationError } = await (supabase as any)
+          .from("product_publications")
+          .upsert([
+            { product_id: productId, vendor_id: vendorId, channel: "storefront", status: publicationStatus(distribution.storefront, "storefront"), published_at: distribution.storefront && finalStatus === "published" ? new Date().toISOString() : null },
+            { product_id: productId, vendor_id: vendorId, channel: "marketplace", status: publicationStatus(distribution.marketplace, "marketplace"), published_at: distribution.marketplace && finalStatus === "published" ? new Date().toISOString() : null },
+          ], { onConflict: "product_id,channel" });
+        if (publicationError) console.warn("Product channels unavailable until migration is applied:", publicationError.message);
+      } catch (publicationError) {
+        console.warn("Product channel publication skipped:", publicationError);
+      }
       const verb = isEdit
         ? "mis à jour"
         : finalStatus === "draft"
           ? "sauvegardé en brouillon"
           : "publié";
-      const justPublished = finalStatus === "published";
-      toast.success(
-        `Produit ${verb} ✨`,
-        justPublished
-          ? {
-              description:
-                "🚀 Créez votre première publicité Facebook optimisée IA",
-              action: {
-                label: "Studio Pub →",
-                onClick: () =>
-                  navigate(`/dashboard/ads-studio?product=${productData.id}`),
-              },
-              duration: 8000,
-            }
-          : undefined,
-      );
+      toast.success(`Produit ${verb} ✨`, {
+        description: distribution.marketplace && finalStatus === "published"
+          ? "Votre produit est visible dans votre boutique et envoyé en revue pour la marketplace."
+          : distribution.storefront
+            ? "Votre produit est visible dans votre boutique personnelle."
+            : "Votre produit reste masqué jusqu'à sa prochaine publication.",
+      });
       clearLocalDraft();
       setIsDirty(false);
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
-      if (justPublished && !isEdit) {
-        navigate(`/dashboard/ads-studio?product=${productData.id}`);
-      } else {
-        navigate("/dashboard/products");
-      }
+      navigate("/dashboard/products");
     } catch (e: unknown) {
       toast.error("Erreur", { description: (e as Error).message });
     } finally {
@@ -757,7 +772,7 @@ const Inner = ({
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-opacity ${
                   saveState === "saving"
                     ? "bg-muted text-muted-foreground"
-                    : "bg-green-500/10 text-green-600 dark:text-green-400"
+                    : "bg-success/10 text-success"
                 }`}
               >
                 {saveState === "saving" ? (
@@ -789,15 +804,15 @@ const Inner = ({
             <div
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
                 isDraft
-                  ? "border-amber-500/40 bg-amber-500/10"
-                  : "border-green-500/40 bg-green-500/10"
+                  ? "border-warning/40 bg-warning/10"
+                  : "border-success/40 bg-success/10"
               }`}
             >
               <FileEdit
                 size={12}
                 className={
                   isDraft
-                    ? "text-amber-600 dark:text-amber-400"
+                    ? "text-warning"
                     : "text-muted-foreground/50"
                 }
               />
@@ -812,15 +827,15 @@ const Inner = ({
                 size={12}
                 className={
                   !isDraft
-                    ? "text-green-600 dark:text-green-400"
+                    ? "text-success"
                     : "text-muted-foreground/50"
                 }
               />
               <span
                 className={`text-[10px] font-bold uppercase tracking-wide ${
                   isDraft
-                    ? "text-amber-700 dark:text-amber-400"
-                    : "text-green-700 dark:text-green-400"
+                    ? "text-warning"
+                    : "text-success"
                 }`}
               >
                 {isDraft ? "Brouillon" : "Publié"}
@@ -891,7 +906,7 @@ const Inner = ({
                           active
                             ? "bg-primary-foreground/20"
                             : done
-                              ? "bg-green-500/15 text-green-700 dark:text-green-400"
+                              ? "bg-success/15 text-success"
                               : "bg-muted"
                         }`}
                       >
@@ -1460,12 +1475,12 @@ const Inner = ({
                   </div>
 
                   {previewDiscount !== null && (
-                    <div className="flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20 text-green-700 dark:text-green-400">
+                    <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20 text-success">
                         <Sparkles size={16} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-green-700 dark:text-green-400">
+                        <p className="text-sm font-bold text-success">
                           Promotion -{previewDiscount}% affichée
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -1611,6 +1626,45 @@ const Inner = ({
                       chariow, maketou, Stripe, Calendly etc..).
                     </p>
                   </div>
+
+                  <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Globe size={16} className="text-primary" />
+                        <Label className="text-sm font-black">Canaux de publication</Label>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Votre boutique vous appartient. La marketplace est facultative et peut apporter du trafic supplémentaire après validation.
+                      </p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-primary/40">
+                        <Switch
+                          checked={distribution.storefront}
+                          onCheckedChange={(checked) => setDistribution((current) => ({ ...current, storefront: checked }))}
+                          aria-label="Publier dans ma boutique"
+                        />
+                        <span>
+                          <span className="flex items-center gap-1.5 text-sm font-bold"><Store size={14} className="text-primary" /> Ma boutique</span>
+                          <span className="mt-1 block text-[11px] text-muted-foreground">Contrôle total et lien personnel partageable.</span>
+                        </span>
+                      </label>
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-primary/40">
+                        <Switch
+                          checked={distribution.marketplace}
+                          onCheckedChange={(checked) => setDistribution((current) => ({ ...current, marketplace: checked }))}
+                          aria-label="Proposer dans la marketplace"
+                        />
+                        <span>
+                          <span className="flex items-center gap-1.5 text-sm font-bold"><Globe size={14} className="text-primary" /> Marketplace MindHubs</span>
+                          <span className="mt-1 block text-[11px] text-muted-foreground">Découverte gratuite potentielle, soumise aux règles de la plateforme.</span>
+                        </span>
+                      </label>
+                    </div>
+                    {!distribution.storefront && !distribution.marketplace && (
+                      <p className="flex items-center gap-2 text-xs font-semibold text-warning"><AlertCircle size={14} /> Ce produit restera invisible après publication.</p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1657,8 +1711,8 @@ const Inner = ({
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
                     isDraft
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                      : "bg-green-500/15 text-green-700 dark:text-green-400"
+                      ? "bg-warning/15 text-warning"
+                      : "bg-success/15 text-success"
                   }`}
                 >
                   {isDraft ? <FileEdit size={9} /> : <Globe size={9} />}
@@ -1678,7 +1732,7 @@ const Inner = ({
                   >
                     <span className="text-muted-foreground">{s.label}</span>
                     {stepValid[s.key] ? (
-                      <span className="inline-flex items-center gap-1 font-semibold text-green-600 dark:text-green-400">
+                      <span className="inline-flex items-center gap-1 font-semibold text-success">
                         <Check size={10} /> OK
                       </span>
                     ) : (

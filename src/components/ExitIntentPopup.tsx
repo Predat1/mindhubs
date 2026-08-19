@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, MessageCircle, Zap, Bell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -85,7 +85,7 @@ export const ExitIntentPopup = () => {
                       <Bell size={10} className="text-[#25D366]" /> +2.5k membres
                    </div>
                    <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                      <Zap size={10} className="text-amber-500" /> Gratuit
+                      <Zap size={10} className="text-primary" /> Gratuit
                    </div>
                 </div>
 

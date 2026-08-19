@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Progress } from "../ui/progress";
 import { Trophy, Star, Shield, Zap, Award } from "lucide-react";
 
@@ -21,11 +21,11 @@ const tierIcons: Record<LevelTier, any> = {
 };
 
 const tierColors: Record<LevelTier, string> = {
-  Bronze: "from-amber-700 to-amber-500 shadow-amber-500/20",
+  Bronze: "from-warning/80 to-warning shadow-warning/20",
   Silver: "from-slate-400 to-slate-200 shadow-slate-200/20",
-  Gold: "from-yellow-500 to-yellow-300 shadow-yellow-300/20",
-  Platinum: "from-cyan-500 to-blue-400 shadow-blue-400/20",
-  Diamond: "from-indigo-600 to-purple-400 shadow-purple-500/20",
+  Gold: "from-primary to-brand-cyan-strong shadow-primary/20",
+  Platinum: "from-brand-cyan-strong to-info shadow-info/20",
+  Diamond: "from-brand-magenta to-primary shadow-brand-magenta/20",
 };
 
 export const LevelProgressBar = ({ xp = 0, level = 1, tier = "Bronze", nextLevelXp = 500 }: LevelProgressBarProps) => {

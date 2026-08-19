@@ -33,7 +33,7 @@ const DiscoverySection = () => {
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
           <p className="text-center text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-6 sm:mb-8">
-            Explorez notre catalogue et trouvez la compétence qui fera la différence dans votre carrière.
+            Explorez la marketplace et trouvez le produit qui correspond à votre prochain projet.
           </p>
         </AnimateOnScroll>
 
@@ -44,7 +44,7 @@ const DiscoverySection = () => {
               <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher une formation..."
+                placeholder="Rechercher un produit..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {

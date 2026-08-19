@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState, type ReactNode } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useRef, type ReactNode } from "react";
+import { EASE_OUT } from "@/lib/ease";
 
 type AnimationVariant = "fade-up" | "fade-down" | "fade-left" | "fade-right" | "zoom-in" | "blur-in";
 
@@ -10,76 +12,31 @@ interface Props {
   variant?: AnimationVariant;
 }
 
-const variantStyles: Record<AnimationVariant, { from: React.CSSProperties; to: React.CSSProperties }> = {
-  "fade-up": {
-    from: { opacity: 0, transform: "translateY(40px)" },
-    to: { opacity: 1, transform: "translateY(0)" },
-  },
-  "fade-down": {
-    from: { opacity: 0, transform: "translateY(-40px)" },
-    to: { opacity: 1, transform: "translateY(0)" },
-  },
-  "fade-left": {
-    from: { opacity: 0, transform: "translateX(-40px)" },
-    to: { opacity: 1, transform: "translateX(0)" },
-  },
-  "fade-right": {
-    from: { opacity: 0, transform: "translateX(40px)" },
-    to: { opacity: 1, transform: "translateX(0)" },
-  },
-  "zoom-in": {
-    from: { opacity: 0, transform: "scale(0.9)" },
-    to: { opacity: 1, transform: "scale(1)" },
-  },
-  "blur-in": {
-    from: { opacity: 0, filter: "blur(10px)", transform: "translateY(20px)" },
-    to: { opacity: 1, filter: "blur(0px)", transform: "translateY(0)" },
-  },
+const hiddenByVariant: Record<AnimationVariant, Record<string, string | number>> = {
+  "fade-up": { opacity: 0, y: 24 },
+  "fade-down": { opacity: 0, y: -24 },
+  "fade-left": { opacity: 0, x: -24 },
+  "fade-right": { opacity: 0, x: 24 },
+  "zoom-in": { opacity: 0, scale: 0.96 },
+  "blur-in": { opacity: 0, y: 16, filter: "blur(6px)" },
 };
 
-const AnimateOnScroll = ({ children, className = "", delay = 0, duration = 700, variant = "fade-up" }: Props) => {
+const AnimateOnScroll = ({ children, className = "", delay = 0, duration = 280, variant = "fade-up" }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    // Safety timeout: if observer doesn't trigger in 2s, show anyway
-    const timeout = setTimeout(() => setVisible(true), 2000);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          clearTimeout(timeout);
-          observer.unobserve(el);
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
-    );
-
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  const styles = variantStyles[variant];
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
+  const reduce = useReducedMotion();
+  const safeDuration = Math.min(Math.max(duration, 120), 400) / 1000;
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      initial={reduce ? false : hiddenByVariant[variant]}
+      animate={reduce || isInView ? { opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)" } : hiddenByVariant[variant]}
+      transition={reduce ? { duration: 0.01 } : { duration: safeDuration, delay: Math.min(Math.max(delay, 0), 320) / 1000, ease: EASE_OUT }}
       className={className}
-      style={{
-        ...(visible ? styles.to : styles.from),
-        transition: `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, filter ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
-        willChange: "opacity, transform",
-      }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 };
 

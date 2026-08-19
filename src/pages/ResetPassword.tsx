@@ -58,7 +58,7 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Réinitialiser le mot de passe" description="Réinitialisez votre mot de passe MindHub." path="/reset-password" />
+      <SEO title="Réinitialiser le mot de passe" description="Réinitialisez votre mot de passe MindHubs." path="/reset-password" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-md">

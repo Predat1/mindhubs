@@ -1,241 +1,159 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, LayoutDashboard, User, LogOut, Zap, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { LayoutDashboard, LogOut, Menu, Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { useSearchProducts } from "@/hooks/useProducts";
-import { NotificationBell } from "@/components/NotificationBell";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDebounce } from "@/hooks/useDebounce";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { usePublicShell } from "@/components/public-shell-context";
+import MindHubsLogo from "@/components/brand/MindHubsLogo";
 
 const navLinks = [
-  { label: "Explorer", href: "/boutique" },
-  { label: "Devenir Expert", href: "/experts", highlight: true },
-  { label: "Expertise", href: "/a-propos" },
-  { label: "Tarifs", href: "/pricing" },
-  { label: "Support", href: "/contact" },
+  { label: "Marketplace", href: "/boutique" },
+  { label: "Comment ça marche", href: "/faq" },
+  { label: "Devenir vendeur", href: "/become-a-seller" },
 ];
 
 const Navbar = () => {
-  const [open, setOpen] = useState(false);
+  const inPublicShell = usePublicShell();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [compact, setCompact] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const isMarketplace = location.pathname === "/boutique";
   const { totalItems } = useCart();
   const { data: currentVendor } = useCurrentVendor();
   const { user, signOut } = useAuth();
-  
-  const userInitials = user
-    ? (user.user_metadata?.full_name || user.email || "U")
-        .split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
-    : "";
-    
-  const debouncedSearchQuery = useDebounce(searchQuery, 400);
-  const { data: searchResults = [] } = useSearchProducts(debouncedSearchQuery);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
-        setSearchQuery("");
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  const userInitials = user
+    ? (user.user_metadata?.full_name || user.email || "U").split(" ").map((word: string) => word[0]).join("").toUpperCase().slice(0, 2)
+    : "";
 
   useEffect(() => {
     setSearchOpen(false);
     setSearchQuery("");
-    setOpen(false);
+    setMobileOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (searchOpen) inputRef.current?.focus();
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (inPublicShell) return null;
+
   const handleSearchSubmit = () => {
-    if (searchQuery.trim()) {
-      navigate(`/boutique?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
-      setSearchQuery("");
-    }
+    const query = searchQuery.trim();
+    if (!query) return;
+    navigate(`/boutique?q=${encodeURIComponent(query)}`);
+    setSearchOpen(false);
+    setSearchQuery("");
   };
 
+  const linkClass = (href: string) => cn(
+    "rounded-lg px-3 py-2 text-sm transition-colors",
+    location.pathname === href ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+  );
+
   return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500">
-        <div className="container mx-auto px-4 py-2">
-          <div className="glass-card rounded-xl px-5 py-2.5 flex items-center justify-between">
-            
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground transition-transform group-hover:rotate-12">
-                  <Zap size={20} fill="currentColor" />
-               </div>
-               <span className="text-lg font-bold tracking-tight hidden sm:block">
-                 MIND<span className="text-primary italic">HUBS</span>
-               </span>
+    <nav className="fixed inset-x-0 top-0 z-40 h-20" aria-label="Navigation principale">
+      <div className="mx-auto h-full max-w-7xl px-3 sm:px-4">
+        <motion.div
+          initial={false}
+          animate={{ scale: compact ? 0.985 : 1 }}
+          transition={reduce ? { duration: 0.01 } : { duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className={cn(
+            "relative top-3 flex h-12 items-center gap-2 rounded-xl border px-2.5 transition-[background-color,border-color,box-shadow] duration-200 sm:px-3",
+            compact
+              ? "border-border bg-background/95 shadow-sm backdrop-blur-xl"
+              : "border-transparent bg-background/60 backdrop-blur-sm",
+          )}
+        >
+          <MindHubsLogo size="sm" className="px-2 py-1.5" />
+
+          <div className="hidden items-center gap-0.5 lg:flex">
+            {navLinks.map((link) => <Link key={link.href} to={link.href} className={linkClass(link.href)}>{link.label}</Link>)}
+          </div>
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {!isMarketplace ? <div className="relative hidden md:block">
+              <motion.div
+                initial={false}
+                animate={{ width: searchOpen ? 240 : 40 }}
+                transition={{ duration: reduce ? 0.01 : 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="flex h-10 items-center overflow-hidden rounded-lg border border-border bg-muted/50"
+              >
+                <button type="button" onClick={() => searchOpen && searchQuery.trim() ? handleSearchSubmit() : setSearchOpen(true)} className="grid size-10 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-foreground" aria-label={searchOpen ? "Rechercher" : "Ouvrir la recherche"}>
+                  <Search className="size-4" aria-hidden="true" />
+                </button>
+                {searchOpen ? <input ref={inputRef} value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === "Enter" && handleSearchSubmit()} placeholder="Rechercher…" className="h-full min-w-0 flex-1 bg-transparent pr-3 text-sm outline-none placeholder:text-muted-foreground" /> : null}
+              </motion.div>
+            </div> : null}
+
+            {!isMarketplace ? (
+              <button type="button" onClick={() => setMobileOpen(true)} className="grid size-10 place-items-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden" aria-label="Rechercher un produit">
+                <Search className="size-4" aria-hidden="true" />
+              </button>
+            ) : null}
+
+            <Link to="/panier" className="relative grid size-10 place-items-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" aria-label={`Panier${totalItems ? `, ${totalItems} article${totalItems > 1 ? "s" : ""}` : " vide"}`}>
+              <ShoppingCart className="size-4" aria-hidden="true" />
+              <AnimatePresence initial={false}>{totalItems > 0 ? <motion.span initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.6 }} className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">{totalItems}</motion.span> : null}</AnimatePresence>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                    className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${
-                    location.pathname === link.href
-                      ? "bg-primary/20 text-secondary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild><button type="button" className="grid size-10 place-items-center rounded-lg border border-border bg-muted text-xs font-semibold text-foreground transition-colors hover:bg-accent" aria-label="Ouvrir le menu du compte">{userInitials}</button></DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="mt-2 w-60 rounded-xl border-border bg-popover">
+                  <DropdownMenuLabel className="p-3"><p className="truncate text-sm font-medium">{user.user_metadata?.full_name || "Utilisateur"}</p><p className="truncate text-xs font-normal text-muted-foreground">{user.email}</p></DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/mon-compte")}><User className="mr-2 size-4" /> Profil</DropdownMenuItem>
+                  {currentVendor ? <DropdownMenuItem onClick={() => navigate("/dashboard")}><LayoutDashboard className="mr-2 size-4" /> Dashboard vendeur</DropdownMenuItem> : null}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={async () => { await signOut(); navigate("/"); }} className="text-destructive focus:text-destructive"><LogOut className="mr-2 size-4" /> Déconnexion</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button onClick={() => navigate("/mon-compte")} variant="outline" size="sm" className="hidden sm:inline-flex">Connexion</Button>
+                <Button onClick={() => navigate("/become-a-seller")} size="sm" className="hidden md:inline-flex">Commencer à vendre</Button>
+              </>
+            )}
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              
-              {/* Search Bar (Desktop) */}
-              <div ref={searchRef} className="relative hidden md:block">
-                 <div className={`flex items-center bg-muted rounded-full border border-glass transition-all duration-500 ${searchOpen ? "w-64" : "w-9"}`}>
-                    <button 
-                      aria-label={searchOpen ? "Lancer la recherche" : "Ouvrir la recherche"}
-                      onClick={() => {
-                        if (searchOpen && searchQuery.trim()) {
-                          handleSearchSubmit();
-                        } else {
-                          setSearchOpen(!searchOpen);
-                        }
-                      }}
-                      className="h-9 w-9 shrink-0 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
-                    >
-                       <Search size={18} />
-                    </button>
-                    {searchOpen && (
-                      <input 
-                        ref={inputRef}
-                        type="text"
-                        placeholder="Rechercher..."
-                        className="bg-transparent border-none text-xs font-bold w-full focus:ring-0 pr-4"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-                      />
-                    )}
-                 </div>
-              </div>
-
-              {/* Notifications */}
-              <div className="hidden sm:block">
-                <NotificationBell />
-              </div>
-
-              {/* Cart */}
-              <Link to="/panier" aria-label={`Panier${totalItems > 0 ? `, ${totalItems} article${totalItems > 1 ? "s" : ""}` : " vide"}`} className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center text-secondary hover:text-primary transition-all border border-glass">
-                <ShoppingCart size={18} />
-                <AnimatePresence>
-                  {totalItems > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center shadow-lg"
-                    >
-                      {totalItems}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Link>
-
-              {/* Auth / Profile */}
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button aria-label={`Ouvrir le profil de ${user.user_metadata?.full_name || user.email || "l'utilisateur"}`} className="h-10 w-10 rounded-2xl bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-black text-sm hover:scale-105 transition-transform">
-                       {userInitials}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-lg mt-2 bg-surface border-border">
-                    <DropdownMenuLabel className="font-bold p-4">
-                       <p className="text-sm truncate">{user.user_metadata?.full_name || "Utilisateur"}</p>
-                       <p className="text-[10px] text-muted-foreground font-medium truncate">{user.email}</p>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/5" />
-                    <DropdownMenuItem onClick={() => navigate("/mon-compte")} className="p-3 rounded-xl m-1 hover:bg-primary/10 cursor-pointer">
-                       <User size={16} className="mr-3" /> Profil Expert
-                    </DropdownMenuItem>
-                    {currentVendor && (
-                      <DropdownMenuItem onClick={() => navigate("/dashboard")} className="p-3 rounded-xl m-1 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer">
-                         <LayoutDashboard size={16} className="mr-3" /> Dashboard Vendeur
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator className="bg-white/5" />
-                    <DropdownMenuItem onClick={async () => { await signOut(); navigate("/"); }} className="p-3 rounded-xl m-1 text-destructive hover:bg-destructive/10 cursor-pointer">
-                       <LogOut size={16} className="mr-3" /> Déconnexion
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button onClick={() => navigate("/mon-compte")} className="rounded-2xl px-6 h-10 btn-glow font-black hidden sm:flex">
-                   Connexion
-                </Button>
-              )}
-
-              {/* Mobile Menu Toggle */}
-              <button aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open} className="lg:hidden h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground" onClick={() => setOpen(!open)}>
-                 {open ? <X size={20} /> : <Menu size={20} />}
-              </button>
-            </div>
+            <Button type="button" variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Ouvrir le menu mobile"><Menu className="size-5" aria-hidden="true" /></Button>
           </div>
-        </div>
+        </motion.div>
+      </div>
 
-        {/* Mobile Navigation Menu */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-surface border-t border-glass overflow-hidden"
-            >
-              <div className="container mx-auto px-6 py-8 space-y-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    to={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted text-lg font-medium hover:bg-primary/10 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                       {link.label}
-                    </div>
-                    <ChevronRight size={18} className="text-muted-foreground" />
-                  </Link>
-                ))}
-                {!user && (
-                  <Button onClick={() => navigate("/mon-compte")} className="w-full h-14 rounded-2xl btn-glow text-lg font-black">
-                     Se Connecter
-                  </Button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
-    </>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent side="right" className="w-[min(22rem,88vw)] border-border bg-background">
+          <SheetHeader className="text-left"><SheetTitle>MindHubs</SheetTitle></SheetHeader>
+          <div className="mt-8 flex flex-col gap-2">
+            {!isMarketplace ? <form onSubmit={(event) => { event.preventDefault(); handleSearchSubmit(); setMobileOpen(false); }} className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Rechercher un produit…" className="h-11 w-full rounded-lg border border-border bg-muted/50 pl-9 pr-3 text-sm outline-none focus:border-ring" aria-label="Rechercher un produit" />
+            </form> : null}
+            {navLinks.map((link) => <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} className={linkClass(link.href)}>{link.label}</Link>)}
+            <Link to="/become-a-seller" onClick={() => setMobileOpen(false)} className="mt-3 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Commencer à vendre</Link>
+            {!user ? <Button onClick={() => { setMobileOpen(false); navigate("/mon-compte"); }} variant="outline" className="w-full">Connexion</Button> : null}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </nav>
   );
 };
 

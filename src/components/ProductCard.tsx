@@ -1,125 +1,172 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { Flame, Users, Store, BadgeCheck, Sparkles, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, ImageOff, Package, ShoppingBag, Store, Truck } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 import { usePrefetchProduct } from "@/hooks/useProducts";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency, parseCurrency } from "@/lib/currency";
 import { trackProductClick } from "@/hooks/useProductTracking";
+import MindHubsMark from "@/components/brand/MindHubsMark";
 
-const BEST_SELLERS = ["formation-ia", "kit-business", "pack-digital"];
+type ProductCardProps = {
+  product: Product;
+  sourceChannel?: "marketplace" | "storefront" | "direct";
+  showQuickBuy?: boolean;
+};
 
 const StarRating = ({ rating }: { rating: number }) => (
-  <div className="flex justify-center gap-0.5">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <svg
-        key={i}
-        className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < Math.floor(rating) ? "text-primary fill-primary" : i < rating ? "text-primary fill-primary opacity-50" : "text-muted-foreground/30"}`}
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    ))}
+  <div className="flex items-center gap-1" aria-label={`Note ${rating} sur 5`}>
+    <span className="text-xs tracking-tight text-primary" aria-hidden="true">★★★★★</span>
+    <span className="text-[10px] font-medium text-muted-foreground">{rating.toFixed(1)}</span>
   </div>
 );
 
-const ProductCard = ({ product }: { product: Product }) => {
+const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = true }: ProductCardProps) => {
   const [popupOpen, setPopupOpen] = useState(false);
-  const isBestSeller = BEST_SELLERS.includes(product.id);
+  const [imageFailed, setImageFailed] = useState(false);
   const vendor = product.vendor;
   const prefetch = usePrefetchProduct();
+  const reduce = useReducedMotion();
+  const productMode = product.productMode || "digital";
+  const isOutOfStock = (productMode === "physical" || productMode === "hybrid") && product.inventoryQuantity === 0;
+  const hasDiscount = parseCurrency(product.oldPrice) > parseCurrency(product.price);
+  const detailHref = `/produit/${product.id}?source=${sourceChannel}`;
+  const vendorHref = vendor?.username ? `/store/${encodeURIComponent(vendor.username)}` : null;
 
-  const handleBuy = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleBuy = () => {
+    if (isOutOfStock) return;
     trackProductClick(product.id);
     setPopupOpen(true);
   };
 
-  const handleVendorClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDetailClick = () => {
+    sessionStorage.setItem("mindhubs:last-source", sourceChannel);
   };
+
+  const sellerContent = (
+    <>
+      <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-muted">
+        {vendor?.avatar_url ? (
+          <img src={vendor.avatar_url} alt="" className="size-full object-cover" loading="lazy" />
+        ) : vendor ? (
+          <Store size={13} aria-hidden="true" />
+        ) : (
+          <MindHubsMark size={17} decorative />
+        )}
+      </span>
+      <span className="truncate text-xs font-medium text-muted-foreground group-hover:text-foreground">
+        {vendor?.shop_name || "MindHubs"}
+      </span>
+      {vendor?.verified ? <BadgeCheck size={13} className="shrink-0 text-primary" aria-label="Vendeur vérifié" /> : null}
+    </>
+  );
 
   return (
     <>
-      <motion.div
-        whileHover={{ y: -8 }}
+      <motion.article
+        whileHover={reduce ? undefined : { y: -3 }}
+        transition={{ duration: reduce ? 0.01 : 0.2, ease: [0.16, 1, 0.3, 1] }}
         onMouseEnter={() => prefetch(product.id)}
-        className="h-full"
+        className="h-full will-change-transform"
       >
-        <Link to={`/produit/${product.id}`} className="block group h-full">
-          <div className="glass-card-hover rounded-2xl overflow-hidden h-full flex flex-col relative border-glass bg-white/40 dark:bg-card/40">
-            
-            {/* Image Container */}
-            <div className="relative aspect-square overflow-hidden">
-              {isBestSeller ? (
-                <Badge className="absolute top-3 left-3 z-10 bg-primary/90 text-white border-none px-2.5 py-0.5 font-bold text-[10px] tracking-widest gap-1.5 shadow-lg">
-                   <Flame size={11} className="animate-pulse" /> TOP VENTE
-                </Badge>
+        <div className="glass-card-hover flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+          <Link
+            to={detailHref}
+            onClick={handleDetailClick}
+            className="group block focus-visible:outline-none"
+            aria-label={`Voir le produit ${product.title}`}
+          >
+            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+              {imageFailed ? (
+                <div className="grid size-full place-items-center text-muted-foreground" role="img" aria-label={`Image indisponible pour ${product.title}`}>
+                  <ImageOff size={28} aria-hidden="true" />
+                </div>
               ) : (
-                <Badge className="absolute top-3 left-3 z-10 bg-emerald-500/90 text-white border-none px-2.5 py-0.5 font-bold text-[10px] tracking-widest gap-1.5 shadow-lg">
-                   <Sparkles size={12} /> NOUVEAU
-                </Badge>
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  loading="lazy"
+                  decoding="async"
+                  width={640}
+                  height={480}
+                  onError={() => setImageFailed(true)}
+                  className="size-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.02]"
+                />
               )}
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[1]" />
-              
-              <img
-                src={product.image}
-                alt={product.title}
-                loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
             </div>
-
-            {/* Content Container */}
-            <div className="p-4 flex flex-col flex-1 space-y-3">
-              
-              <div className="space-y-2">
-                <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <div className="space-y-2 p-4 pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 tracking-[-0.01em] text-foreground transition-colors group-hover:text-primary">
                   {product.title}
                 </h3>
-                {product.rating && <StarRating rating={product.rating} />}
+                <ArrowUpRight size={16} className="mt-0.5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" aria-hidden="true" />
+              </div>
+              {product.rating && product.rating > 0 ? <StarRating rating={product.rating} /> : null}
+            </div>
+          </Link>
+
+          <div className="flex flex-1 flex-col gap-3 px-4 pb-4">
+            {vendorHref ? (
+              <Link
+                to={vendorHref}
+                className="group flex min-h-8 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`Voir la boutique ${vendor?.shop_name}`}
+              >
+                {sellerContent}
+              </Link>
+            ) : (
+              <div className="flex min-h-8 items-center gap-2" aria-label="Produit officiel MindHubs">
+                {sellerContent}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="outline" className="gap-1 rounded-md px-2 py-1 text-[10px] font-medium">
+                {productMode === "digital" ? <Package size={11} aria-hidden="true" /> : <Truck size={11} aria-hidden="true" />}
+                {productMode === "digital" ? "Digital" : productMode === "physical" ? "Physique" : "Hybride"}
+              </Badge>
+              {(productMode === "physical" || productMode === "hybrid") && product.inventoryQuantity !== undefined ? (
+                <span className={`text-[10px] font-medium ${isOutOfStock ? "text-destructive" : "text-muted-foreground"}`}>
+                  {isOutOfStock ? "Rupture" : `${product.inventoryQuantity} disponible${product.inventoryQuantity > 1 ? "s" : ""}`}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="mt-auto flex items-end justify-between gap-3 border-t border-border pt-3">
+              <div className="min-w-0">
+                {hasDiscount ? <span className="block text-[10px] font-medium text-muted-foreground line-through">{formatCurrency(product.oldPrice)}</span> : null}
+                <span className="block text-base font-bold text-foreground">{formatCurrency(product.price)}</span>
               </div>
 
-              {vendor && (
-                <div onClick={handleVendorClick} className="flex items-center gap-2">
-                   <div className="h-6 w-6 rounded-lg bg-muted flex items-center justify-center border border-border overflow-hidden">
-                      {vendor.avatar_url ? <img src={vendor.avatar_url} className="h-full w-full object-cover" /> : <Store size={12} />}
-                   </div>
-                   <span className="text-[10px] font-bold text-muted-foreground truncate hover:text-primary transition-colors">
-                      {vendor.shop_name}
-                   </span>
-                   {vendor.verified && <BadgeCheck size={12} className="text-primary" />}
-                </div>
+              {showQuickBuy ? (
+                <button
+                  type="button"
+                  onClick={handleBuy}
+                  disabled={isOutOfStock}
+                  aria-label={isOutOfStock ? `${product.title} est en rupture de stock` : `Acheter ${product.title}`}
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+                >
+                  <ShoppingBag size={15} aria-hidden="true" />
+                  <span className="hidden sm:inline">Acheter</span>
+                </button>
+              ) : (
+                <Link
+                  to={detailHref}
+                  onClick={handleDetailClick}
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Voir le produit
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
               )}
-
-              <div className="flex-1" />
-
-              <div className="flex items-center justify-between pt-4 border-t border-glass">
-                 <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground line-through font-bold">{formatCurrency(product.oldPrice)}</span>
-                    <span className="text-base font-extrabold text-foreground">{formatCurrency(product.price)}</span>
-                 </div>
-                 <button
-                   onClick={handleBuy}
-                   aria-label={`Acheter ${product.title}`}
-                   className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform active:scale-95"
-                 >
-                    <ShoppingBag size={18} />
-                 </button>
-              </div>
-
             </div>
           </div>
-        </Link>
-      </motion.div>
+        </div>
+      </motion.article>
 
-      <BuyPopup product={product} open={popupOpen} onClose={() => setPopupOpen(false)} />
+      {showQuickBuy ? <BuyPopup product={product} sourceChannel={sourceChannel} open={popupOpen} onClose={() => setPopupOpen(false)} /> : null}
     </>
   );
 };

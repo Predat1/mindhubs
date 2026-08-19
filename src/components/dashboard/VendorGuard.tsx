@@ -20,7 +20,7 @@ const VendorGuard = ({ children }: Props) => {
     // vendor===undefined means query still in progress — never redirect yet
     // vendor===null means query is done and confirmed no vendor profile
     if (!loading && !vendorLoading && user && vendor === null) {
-      const t = setTimeout(() => navigate("/become-a-seller"), 300);
+      const t = setTimeout(() => navigate("/become-a-seller/start"), 300);
       return () => clearTimeout(t);
     }
   }, [loading, user, vendor, vendorLoading, navigate]);

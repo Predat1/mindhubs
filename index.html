@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <meta name="theme-color" content="#000000" />
+    <link rel="alternate icon" href="/favicon-32.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#6EE7FF" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0F1113" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
     
     <!-- Theme Script to Prevent FOUC -->
     <script>
       (function() {
         try {
-          const theme = localStorage.getItem('theme');
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (theme === 'dark' || (!theme && prefersDark)) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
+          const theme = localStorage.getItem('mindhubs-theme') === 'light' ? 'light' : 'dark';
+          document.documentElement.classList.add(theme);
+          document.documentElement.dataset.theme = theme;
         } catch (e) {}
       })();
     </script>
@@ -29,16 +29,16 @@
     <link rel="dns-prefetch" href="https://jjhkgjalkctztmauaxiw.supabase.co" />
     <link rel="preconnect" href="https://jjhkgjalkctztmauaxiw.supabase.co" />
 
-    <title>MindHub – Formations Digitales Premium | N°1 en Afrique Francophone</title>
+    <title>MindHubs – Formations Digitales Premium | N°1 en Afrique Francophone</title>
     <meta
       name="description"
-      content="MindHub : plateforme N°1 de formations digitales premium en Afrique francophone. E-books, kits business, marketing digital, IA créative. Paiement unique, accès illimité à vie. +2 000 étudiants formés au Bénin, Sénégal, Côte d'Ivoire."
+      content="MindHubs : plateforme N°1 de formations digitales premium en Afrique francophone. E-books, kits business, marketing digital, IA créative. Paiement unique, accès illimité à vie. +2 000 étudiants formés au Bénin, Sénégal, Côte d'Ivoire."
     />
     <meta
       name="keywords"
-      content="formations digitales Afrique, e-books business, formation en ligne Bénin, Sénégal, Côte d'Ivoire, marketing digital Afrique, business en ligne Afrique, MindHub, formation premium, gagner argent en ligne, vendre produits digitaux, e-commerce Afrique"
+      content="formations digitales Afrique, e-books business, formation en ligne Bénin, Sénégal, Côte d'Ivoire, marketing digital Afrique, business en ligne Afrique, MindHubs, formation premium, gagner argent en ligne, vendre produits digitaux, e-commerce Afrique"
     />
-    <meta name="author" content="MindHub" />
+    <meta name="author" content="MindHubs" />
     <meta name="geo.region" content="BJ" />
     <meta name="geo.placename" content="Cotonou" />
     <meta name="ICBM" content="6.3703, 2.3912" />
@@ -54,7 +54,7 @@
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
-      content="MindHub – Formations Digitales Premium | N°1 en Afrique Francophone"
+      content="MindHubs – Formations Digitales Premium | N°1 en Afrique Francophone"
     />
     <meta
       property="og:description"
@@ -67,13 +67,14 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="https://mindhubs.fun" />
-    <meta property="og:site_name" content="MindHub" />
+    <meta property="og:site_name" content="MindHubs" />
+    <meta property="og:logo" content="https://mindhubs.fun/favicon-512.png" />
     <meta property="og:locale" content="fr_FR" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="MindHub – Formations Digitales Premium | N°1 Afrique"
+      content="MindHubs – Formations Digitales Premium | N°1 Afrique"
     />
     <meta
       name="twitter:description"
@@ -83,12 +84,13 @@
       name="twitter:image"
       content="https://mindhubs.fun/og-image.png"
     />
+    <meta name="twitter:image:src" content="https://mindhubs.fun/favicon-512.png" />
 
     <link rel="canonical" href="https://mindhubs.fun/" />
     <link rel="alternate" hreflang="fr" href="https://mindhubs.fun/" />
     <link rel="alternate" hreflang="x-default" href="https://mindhubs.fun/" />
-    <meta name="apple-mobile-web-app-title" content="MindHub" />
-    <meta name="application-name" content="MindHub" />
+    <meta name="apple-mobile-web-app-title" content="MindHubs" />
+    <meta name="application-name" content="MindHubs" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -101,7 +103,7 @@
         {
           "@type": "Organization",
           "@id": "https://mindhubs.fun/#organization",
-          "name": "MindHub",
+          "name": "MindHubs",
           "url": "https://mindhubs.fun",
           "logo": {
             "@type": "ImageObject",
@@ -109,7 +111,7 @@
             "width": 512,
             "height": 512
           },
-          "description": "Plateforme N°1 de formations digitales premium en Afrique francophone.",
+          "description": "Plateforme de produits et formations digitales premium en Afrique francophone.",
           "foundingDate": "2024",
           "areaServed": [
             {"@type": "Country", "name": "Bénin"},
@@ -135,8 +137,8 @@
           "@type": "WebSite",
           "@id": "https://mindhubs.fun/#website",
           "url": "https://mindhubs.fun",
-          "name": "MindHub",
-          "description": "Formations digitales premium en Afrique francophone",
+          "name": "MindHubs",
+          "description": "Marketplace et boutiques de produits digitaux et physiques en Afrique francophone",
           "publisher": {"@id": "https://mindhubs.fun/#organization"},
           "inLanguage": "fr-FR",
           "potentialAction": {
@@ -152,7 +154,7 @@
           "@type": "WebPage",
           "@id": "https://mindhubs.fun/#webpage",
           "url": "https://mindhubs.fun",
-          "name": "MindHub – Formations Digitales Premium | N°1 en Afrique Francophone",
+          "name": "MindHubs – Formations Digitales Premium | N°1 en Afrique Francophone",
           "isPartOf": {"@id": "https://mindhubs.fun/#website"},
           "about": {"@id": "https://mindhubs.fun/#organization"},
           "description": "Plateforme N°1 de formations digitales premium en Afrique francophone. E-books, kits business, marketing digital, IA créative.",

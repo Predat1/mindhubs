@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { Mail, ExternalLink, Instagram, Music2, MessageCircle } from "lucide-react";
+import { ExternalLink, Instagram, Music2, MessageCircle } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
+import MindHubsMark from "@/components/brand/MindHubsMark";
 import payMtn from "@/assets/pay-mtn.png";
 import payMoov from "@/assets/pay-moov.png";
 import payOrange from "@/assets/pay-orange.png";
@@ -21,11 +22,15 @@ const paymentMethods = [
   { name: "MasterCard", logo: payMastercard },
 ];
 
-const FooterSection = () => {
+type FooterSectionProps = {
+  showContactCta?: boolean;
+};
+
+const FooterSection = ({ showContactCta = true }: FooterSectionProps) => {
   return (
-    <footer className="relative mt-16 sm:mt-24">
+    <footer className={`relative ${showContactCta ? "mt-16 sm:mt-24" : "mt-8 sm:mt-12"}`}>
       {/* Main CTA / Contact Block */}
-      <div className="mx-4 sm:mx-8 lg:mx-16 rounded-xl sm:rounded-2xl bg-neutral border border-outline overflow-hidden">
+      {showContactCta ? <div className="mx-4 sm:mx-8 lg:mx-16 rounded-xl sm:rounded-2xl bg-muted border border-border overflow-hidden">
         <div className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
           <p className="text-primary font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4 flex items-center gap-2">
             <span className="text-primary">✦</span> Contactez-nous
@@ -61,12 +66,13 @@ const FooterSection = () => {
         </div>
 
         {/* Big brand name */}
-        <div className="px-6 sm:px-10 lg:px-16 pb-6 sm:pb-10 flex justify-center">
-            <span className="text-[4rem] sm:text-[7rem] lg:text-[10rem] font-bold tracking-tight leading-none select-none text-foreground/10">
-            MIND✦HUB
-          </span>
+        <div className="flex justify-center px-6 pb-6 sm:px-10 sm:pb-10 lg:px-16">
+          <div className="flex items-center gap-4 select-none text-foreground/10" aria-hidden="true">
+            <MindHubsMark size={88} variant="current" decorative className="opacity-70 sm:size-[128px]" />
+            <span className="text-[4rem] font-bold tracking-[-0.07em] leading-none sm:text-[7rem] lg:text-[10rem]">MindHubs</span>
+          </div>
         </div>
-      </div>
+      </div> : null}
 
       {/* Bottom bar */}
       <div className="mx-4 sm:mx-8 lg:mx-16 mt-0 border-t border-border/50">
@@ -75,7 +81,7 @@ const FooterSection = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
             <p className="text-xs sm:text-sm text-muted-foreground">
               © {new Date().getFullYear()}{" "}
-              <span className="text-primary font-semibold">Mind Hub</span>. Tous droits réservés.
+              <span className="text-primary font-semibold">MindHubs</span>. Tous droits réservés.
             </p>
             <nav className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-muted-foreground">
               <Link to="/conditions-generales" className="hover:text-foreground transition-colors">CGV</Link>

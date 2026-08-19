@@ -14,7 +14,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SEO from "@/components/SEO";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
@@ -64,11 +64,11 @@ interface ApiConfig {
 }
 
 const statusConfig = {
-  pending: { label: "En attente", color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20", icon: Clock },
-  completed: { label: "Terminé", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
+  pending: { label: "En attente", color: "bg-warning/10 text-warning border-warning/20", icon: Clock },
+  completed: { label: "Terminé", color: "bg-success/10 text-success border-success/20", icon: CheckCircle2 },
   shipped: { label: "Expédié", color: "bg-primary/10 text-primary border-primary/20", icon: ExternalLink },
-  delivered: { label: "Livré", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Package },
-  confirmed: { label: "Confirmé", color: "bg-purple-500/10 text-purple-600 border-purple-500/20", icon: BadgeCheck },
+  delivered: { label: "Livré", color: "bg-info/10 text-info border-info/20", icon: Package },
+  confirmed: { label: "Confirmé", color: "bg-info/10 text-info border-info/20", icon: BadgeCheck },
   cancelled: { label: "Annulé", color: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
 };
 
@@ -268,7 +268,7 @@ const Admin = () => {
                         { label: "Ventes Total", value: (orders || []).length, icon: ShoppingBag, color: "primary" },
                         { label: "Revenu Marketplace", value: formatCurrency(revenueTotal), icon: DollarSign, color: "accent" },
                         { label: "Vendeurs", value: (allVendors || []).length, icon: Store, color: "primary" },
-                        { label: "APIs IA", value: (apiConfigs || []).length, icon: Zap, color: "yellow-500" },
+                        { label: "APIs IA", value: (apiConfigs || []).length, icon: Zap, color: "primary" },
                       ].map((s, i) => (
                         <div key={i} className="stat-card rounded-2xl p-5 border-glow">
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary mb-3"><s.icon size={18} /></div>
@@ -369,7 +369,7 @@ const Admin = () => {
                           </div>
                        </div>
                        <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
-                          <Badge className={api.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-muted"}>{api.is_active ? "ACTIF" : "INACTIF"}</Badge>
+                          <Badge className={api.is_active ? "bg-success/10 text-success" : "bg-muted"}>{api.is_active ? "ACTIF" : "INACTIF"}</Badge>
                           <Button size="sm" onClick={() => handleTestApi(api)} disabled={testingApi} className="rounded-xl h-8 text-[10px] font-black gap-2">
                              {testingApi ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} fill="currentColor" />} Tester
                           </Button>

@@ -17,9 +17,10 @@ interface SEOProps {
   faq?: FAQItem[];
 }
 
-const SITE_NAME = "MindHub";
+const SITE_NAME = "MindHubs";
 const BASE_URL = "https://mindhubs.fun";
 const DEFAULT_IMAGE = "/og-image.png";
+const BRAND_ICON = `${BASE_URL}/favicon-512.png`;
 
 const SEGMENT_LABELS: Record<string, string> = {
   boutique: "Boutique",
@@ -73,9 +74,9 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("name", "description", description);
     setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
     if (keywords) setMeta("name", "keywords", keywords);
-    setMeta("name", "author", "MindHub");
-    setMeta("name", "publisher", "MindHub");
-    setMeta("name", "theme-color", "#000000");
+    setMeta("name", "author", SITE_NAME);
+    setMeta("name", "publisher", SITE_NAME);
+    setMeta("name", "theme-color", "#0F1113");
     setMeta("name", "apple-mobile-web-app-title", SITE_NAME);
 
     // Open Graph
@@ -88,6 +89,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("property", "og:image:alt", title);
     setMeta("property", "og:type", type);
     setMeta("property", "og:site_name", SITE_NAME);
+    setMeta("property", "og:logo", BRAND_ICON);
     setMeta("property", "og:locale", "fr_FR");
 
     // Twitter
@@ -95,6 +97,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", ogImage);
+    setMeta("name", "twitter:image:src", BRAND_ICON);
     setMeta("name", "twitter:image:alt", title);
 
     // Canonical + hreflang

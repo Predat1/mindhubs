@@ -26,8 +26,8 @@ const PasswordStrength = ({ password }: Props) => {
   const colors = [
     "bg-muted",
     "bg-destructive",
-    "bg-yellow-500",
-    "bg-yellow-400",
+    "bg-warning",
+    "bg-warning",
     "bg-accent",
   ];
 

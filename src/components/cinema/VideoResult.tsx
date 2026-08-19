@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Download, RefreshCw, Star, Loader2, AlertTriangle, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,10 +26,10 @@ const VideoResult = ({ jobId, videoUrl, status, modelName, reasoning, onRate, on
       >
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-brand-magenta/20 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
-            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-violet-500/30 to-fuchsia-500/30 animate-pulse blur-sm -z-10" />
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary/30 to-brand-magenta/30 animate-pulse blur-sm -z-10" />
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-foreground">Génération en cours...</p>
@@ -37,7 +37,7 @@ const VideoResult = ({ jobId, videoUrl, status, modelName, reasoning, onRate, on
             <p className="text-xs text-muted-foreground mt-1">⏱ Temps estimé : 1-3 min</p>
           </div>
           {reasoning && (
-            <div className="flex items-start gap-1.5 text-xs text-violet-400 bg-violet-500/5 rounded-lg px-3 py-2 mt-1">
+            <div className="flex items-start gap-1.5 text-xs text-primary bg-primary/5 rounded-lg px-3 py-2 mt-1">
               <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
               <span>{reasoning}</span>
             </div>
@@ -98,13 +98,13 @@ const VideoResult = ({ jobId, videoUrl, status, modelName, reasoning, onRate, on
       <div className="p-3 space-y-2">
         {modelName && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Sparkles className="w-3 h-3 text-violet-400" />
+            <Sparkles className="w-3 h-3 text-primary" />
             <span>{modelName}</span>
           </div>
         )}
 
         {reasoning && (
-          <p className="text-xs text-violet-400/80 leading-relaxed">{reasoning}</p>
+          <p className="text-xs text-primary/80 leading-relaxed">{reasoning}</p>
         )}
 
         <div className="flex items-center justify-between pt-1">
@@ -124,7 +124,7 @@ const VideoResult = ({ jobId, videoUrl, status, modelName, reasoning, onRate, on
                 <Star
                   className={`w-4 h-4 transition-colors ${
                     star <= (hoverRating || rating)
-                      ? "fill-yellow-400 text-yellow-400"
+                      ? "fill-primary text-primary"
                       : "text-muted-foreground/30"
                   }`}
                 />

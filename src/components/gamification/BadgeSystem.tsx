@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { 
   Zap, 
   ShieldCheck, 
@@ -41,9 +41,9 @@ const iconMap: Record<string, any> = {
 
 const rarityStyles = {
   commune: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-  rare: "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]",
-  épique: "bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]",
-  légendaire: "bg-amber-500/10 text-amber-500 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.3)] animate-pulse"
+  rare: "bg-info/10 text-info border-info/20 shadow-[0_0_10px_rgba(126,169,255,0.1)]",
+  épique: "bg-brand-magenta/10 text-brand-magenta border-brand-magenta/20 shadow-[0_0_15px_rgba(255,0,91,0.18)]",
+  légendaire: "bg-brand-magenta/10 text-brand-magenta border-brand-magenta/30 shadow-[0_0_20px_rgba(255,0,91,0.25)] animate-pulse"
 };
 
 export const BadgeCard = ({ badge }: { badge: BadgeType }) => {
@@ -61,7 +61,7 @@ export const BadgeCard = ({ badge }: { badge: BadgeType }) => {
           >
             <Icon size={24} />
             {badge.unlocked && badge.rarity === "légendaire" && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[8px] text-white">✦</span>
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-magenta text-[8px] text-white">✦</span>
             )}
           </motion.div>
         </TooltipTrigger>

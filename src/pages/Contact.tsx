@@ -48,13 +48,13 @@ const Contact = () => {
   };
 
   const handleWhatsApp = () => {
-    const msg = encodeURIComponent("Bonjour MindHub, j'ai une question concernant vos formations.");
+    const msg = encodeURIComponent("Bonjour MindHubs, j'ai une question concernant vos produits.");
     window.open(`https://wa.me/22890000000?text=${msg}`, "_blank");
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Contactez MindHub – Support Client" description="Contactez l'équipe MindHub par email, WhatsApp ou formulaire. Support client réactif pour vos formations digitales. Assistance Bénin, Sénégal, Côte d'Ivoire et toute l'Afrique francophone." path="/contact" keywords="contact MindHub, support client formation, aide MindHub, WhatsApp MindHub, service client Afrique, assistance formation en ligne, email mindhubs" />
+      <SEO title="Contactez MindHubs – Support Client" description="Contactez l'équipe MindHubs par email, WhatsApp ou formulaire. Support client pour vos achats, boutiques et produits digitaux. Assistance au Bénin, au Sénégal, en Côte d'Ivoire et dans toute l'Afrique francophone." path="/contact" keywords="contact MindHubs, support client formation, aide MindHubs, WhatsApp MindHubs, service client Afrique, assistance formation en ligne, email mindhubs" />
       <Navbar />
 
       {/* Hero */}

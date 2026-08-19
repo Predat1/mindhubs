@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 const AdminMessagesTab = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -53,7 +53,7 @@ const AdminMessagesTab = () => {
           <h2 className="text-3xl font-black">Supervision des Messages</h2>
           <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Audit des conversations Marketplace</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-warning/10 text-warning border border-warning/20">
           <ShieldAlert size={16} />
           <span className="text-[10px] font-bold uppercase">Mode Modérateur Actif</span>
         </div>

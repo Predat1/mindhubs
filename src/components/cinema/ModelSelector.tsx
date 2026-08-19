@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Bot, ChevronDown, Volume2, Crown, Zap, Coins, Image as ImageIcon } from "lucide-react";
 import {
   TEXT_TO_VIDEO_MODELS,
@@ -16,9 +16,9 @@ interface ModelSelectorProps {
 }
 
 const TIER_CONFIG = {
-  premium: { label: "Premium", icon: Crown, color: "text-amber-400" },
-  standard: { label: "Standard", icon: Zap, color: "text-blue-400" },
-  budget: { label: "Budget", icon: Coins, color: "text-emerald-400" },
+  premium: { label: "Premium", icon: Crown, color: "text-brand-magenta" },
+  standard: { label: "Standard", icon: Zap, color: "text-info" },
+  budget: { label: "Budget", icon: Coins, color: "text-success" },
 };
 
 const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSelectorProps) => {
@@ -48,14 +48,14 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
       {/* Trigger chip */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/60 border border-white/10 hover:border-violet-500/30 transition-colors text-xs font-medium"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/60 border border-border hover:border-primary/30 transition-colors text-xs font-medium"
       >
         {selectedModel === "auto" ? (
-          <Bot className="w-3.5 h-3.5 text-violet-400" />
+          <Bot className="w-3.5 h-3.5 text-primary" />
         ) : (
           <div className={`w-2 h-2 rounded-full ${
-            selectedObj?.tier === "premium" ? "bg-amber-400" :
-            selectedObj?.tier === "standard" ? "bg-blue-400" : "bg-emerald-400"
+            selectedObj?.tier === "premium" ? "bg-brand-magenta" :
+            selectedObj?.tier === "standard" ? "bg-info" : "bg-success"
           }`} />
         )}
         <span className="max-w-[120px] truncate">{displayName}</span>
@@ -77,7 +77,7 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
               <button
                 onClick={() => onModeChange("text-to-video")}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  mode === "text-to-video" ? "bg-violet-500/20 text-violet-300" : "text-muted-foreground hover:bg-muted/40"
+                  mode === "text-to-video" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-muted/40"
                 }`}
               >
                 <Zap className="w-3 h-3" /> Texte → Vidéo
@@ -85,7 +85,7 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
               <button
                 onClick={() => onModeChange("image-to-video")}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  mode === "image-to-video" ? "bg-violet-500/20 text-violet-300" : "text-muted-foreground hover:bg-muted/40"
+                  mode === "image-to-video" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-muted/40"
                 }`}
               >
                 <ImageIcon className="w-3 h-3" /> Image → Vidéo
@@ -96,11 +96,11 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
             <button
               onClick={() => { onSelect("auto"); setOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 transition-colors ${
-                selectedModel === "auto" ? "bg-violet-500/10" : ""
+                selectedModel === "auto" ? "bg-primary/10" : ""
               }`}
             >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-violet-400" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-brand-magenta/20 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 text-left">
                 <p className="text-xs font-semibold">Auto (IA choisit)</p>
@@ -128,20 +128,20 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
                       key={m.id}
                       onClick={() => { onSelect(m.id); setOpen(false); }}
                       className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/40 transition-colors ${
-                        selectedModel === m.id ? "bg-violet-500/10" : ""
+                        selectedModel === m.id ? "bg-primary/10" : ""
                       }`}
                     >
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                        tier === "premium" ? "bg-amber-500/10 text-amber-400" :
-                        tier === "standard" ? "bg-blue-500/10 text-blue-400" :
-                        "bg-emerald-500/10 text-emerald-400"
+                        tier === "premium" ? "bg-brand-magenta/10 text-brand-magenta" :
+                        tier === "standard" ? "bg-info/10 text-info" :
+                        "bg-success/10 text-success"
                       }`}>
                         {m.provider.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 text-left min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-medium truncate">{m.name}</span>
-                          {m.hasAudio && <Volume2 className="w-3 h-3 text-violet-400 flex-shrink-0" />}
+                          {m.hasAudio && <Volume2 className="w-3 h-3 text-primary flex-shrink-0" />}
                           {m.badge && (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/5 text-muted-foreground font-medium">
                               {m.badge}

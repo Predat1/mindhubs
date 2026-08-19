@@ -125,13 +125,13 @@ export default function MyPurchases() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                        {product.is_lms ? (
-                         <Button asChild className="w-full h-12 rounded-xl bg-primary text-white font-black gap-2">
+                         <Button asChild className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-black gap-2">
                            <Link to={`/formation/${product.id}`}>
                              <Play size={16} /> ACCÉDER À LA FORMATION
                            </Link>
                          </Button>
                        ) : (
-                         <Button className="w-full h-12 rounded-xl bg-white text-black hover:bg-primary hover:text-white font-black gap-2" onClick={() => window.open(product.file_url, '_blank')}>
+                         <Button className="w-full h-12 rounded-xl bg-surface-secondary text-foreground hover:bg-primary hover:text-primary-foreground font-black gap-2" onClick={() => window.open(product.file_url, '_blank')}>
                            <Download size={16} /> TÉLÉCHARGER
                          </Button>
                        )}
@@ -151,7 +151,7 @@ export default function MyPurchases() {
                     </div>
 
                     <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                       <div className="flex items-center gap-2 text-emerald-500">
+                       <div className="flex items-center gap-2 text-success">
                           <CheckCircle2 size={16} />
                           <span className="text-[10px] font-black uppercase tracking-widest">Paiement Validé</span>
                        </div>

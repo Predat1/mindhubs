@@ -18,12 +18,14 @@ export interface DbProduct {
   image_urls: string[] | null;
   key_features: string[] | null;
   vendor_id: string | null;
+  created_at?: string | null;
   is_lms: boolean;
   product_mode?: "digital" | "physical" | "hybrid";
   sku?: string | null;
   inventory_quantity?: number | null;
   shipping_notes?: string | null;
   vendor?: {
+    username?: string;
     shop_name: string;
     avatar_url: string | null;
     verified: boolean;
@@ -45,23 +47,44 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   keyFeatures: db.key_features ?? [],
   vendorId: db.vendor_id ?? undefined,
   vendor: db.vendor,
+  created_at: db.created_at ?? undefined,
   is_lms: db.is_lms || false,
+  featured: db.featured || false,
   productMode: db.product_mode || "digital",
   sku: db.sku ?? undefined,
   inventoryQuantity: db.inventory_quantity ?? undefined,
   shippingNotes: db.shipping_notes ?? undefined,
 });
 
+const fetchPublishedMarketplaceProducts = async (): Promise<Product[] | null> => {
+  // The generated Supabase types predate the marketplace distribution table.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from("product_publications")
+    .select("product:products(*, vendor:vendors(username, shop_name, avatar_url, verified))")
+    .eq("channel", "marketplace")
+    .eq("status", "published")
+    .order("sort_order");
+  if (error) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).filter((row: any) => row.product).map((row: any) => mapDbToProduct(row.product as DbProduct));
+};
+
 export const useProducts = () => {
   return useQuery({
     queryKey: ["products"],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
-        .order("sort_order", { ascending: true }); // Admin priority
-
-      const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const publishedProducts = await fetchPublishedMarketplaceProducts();
+      let dbProducts: Product[] = publishedProducts || [];
+      if (publishedProducts === null) {
+        const { data } = await supabase
+          .from("products")
+          .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .eq("status", "published")
+          .is("vendor_id", null)
+          .order("sort_order", { ascending: true });
+        dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      }
       
       // Combine static products with DB products, avoiding duplicates by ID
       const combined = [...allProducts];
@@ -98,13 +121,18 @@ export const useFeaturedProducts = () => {
   return useQuery({
     queryKey: ["products", "featured"],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
-        .eq("featured", true)
-        .order("sort_order");
-
-      const dbFeatured = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const publishedProducts = await fetchPublishedMarketplaceProducts();
+      let dbFeatured: Product[];
+      if (publishedProducts !== null) {
+        dbFeatured = publishedProducts.filter((product) => (product as Product & { featured?: boolean }).featured);
+      } else {
+        const { data } = await supabase
+          .from("products")
+          .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .eq("featured", true)
+          .order("sort_order");
+        dbFeatured = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      }
       const staticFeatured = allProducts.filter((p) => featuredProductIds.includes(p.id));
 
       // Combine and deduplicate
@@ -123,17 +151,35 @@ export const useFeaturedProducts = () => {
 
 
 
-export const useProduct = (id: string) => {
+export const useProduct = (id: string, sourceChannel?: "marketplace" | "storefront" | "direct") => {
   const queryClient = useQueryClient();
   
   return useQuery({
-    queryKey: ["products", id],
+    queryKey: ["products", id, sourceChannel],
     queryFn: async (): Promise<Product | null> => {
       const { data, error } = await supabase
         .from("products")
-        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
+        .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
         .eq("id", id)
         .maybeSingle();
+
+      if ((sourceChannel === "marketplace" || sourceChannel === "storefront") && !error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: publication, error: publicationError } = await (supabase as any)
+          .from("product_publications")
+          .select("product:products(*, vendor:vendors(username, shop_name, avatar_url, verified))")
+          .eq("product_id", id)
+          .eq("channel", sourceChannel)
+          .eq("status", "published")
+          .maybeSingle();
+
+        if (!publicationError) {
+          if (publication?.product) return mapDbToProduct(publication.product as DbProduct);
+          // Static catalogue items remain available while database-backed products
+          // are governed strictly by their publication status.
+          return allProducts.find((p) => p.id === id) ?? null;
+        }
+      }
 
       if (error || !data) {
         const fallback = allProducts.find((p) => p.id === id);
@@ -159,13 +205,18 @@ export const useNewProducts = () => {
   return useQuery({
     queryKey: ["products", "new"],
     queryFn: async (): Promise<Product[]> => {
-      const { data } = await supabase
-        .from("products")
-        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      const dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      const publishedProducts = await fetchPublishedMarketplaceProducts();
+      let dbProducts: Product[];
+      if (publishedProducts !== null) {
+        dbProducts = publishedProducts.slice(0, 10);
+      } else {
+        const { data } = await supabase
+          .from("products")
+          .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .order("created_at", { ascending: false })
+          .limit(10);
+        dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      }
       const combined = [...dbProducts];
       
       // Add static products if we have room
@@ -187,15 +238,20 @@ export const useSearchProducts = (query: string) => {
     queryFn: async (): Promise<Product[]> => {
       if (!query.trim()) return [];
 
-      const { data } = await supabase
-        .from("products")
-        .select("*, vendor:vendors(shop_name, avatar_url, verified)")
-        .ilike("title", `%${query}%`)
-        .order("sort_order")
-        .limit(20);
-
-      const dbResults = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
       const q = query.toLowerCase();
+      const publishedProducts = await fetchPublishedMarketplaceProducts();
+      let dbResults: Product[];
+      if (publishedProducts !== null) {
+        dbResults = publishedProducts.filter((p) => p.title.toLowerCase().includes(q)).slice(0, 20);
+      } else {
+        const { data } = await supabase
+          .from("products")
+          .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .ilike("title", `%${query}%`)
+          .order("sort_order")
+          .limit(20);
+        dbResults = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
+      }
       const staticResults = allProducts.filter((p) => p.title.toLowerCase().includes(q));
 
       const combined = [...dbResults];
@@ -221,7 +277,7 @@ export const usePrefetchProduct = () => {
       queryFn: async (): Promise<Product | null> => {
         const { data, error } = await supabase
           .from("products")
-          .select("*, vendor:vendors(shop_name, avatar_url, verified)")
+          .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
           .eq("id", id)
           .maybeSingle();
 

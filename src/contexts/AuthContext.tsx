@@ -9,12 +9,12 @@ interface AuthContextType {
   loading: boolean;
   isDemo: boolean;
   canMutate: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, redirectTo?: string) => Promise<{ error: Error | null; needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGoogle: (redirectTo?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
-  resendConfirmation: (email: string) => Promise<{ error: Error | null }>;
+  resendConfirmation: (email: string, redirectTo?: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,20 +91,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    if (isDemoMode) return { error: new Error("Le mode démo ne permet pas de créer un compte.") };
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, redirectTo?: string) => {
+    if (isDemoMode) return { error: new Error("Le mode démo ne permet pas de créer un compte."), needsConfirmation: false };
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: redirectTo || window.location.origin,
       },
     });
     if (!error && typeof window !== "undefined" && window.fbq) {
       window.fbq("track", "CompleteRegistration", { content_name: "Signup" });
     }
-    return { error: error ? new Error(translateAuthError(error.message)) : null };
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
+    return { error: error ? new Error(translateAuthError(error.message)) : null, needsConfirmation: !data.session };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -113,12 +117,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error ? new Error(translateAuthError(error.message)) : null };
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo?: string) => {
     if (isDemoMode) return { error: new Error("Le mode démo est déjà ouvert.") };
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/mon-compte`,
+        redirectTo: redirectTo || `${window.location.origin}/mon-compte`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -147,12 +151,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error ? new Error(translateAuthError(error.message)) : null };
   };
 
-  const resendConfirmation = async (email: string) => {
+  const resendConfirmation = async (email: string, redirectTo?: string) => {
     if (isDemoMode) return { error: new Error("La confirmation email est désactivée en mode démo.") };
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: redirectTo || window.location.origin },
     });
     return { error: error ? new Error(translateAuthError(error.message)) : null };
   };

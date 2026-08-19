@@ -1,15 +1,15 @@
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-import { useVendor, useVendorProducts } from "@/hooks/useVendors";
+import { useVendor, usePublishedVendorProducts } from "@/hooks/useVendors";
 import { 
   Store, 
   BadgeCheck, 
   Package, 
-  Users, 
   Star, 
   MessageSquare, 
   Share2, 
@@ -22,18 +22,24 @@ import {
   Instagram,
   Linkedin,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import ExpertChat from "@/components/ExpertChat";
+import { DEFAULT_VENDOR_BRAND_COLOR } from "@/lib/design-tokens";
 
 import StandaloneNavbar from "@/components/StandaloneNavbar";
 
 const VendorStore = () => {
   const { username } = useParams<{ username: string }>();
   const { data: vendor, isLoading } = useVendor(username);
-  const { data: products = [] } = useVendorProducts(vendor?.id);
+  const { data: products = [] } = usePublishedVendorProducts(vendor?.id, "storefront");
+  const [categoryFilter, setCategoryFilter] = useState("Tous");
+  const visibleProducts = useMemo(
+    () => categoryFilter === "Tous" ? products : products.filter((product) => product.category === categoryFilter),
+    [categoryFilter, products],
+  );
 
   if (isLoading) {
     return (
@@ -70,11 +76,12 @@ const VendorStore = () => {
   };
 
   const initials = vendor.shop_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  const brandColor = vendor.primary_color || "#F59E0B";
+  const brandColor = vendor.primary_color || DEFAULT_VENDOR_BRAND_COLOR;
   const isStandalone = vendor.standalone_mode;
+  const categories = ["Tous", ...Array.from(new Set(products.map((product) => product.category))).slice(0, 3)];
 
   return (
-    <div className="min-h-screen bg-background" style={{ "--primary": brandColor } as React.CSSProperties}>
+    <div className="min-h-screen bg-background" style={{ "--store-primary": brandColor } as React.CSSProperties}>
       <SEO 
         title={`${vendor.shop_name} — Mindhubs Expert`} 
         description={vendor.description || `Explorez la boutique digitale de ${vendor.shop_name}.`} 
@@ -161,8 +168,8 @@ const VendorStore = () => {
                            )}
                            {vendor.plan && vendor.plan !== 'free' && (
                              <Badge className={`font-black hidden md:flex border-none ${
-                               vendor.plan === 'elite' ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 
-                               vendor.plan === 'pro' ? 'bg-purple-500 text-white' : 
+                               vendor.plan === 'elite' ? 'bg-brand-magenta text-white shadow-[0_0_15px_rgba(255,0,91,0.35)]' :
+                               vendor.plan === 'pro' ? 'bg-primary text-primary-foreground' :
                                'bg-zinc-500 text-white'
                              }`}>
                                {vendor.plan.toUpperCase()}
@@ -184,8 +191,9 @@ const VendorStore = () => {
                         <Button 
                           className="rounded-full gap-2 px-8 shadow-lg transition-transform hover:scale-105 active:scale-95"
                           style={{ backgroundColor: brandColor, boxShadow: `0 10px 20px -5px ${brandColor}4D` }}
+                          onClick={handleShare}
                         >
-                          Suivre l'Expert
+                          Partager la boutique
                         </Button>
                         <Button variant="outline" size="icon" className="rounded-full h-10 w-10 border-border/60" onClick={handleShare}>
                            <Share2 size={16} />
@@ -203,9 +211,9 @@ const VendorStore = () => {
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-2 bg-muted/30 rounded-[2rem] border border-border/50 backdrop-blur-sm">
                   {[
                     { icon: Package, label: "Produits", val: products.length },
-                    { icon: Users, label: "Étudiants", val: "1.2k+" },
-                    { icon: Star, label: "Avis Pro", val: "4.9/5", color: "text-amber-500" },
-                    { icon: ShieldCheck, label: "Fiabilité", val: "Elite", color: "text-emerald-500" },
+                    { icon: Store, label: "Canal", val: "Boutique" },
+                    { icon: Star, label: "Avis", val: "À découvrir", color: "text-primary" },
+                    { icon: ShieldCheck, label: "Statut", val: vendor.verified ? "Vérifié" : "Actif", color: "text-success" },
                   ].map((stat, i) => (
                     <div key={i} className="bg-card/50 p-4 md:p-6 rounded-3xl border border-transparent hover:border-primary/20 transition-all text-center group">
                        <div className={`h-8 w-8 rounded-xl bg-background flex items-center justify-center mx-auto mb-3 shadow-sm transition-transform group-hover:scale-110 ${stat.color || ""}`} style={{ color: stat.color ? undefined : brandColor }}>
@@ -227,30 +235,39 @@ const VendorStore = () => {
             <div className="flex items-center justify-between border-b border-border/50 pb-6">
                <div className="space-y-1">
                   <h2 className="text-2xl font-black flex items-center gap-3">
-                     <Package style={{ color: brandColor }} /> Bibliothèque de Formations
+                     <Package style={{ color: brandColor }} /> Produits de la boutique
                   </h2>
-                  <p className="text-sm text-muted-foreground font-medium">Tous les outils digitaux créés par cet expert.</p>
+                  <p className="text-sm text-muted-foreground font-medium">Découvrez les offres publiées directement par cette boutique.</p>
                </div>
                <div className="hidden md:flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="rounded-full font-bold" style={{ color: brandColor, backgroundColor: `${brandColor}1A` }}>Tous</Button>
-                  <Button variant="ghost" size="sm" className="rounded-full font-bold">E-books</Button>
-                  <Button variant="ghost" size="sm" className="rounded-full font-bold">Kits Business</Button>
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCategoryFilter(category)}
+                      className="rounded-full font-bold"
+                      style={categoryFilter === category ? { color: brandColor, backgroundColor: `${brandColor}1A` } : undefined}
+                    >
+                      {category}
+                    </Button>
+                  ))}
                </div>
             </div>
 
-            {products.length === 0 ? (
+            {visibleProducts.length === 0 ? (
                <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed border-border">
                   <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-muted-foreground">
                      <Package size={24} />
                   </div>
-                  <h3 className="text-xl font-bold">Aucun produit actif</h3>
-                  <p className="text-muted-foreground text-sm">Cet expert prépare actuellement de nouveaux contenus.</p>
+                  <h3 className="text-xl font-bold">{products.length === 0 ? "Aucun produit actif" : "Aucun produit dans cette catégorie"}</h3>
+                  <p className="text-muted-foreground text-sm">{products.length === 0 ? "Cette boutique prépare actuellement de nouvelles offres." : "Essayez une autre catégorie pour continuer votre découverte."}</p>
                </div>
             ) : (
                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  {products.map((p, i) => (
+                  {visibleProducts.map((p, i) => (
                     <AnimateOnScroll key={p.id} delay={i * 50}>
-                       <ProductCard product={p} />
+                       <ProductCard product={p} sourceChannel="storefront" />
                     </AnimateOnScroll>
                   ))}
                </div>
@@ -264,18 +281,10 @@ const VendorStore = () => {
            className="max-w-2xl mx-auto p-8 rounded-[2rem] border text-center space-y-6"
            style={{ backgroundColor: `${brandColor}0D`, borderColor: `${brandColor}33` }}
          >
-            <div className="flex justify-center -space-x-3">
-               {[1,2,3,4].map(i => (
-                 <div key={i} className="h-10 w-10 rounded-full border-2 border-background bg-muted overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+10}`} alt="User" />
-                 </div>
-               ))}
-               <div className="h-10 w-10 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-black text-white" style={{ backgroundColor: brandColor }}>+50</div>
-            </div>
             <div className="space-y-2">
-               <h3 className="text-xl font-bold">Rejoignez la communauté de {vendor.shop_name}</h3>
+               <h3 className="text-xl font-bold">Une boutique claire, un achat en confiance</h3>
                <p className="text-xs text-muted-foreground max-w-sm mx-auto font-medium">
-                  Achetez en toute confiance. Mindhubs garantit l'accès à vie et la qualité des contenus de tous ses experts vérifiés.
+                  Consultez les informations du produit, le profil du vendeur et les modalités de livraison avant de commander.
                </p>
             </div>
             <Button asChild variant="link" className="font-black gap-2" style={{ color: brandColor }}>

@@ -96,9 +96,9 @@ export const NotificationBell = () => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "new_product": return <Package size={16} className="text-blue-500" />;
-      case "success": return <CheckCircle size={16} className="text-emerald-500" />;
-      case "warning": return <AlertCircle size={16} className="text-amber-500" />;
+      case "new_product": return <Package size={16} className="text-info" />;
+      case "success": return <CheckCircle size={16} className="text-success" />;
+      case "warning": return <AlertCircle size={16} className="text-warning" />;
       default: return <Info size={16} className="text-primary" />;
     }
   };
@@ -109,7 +109,7 @@ export const NotificationBell = () => {
         <button className="relative h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-white/5">
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white shadow-sm ring-2 ring-background animate-pulse">
+            <span className="absolute top-1.5 right-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground shadow-sm ring-2 ring-background animate-pulse">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

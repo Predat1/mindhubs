@@ -200,9 +200,9 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Vendeurs", value: stats.total, icon: Store, color: "text-primary" },
-          { label: "Vendeurs Actifs", value: stats.active, icon: BadgeCheck, color: "text-emerald-500" },
-          { label: "Revenu Commissions", value: formatCurrency(stats.mhCommission), icon: TrendingUp, color: "text-fuchsia-500" },
-          { label: "Volume Marketplace", value: formatCurrency(stats.grossMarketplace), icon: ShoppingBag, color: "text-blue-500" },
+          { label: "Vendeurs Actifs", value: stats.active, icon: BadgeCheck, color: "text-success" },
+          { label: "Revenu Commissions", value: formatCurrency(stats.mhCommission), icon: TrendingUp, color: "text-brand-magenta" },
+          { label: "Volume Marketplace", value: formatCurrency(stats.grossMarketplace), icon: ShoppingBag, color: "text-info" },
         ].map((s, i) => (
           <div key={i} className="stat-card rounded-2xl p-5 border-glow">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-muted/50 mb-3 ${s.color}`}><s.icon size={18} /></div>
@@ -254,7 +254,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                     </div>
                   </td>
                   <td className="p-4 text-center">
-                    <Badge className={`font-black text-[9px] uppercase ${v.plan === 'elite' ? 'bg-amber-500' : v.plan === 'pro' ? 'bg-purple-500' : 'bg-zinc-500'}`}>
+                    <Badge className={`font-black text-[9px] uppercase ${v.plan === 'elite' ? 'bg-brand-magenta' : v.plan === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-zinc-500'}`}>
                        {v.plan}
                     </Badge>
                   </td>
@@ -265,7 +265,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                   <td className="p-4 text-center">
                     <button 
                       onClick={() => toggleVerification(v.vendor_id, v.shop_name, v.verified)}
-                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${v.verified ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-muted/30 text-muted-foreground border border-border hover:border-primary/50"}`}
+                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${v.verified ? "bg-success/10 text-success border border-success/20" : "bg-muted/30 text-muted-foreground border border-border hover:border-primary/50"}`}
                     >
                       {v.verified ? "VÉRIFIÉ ✓" : "STANDARD"}
                     </button>
@@ -302,7 +302,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
         <SheetContent className="w-full sm:max-w-2xl glass-card border-border p-0 overflow-y-auto hide-scrollbar">
           {selectedVendor && (
             <div className="flex flex-col h-full">
-               <div className="relative h-48 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-transparent">
+               <div className="relative h-48 bg-gradient-to-br from-primary/20 via-brand-magenta/10 to-transparent">
                   <div className="absolute inset-0 bg-background/40 backdrop-blur-3xl" />
                   <Button variant="ghost" size="icon" onClick={() => setSelectedVendor(null)} className="absolute top-6 right-6 hover:bg-muted/50"><X /></Button>
                   
@@ -323,7 +323,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                      <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border relative">
                         <p className="text-[9px] font-black text-muted-foreground uppercase mb-2">Abonnement Actuel</p>
                         <div className="flex flex-col gap-3">
-                           <Badge className={`w-fit font-black text-[10px] uppercase ${selectedVendor.plan === 'elite' ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : selectedVendor.plan === 'pro' ? 'bg-purple-500' : 'bg-zinc-500'}`}>
+                           <Badge className={`w-fit font-black text-[10px] uppercase ${selectedVendor.plan === 'elite' ? 'bg-brand-magenta shadow-lg shadow-brand-magenta/20' : selectedVendor.plan === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-zinc-500'}`}>
                               {selectedVendor.plan}
                            </Badge>
                            
@@ -398,7 +398,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                          vendorDetails?.transactions.map((t: any) => (
                           <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border text-[11px]">
                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${t.amount > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"}`}>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${t.amount > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                                    {t.amount > 0 ? "+" : ""}{t.amount}
                                 </div>
                                 <div>
@@ -431,10 +431,10 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                              <div className="text-right flex flex-col items-end gap-1">
                                 <p className="text-[10px] font-black text-primary">{formatCurrency(p.price)}</p>
                                 <div className="flex items-center gap-2">
-                                  <Badge className={`text-[8px] font-black ${p.status === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted'}`}>
+                                  <Badge className={`text-[8px] font-black ${p.status === 'published' ? 'bg-success/10 text-success' : 'bg-muted'}`}>
                                      {p.status?.toUpperCase() || "BROUILLON"}
                                   </Badge>
-                                  <button onClick={() => setDeleteConfirm({ id: p.id, label: p.title, type: 'product' })} className="text-destructive hover:text-red-600 transition-colors">
+                              <button onClick={() => setDeleteConfirm({ id: p.id, label: p.title, type: 'product' })} className="text-destructive hover:text-destructive-strong transition-colors">
                                     <Trash2 size={12} />
                                   </button>
                                 </div>
@@ -459,7 +459,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                                 <p className="text-[9px] text-muted-foreground">{o.customer_name}</p>
                              </div>
                              <div className="text-right">
-                                <p className="text-xs font-black text-emerald-500">{formatCurrency(o.total_price)}</p>
+                                <p className="text-xs font-black text-success">{formatCurrency(o.total_price)}</p>
                                 <p className="text-[8px] font-bold text-muted-foreground uppercase">{new Date(o.created_at).toLocaleDateString()}</p>
                              </div>
                           </div>

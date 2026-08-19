@@ -1,18 +1,20 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "motion/react";
 import { ReactNode } from "react";
+import { EASE_OUT } from "@/lib/ease";
 
 interface PageTransitionProps {
   children: ReactNode;
 }
 
 const PageTransition = ({ children }: PageTransitionProps) => {
+  const reduce = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full h-full"
+      initial={reduce ? false : { opacity: 0, y: 8, filter: "blur(4px)" }}
+      animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8, filter: "blur(4px)" }}
+      transition={{ duration: reduce ? 0.01 : 0.28, ease: EASE_OUT }}
+      className="h-full w-full will-change-[opacity,transform,filter]"
     >
       {children}
     </motion.div>

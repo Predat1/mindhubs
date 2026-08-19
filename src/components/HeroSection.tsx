@@ -1,203 +1,48 @@
-import { ArrowRight, Star, TrendingUp, Users, Sparkles, ShieldCheck, Zap, BookOpen, Globe } from "lucide-react";
+import { ArrowRight, Store } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import { usePlatformStats } from "@/hooks/usePlatformStats";
-import { motion } from "framer-motion";
-
-/* ── Animated counter ─────────────────────────────────────────── */
-function AnimatedCount({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [display, setDisplay] = useState(0);
-  const raf = useRef<number>(0);
-
-  useEffect(() => {
-    if (target === 0) return;
-    const duration = 2000;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4); // easeOutQuart
-      setDisplay(Math.floor(eased * target));
-      if (progress < 1) raf.current = requestAnimationFrame(tick);
-    };
-
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target]);
-
-  return (
-    <span>
-      {display.toLocaleString("fr-FR")}
-      {suffix}
-    </span>
-  );
-}
-
-/* ── Avatar stack ─────────────────────────────────────────────── */
-const AVATAR_SEEDS = ["Aisha", "Kwame", "Fatou", "Olivier", "Nadia", "Mamadou"];
-
-const AvatarStack = () => (
-  <div className="flex items-center -space-x-3">
-    {AVATAR_SEEDS.map((name, i) => (
-      <div
-        key={name}
-        className="relative h-8 w-8 rounded-xl border-2 border-background overflow-hidden shadow-lg"
-        style={{ zIndex: AVATAR_SEEDS.length - i }}
-      >
-        <img
-          src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${name}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
-          alt={name}
-          className="h-full w-full object-cover bg-muted"
-          loading="eager"
-        />
-      </div>
-    ))}
-  </div>
-);
+import { motion, useReducedMotion } from "motion/react";
+import { EASE_OUT } from "@/lib/ease";
 
 const HeroSection = () => {
-  const { data: stats } = usePlatformStats();
-  const buyers = Math.max(stats?.totalBuyers ?? 0, 1250);
-  const vendors = Math.max(stats?.totalVendors ?? 0, 48);
+  const reduce = useReducedMotion() ?? false;
+  const reveal = (delay: number) => ({
+    initial: reduce ? false : { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: reduce ? { duration: 0.01 } : { duration: 0.28, delay, ease: EASE_OUT },
+  });
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-36 pb-24 overflow-hidden aurora-bg">
-
-      <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
-        
-        {/* Eyebrow badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-outline bg-muted px-4 py-2 text-[10px] sm:text-xs font-medium tracking-wide uppercase text-secondary"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-          </span>
-          Plateforme N°1 de l'Économie Digitale en Afrique
+    <section className="relative overflow-hidden border-b border-border pb-16 pt-32 sm:pb-24 sm:pt-40">
+      <div className="container relative z-10 mx-auto flex max-w-4xl flex-col items-center px-4 text-center">
+        <motion.div {...reveal(0)} className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+          Marketplace et boutiques digitales
         </motion.div>
 
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-center text-3xl sm:text-5xl md:text-[60px] font-bold leading-[1.1] tracking-tight max-w-4xl px-6"
-        >
-          Passez de l'idée au <br />
-          <span className="text-gradient-primary italic">profit immédiat.</span>
+        <motion.h1 {...reveal(0.06)} className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-0.055em] sm:text-6xl">
+          Achetez, créez et vendez simplement avec MindHubs.
         </motion.h1>
 
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-8 text-center text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl px-6 leading-relaxed"
-        >
-          La première usine à produits digitaux conçue pour l'Afrique. 
-          Apprenez, créez et vendez vos compétences avec l'IA.
+        <motion.p {...reveal(0.12)} className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+          Découvrez des produits digitaux utiles ou lancez votre boutique en ligne avec un catalogue, un lien partageable et des outils simples pour vendre.
         </motion.p>
 
-        {/* CTA Buttons */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-12 flex flex-col sm:flex-row items-center gap-4"
-        >
-          <Link
-            to="/boutique"
-            className="btn-glow group relative inline-flex items-center gap-2.5 px-8 h-[42px] rounded-full font-medium text-base"
-          >
-            Explorer la Boutique
-            <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-2" />
+        <motion.div {...reveal(0.18)} className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+          <Link to="/boutique" className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-transform hover:-translate-y-0.5">
+            Explorer la marketplace <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
-          <Link
-            to="/dashboard/factory"
-            className="group relative inline-flex items-center gap-2.5 px-8 h-[42px] rounded-full font-medium text-base border border-outline bg-surface hover:bg-muted transition-all duration-500"
-          >
-            <Zap size={20} className="text-primary" />
-            Lancer l'AI Factory
+          <Link to="/become-a-seller" className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <Store className="size-4" aria-hidden="true" /> Commencer à vendre
           </Link>
         </motion.div>
 
-        {/* Social Proof Block */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-20 w-full max-w-4xl px-6"
-        >
-          <div className="glass-card p-6 rounded-xl">
-            <div className="px-0 flex flex-col lg:flex-row items-center justify-between gap-10">
-              
-              {/* Left: Buyers */}
-              <div className="flex flex-col items-center lg:items-start gap-4">
-                <AvatarStack />
-                <div className="space-y-1 text-center lg:text-left">
-                  <p className="text-xl md:text-2xl font-extrabold">
-                    <AnimatedCount target={buyers} suffix="+" />
-                  </p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Étudiants Visionnaires</p>
-                </div>
-                <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={12} className="fill-primary text-primary" />
-                  ))}
-                  <span className="text-[10px] font-black text-primary ml-1">4.9/5 satisfaction</span>
-                </div>
-              </div>
-
-              <div className="hidden lg:block h-16 w-px bg-black/5 dark:bg-white/10" />
-
-              {/* Center: Vendors */}
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <Users size={22} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xl md:text-2xl font-extrabold">
-                    <AnimatedCount target={vendors} suffix="+" />
-                  </p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Experts Actifs</p>
-                </div>
-              </div>
-
-              <div className="hidden lg:block h-16 w-px bg-white/10" />
-
-              {/* Right: Growth */}
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="h-11 w-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                  <TrendingUp size={22} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xl md:text-2xl font-extrabold">70% ROI</p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Moyenne Constatée</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Trust Line */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12 text-muted-foreground">
-            {[
-              { icon: ShieldCheck, text: "Transactions Sécurisées" },
-              { icon: BookOpen, text: "Contenus Certifiés" },
-              { icon: Globe, text: "Support Local 24/7" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <item.icon size={16} className="text-primary" />
-                <span className="text-xs font-bold uppercase tracking-wider">{item.text}</span>
-              </div>
-            ))}
-          </div>
-
+        <motion.div {...reveal(0.24)} className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <span>Accès immédiat après achat</span>
+          <span className="hidden size-1 rounded-full bg-border sm:block" aria-hidden="true" />
+          <span>Boutique vendeur personnalisable</span>
+          <span className="hidden size-1 rounded-full bg-border sm:block" aria-hidden="true" />
+          <span>Marketplace ouverte à tous</span>
         </motion.div>
-
       </div>
     </section>
   );

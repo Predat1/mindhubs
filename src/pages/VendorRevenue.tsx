@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
@@ -158,8 +158,8 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
           {[
             { label: "Solde Disponible", value: stats.availableBalance, color: "text-primary", bg: "bg-primary/10" },
             { label: "Revenu Total", value: stats.total, color: "text-white", bg: "bg-white/5" },
-            { label: "En cours de retrait", value: stats.pendingPayout, color: "text-amber-500", bg: "bg-amber-500/10" },
-            { label: "Panier Moyen", value: stats.avg, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+            { label: "En cours de retrait", value: stats.pendingPayout, color: "text-warning", bg: "bg-warning/10" },
+            { label: "Panier Moyen", value: stats.avg, color: "text-success", bg: "bg-success/10" },
           ].map((stat) => (
             <div key={stat.label} className={`rounded-3xl border border-white/5 ${stat.bg} p-6 backdrop-blur-xl`}>
               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">{stat.label}</p>
@@ -205,7 +205,7 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
                    Un souci avec une vente ou un retrait ? Notre équipe est disponible 7j/7 pour vous aider.
                  </p>
                  {plan === 'elite' && (
-                    <Badge className="bg-amber-500 text-black font-black uppercase text-[8px] tracking-widest">
+                    <Badge className="bg-warning text-warning-foreground font-black uppercase text-[8px] tracking-widest">
                        Priority WhatsApp Support Active
                     </Badge>
                  )}
@@ -248,9 +248,9 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
                              <td className="px-8 py-4 text-xs font-mono text-muted-foreground">{p.payment_details}</td>
                              <td className="px-8 py-4">
                                 <Badge className={`uppercase text-[8px] font-black tracking-widest ${
-                                  p.status === 'processed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+                                  p.status === 'processed' ? 'bg-success/10 text-success border-success/20' :
                                   p.status === 'rejected' ? 'bg-destructive/10 text-destructive border-destructive/20' : 
-                                  'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                  'bg-warning/10 text-warning border-warning/20'
                                 }`}>
                                    {p.status === 'processed' ? 'Effectué' : p.status === 'rejected' ? 'Refusé' : 'En attente'}
                                 </Badge>

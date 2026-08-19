@@ -2,94 +2,15 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Check, X, ArrowRight, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { VENDOR_PLANS } from "@/config/vendor-plans";
 
-// --- CONFIGURATION DES PLANS STATIQUES ---
-const PLANS = [
-  {
-    id: 'free', name: 'Free', badge: 'Débutant',
-    price_monthly: 0, price_yearly: 0,
-    tagline: 'Pour tester sans risque',
-    highlight: false, highlight_label: null,
-    features: [
-      { label: '5 produits maximum',          included: true  },
-      { label: '50 crédits IA / mois',         included: true  },
-      { label: 'Commission 20%',               included: true  },
-      { label: 'Boutique publique standard',   included: true  },
-      { label: 'Support email',                included: true  },
-      { label: 'Ads Studio',                   included: false },
-      { label: 'Creator Lab',                  included: false },
-      { label: 'Placement prioritaire',        included: false },
-      { label: 'Accompagnement 1:1',           included: false },
-    ],
-    cta: 'Commencer gratuitement',
-    cta_href: '/become-a-seller?plan=free',
-  },
-  {
-    id: 'starter', name: 'Starter', badge: 'Recommandé',
-    price_monthly: 4999, price_yearly: 49990,
-    tagline: 'Pour lancer sérieusement',
-    highlight: false, highlight_label: 'Économisez 2 mois',
-    features: [
-      { label: '20 produits maximum',          included: true  },
-      { label: '200 crédits IA / mois',        included: true  },
-      { label: 'Commission 15%',               included: true  },
-      { label: 'Boutique publique standard',   included: true  },
-      { label: 'Support prioritaire',          included: true  },
-      { label: 'Ads Studio basique',           included: true  },
-      { label: 'Creator Lab',                  included: false },
-      { label: 'Placement prioritaire',        included: false },
-      { label: 'Accompagnement 1:1',           included: false },
-    ],
-    cta: 'Choisir Starter',
-    cta_href: '/become-a-seller?plan=starter',
-  },
-  {
-    id: 'pro', name: 'Pro', badge: "L'excellence",
-    price_monthly: 14999, price_yearly: 149990,
-    tagline: 'Pour scaler vos ventes',
-    highlight: true, highlight_label: '⭐ Le plus populaire',
-    features: [
-      { label: 'Produits illimités',           included: true  },
-      { label: '1 000 crédits IA / mois',      included: true  },
-      { label: 'Commission 10%',               included: true  },
-      { label: 'Boutique publique premium',    included: true  },
-      { label: 'Support prioritaire',          included: true  },
-      { label: 'Ads Studio complet',           included: true  },
-      { label: 'Creator Lab complet',          included: true  },
-      { label: 'Cinema Studio',                included: true  },
-      { label: 'Placement prioritaire',        included: false },
-      { label: 'Accompagnement 1:1',           included: false },
-    ],
-    cta: 'Passer à Pro',
-    cta_href: '/become-a-seller?plan=pro',
-  },
-  {
-    id: 'elite', name: 'Elite', badge: 'VIP',
-    price_monthly: 49999, price_yearly: 499990,
-    tagline: 'Pour dominer votre marché',
-    highlight: false, highlight_label: '🏆 Tout inclus',
-    features: [
-      { label: 'Tout illimité',                included: true  },
-      { label: '5 000 crédits IA / mois',      included: true  },
-      { label: 'Commission 5%',                included: true  },
-      { label: 'Boutique publique premium',    included: true  },
-      { label: 'Support WhatsApp dédié',       included: true  },
-      { label: 'Ads Studio complet',           included: true  },
-      { label: 'Cinema Studio (Ultra HD)',     included: true  },
-      { label: 'Creator Lab complet',          included: true  },
-      { label: 'Placement prioritaire',        included: true  },
-      { label: 'Accompagnement 1:1',           included: true  },
-    ],
-    cta: 'Devenir Elite',
-    cta_href: '/become-a-seller?plan=elite',
-  },
-];
+const PLANS = VENDOR_PLANS;
 
 const CREDIT_PACKS = [
   { credits: 500,  price_fcfa: 3500,  per_credit: '7 FCFA', label: 'Pack Essentiel' },
@@ -107,10 +28,10 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background text-foreground font-outfit transition-colors duration-300">
       <SEO 
-        title="Tarifs – Plans Vendeur MindHub" 
-        description="Découvrez nos tarifs vendeur MindHub : plan Starter gratuit, Pro et Expert. Créez votre boutique digitale, vendez des formations et e-books en Afrique francophone. Outils IA, commissions jusqu'à 90%."
+        title="Tarifs – Plans Vendeur MindHubs"
+        description="Découvrez les plans vendeur MindHubs. Créez votre boutique gratuitement, puis activez les outils adaptés à votre activité de produits digitaux ou physiques."
         path="/pricing"
-        keywords="tarifs MindHub, prix vendeur en ligne, plan formation Afrique, coût boutique digitale, commission vendeur e-books, abonnement plateforme formation"
+        keywords="tarifs MindHubs, prix vendeur en ligne, plan formation Afrique, coût boutique digitale, commission vendeur e-books, abonnement plateforme formation"
       />
       <Navbar />
 
@@ -166,7 +87,7 @@ export default function Pricing() {
                   />
                 )}
                 <span className="relative z-10">Annuel</span>
-                <Badge className="absolute -top-8 -right-4 bg-emerald-500 text-white border-none animate-bounce text-[9px] px-2 py-0.5 shadow-lg">
+                <Badge className="absolute -top-8 -right-4 bg-brand-magenta text-white border-none animate-bounce text-[9px] px-2 py-0.5 shadow-lg">
                   -2 mois offerts
                 </Badge>
               </button>
@@ -190,7 +111,7 @@ export default function Pricing() {
                   className={cn(
                     "relative flex flex-col p-8 rounded-[2rem] border transition-all duration-500",
                     p.highlight 
-                      ? "bg-card border-primary shadow-[0_0_40px_rgba(212,175,55,0.15)] scale-[1.04] z-20" 
+                      ? "bg-card border-primary shadow-[0_0_40px_rgba(24,220,255,0.15)] scale-[1.04] z-20"
                       : "bg-card/50 border-border hover:border-primary/20 hover:bg-card z-10"
                   )}
                 >
@@ -221,7 +142,7 @@ export default function Pricing() {
                            <span className="text-xs text-muted-foreground/50 line-through font-bold">
                               {formatPrice(currentMonthlyPrice)} FCFA
                            </span>
-                           <span className="text-[9px] font-black text-emerald-500 uppercase">
+                           <span className="text-[9px] font-black text-success uppercase">
                               Facturé {formatPrice(p.price_yearly)} FCFA / an
                            </span>
                         </div>
@@ -247,7 +168,7 @@ export default function Pricing() {
                       >
                         <div className="mt-0.5 shrink-0">
                           {f.included 
-                            ? <Check size={14} className="text-emerald-500" /> 
+                            ? <Check size={14} className="text-success" />
                             : <X size={14} className="text-destructive/70" />
                           }
                         </div>
@@ -295,7 +216,7 @@ export default function Pricing() {
               {CREDIT_PACKS.map((pack, i) => (
                 <div key={i} className="bg-card p-6 rounded-2xl border border-border hover:border-primary/30 transition-all group relative overflow-hidden shadow-sm">
                   {pack.badge && (
-                    <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded shadow-md">
+                    <div className="absolute top-4 right-4 bg-success text-success-foreground text-[9px] font-black uppercase px-2 py-1 rounded shadow-md">
                       {pack.badge}
                     </div>
                   )}
@@ -330,7 +251,7 @@ export default function Pricing() {
                   { q: "Puis-je changer de plan plus tard ?", a: "Absolument. Vous pouvez upgrader ou downgrader votre offre à tout moment depuis votre tableau de bord vendeur. La différence sera calculée automatiquement." },
                   { q: "Y a-t-il un engagement ?", a: "Non, tous nos plans sont sans engagement. Vous pouvez annuler votre abonnement quand vous le souhaitez en un clic." },
                   { q: "Comment fonctionne la commission ?", a: "La commission est prélevée uniquement lors d'une vente. Le reste est crédité instantanément sur votre solde vendeur." },
-                  { q: "Que sont les crédits IA ?", a: "Ils vous permettent d'utiliser nos outils d'IA (Ads Studio, Creator Lab) pour générer du contenu pour vos produits digitaux." }
+                  { q: "Que sont les crédits IA ?", a: "Ils permettent d'utiliser l'assistant de fiche produit et les automatismes disponibles dans votre plan." }
                 ].map((item, i) => (
                   <motion.div 
                     key={i}

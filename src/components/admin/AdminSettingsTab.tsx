@@ -105,7 +105,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                <div className="flex flex-col lg:flex-row gap-8">
                   {/* Plan Header */}
                   <div className="lg:w-48 shrink-0">
-                     <Badge className={`mb-2 font-black uppercase ${p.plan === 'elite' ? 'bg-amber-500' : p.plan === 'pro' ? 'bg-purple-500' : 'bg-zinc-500'}`}>
+                     <Badge className={`mb-2 font-black uppercase ${p.plan === 'elite' ? 'bg-brand-magenta' : p.plan === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-zinc-500'}`}>
                         Plan {p.plan}
                      </Badge>
                      <div className="space-y-4">
@@ -179,8 +179,6 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                      {/* Toggles */}
                      <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
                         {[
-                          { key: 'ads_studio', label: 'Ads Studio' },
-                          { key: 'creator_lab_full', label: 'Lab Complet' },
                           { key: 'priority_placement', label: 'Priorité' },
                         ].map(toggle => (
                           <div key={toggle.key} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
@@ -227,7 +225,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
       {/* ─── SECTION: CREDIT COSTS (INFORMATIVE) ─── */}
       <section className="space-y-6">
         <div className="flex items-center gap-4">
-           <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-2xl"><AlertCircle size={24} /></div>
+           <div className="h-12 w-12 rounded-2xl bg-warning/10 text-warning flex items-center justify-center shadow-2xl"><AlertCircle size={24} /></div>
            <div>
              <h2 className="text-3xl font-black tracking-tighter">Coûts des Fonctionnalités</h2>
              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Aperçu de la rentabilité par action IA</p>
@@ -250,15 +248,13 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                   { name: "Validation d'Idée", key: "validate", cost: 2, margin: "98%" },
                   { name: "Planification Produit", key: "plan", cost: 3, margin: "99%" },
                   { name: "Rédaction Chapitre", key: "chapter-draft", cost: 48, margin: "60%" },
-                  { name: "Kit Marketing", key: "marketing", cost: 4, margin: "98%" },
-                  { name: "Ads Studio (Kit)", key: "ads-creative", cost: 36, margin: "90%" },
                   { name: "Description IA", key: "description", cost: 1, margin: "98%" },
                 ].map((f) => (
                   <tr key={f.key} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4 font-bold text-sm">{f.name}</td>
                     <td className="p-4 font-black text-primary">{CREDIT_COSTS[f.key as keyof typeof CREDIT_COSTS] || "-"}</td>
                     <td className="p-4 text-xs font-mono text-muted-foreground">~{f.cost} FCFA</td>
-                    <td className="p-4"><Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-black">{f.margin}</Badge></td>
+                    <td className="p-4"><Badge className="bg-success/10 text-success border-success/20 font-black">{f.margin}</Badge></td>
                   </tr>
                 ))}
               </tbody>
@@ -275,14 +271,14 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
       {/* ─── SECTION: GLOBAL NOTIFICATIONS ─── */}
       <section className="space-y-6">
         <div className="flex items-center gap-4">
-           <div className="h-12 w-12 rounded-2xl bg-fuchsia-500/10 text-fuchsia-500 flex items-center justify-center shadow-2xl"><Bell size={24} /></div>
+           <div className="h-12 w-12 rounded-2xl bg-brand-magenta/10 text-brand-magenta flex items-center justify-center shadow-2xl"><Bell size={24} /></div>
            <div>
              <h2 className="text-3xl font-black tracking-tighter">Notifications Globales</h2>
              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Envoyer un message flash à tous les vendeurs</p>
            </div>
         </div>
 
-        <Card className="stat-card p-8 rounded-[3rem] border-glow bg-gradient-to-br from-fuchsia-500/5 to-transparent">
+        <Card className="stat-card p-8 rounded-[3rem] border-glow bg-gradient-to-br from-brand-magenta/5 to-transparent">
            <form onSubmit={handleSendNotification} className="space-y-6 max-w-2xl">
               <div className="grid md:grid-cols-2 gap-6">
                  <div className="space-y-2">
@@ -328,7 +324,7 @@ const AdminSettingsTab = ({ logAction }: AdminSettingsTabProps) => {
                   className="h-12 rounded-xl bg-muted/30 border-border" 
                  />
               </div>
-              <Button type="submit" disabled={sendingNotif} className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest gap-2 bg-fuchsia-600 hover:bg-fuchsia-500 shadow-xl shadow-fuchsia-500/20">
+              <Button type="submit" disabled={sendingNotif} className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest gap-2 bg-brand-magenta hover:bg-brand-magenta/90 shadow-xl shadow-brand-magenta/20">
                  {sendingNotif ? <Loader2 className="animate-spin" /> : <Bell size={18} />} Diffuser l'annonce
               </Button>
            </form>

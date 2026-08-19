@@ -39,15 +39,21 @@ export interface Product {
   keyFeatures?: string[];
   vendorId?: string;
   vendor?: {
+    username?: string;
     shop_name: string;
     avatar_url: string | null;
     verified: boolean;
   };
   is_lms?: boolean;
+  featured?: boolean;
   productMode?: "digital" | "physical" | "hybrid";
   sku?: string;
   inventoryQuantity?: number;
   shippingNotes?: string;
+  status?: string;
+  created_at?: string;
+  storefrontStatus?: "draft" | "pending_review" | "published" | "hidden" | "archived";
+  marketplaceStatus?: "draft" | "pending_review" | "published" | "hidden" | "archived";
 }
 
 export const allProducts: Product[] = [

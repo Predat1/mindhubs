@@ -1,570 +1,323 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
-import Navbar from "@/components/Navbar";
-import FooterSection from "@/components/FooterSection";
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Store,
+  UserRound,
+} from "lucide-react";
+
 import SEO from "@/components/SEO";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  CheckCircle2, 
-  Sparkles, 
-  ArrowRight, 
-  Rocket, 
-  Crown, 
-  Star, 
-  Sprout, 
-  Camera, 
-  Upload,
-  ChevronRight,
-  Check,
-  Copy,
-  LayoutDashboard,
-  PlusCircle,
-  Eye,
-  Settings
-} from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+import MindHubsMark from "@/components/brand/MindHubsMark";
+import {
+  initializeSeller,
+  isUsernameAvailable,
+  normalizeUsername,
+  slugifyShopName,
+} from "@/lib/seller-onboarding";
 
-// --- TYPES & SCHEMA ---
-type Step = 1 | 2 | 3;
-type PlanId = "free" | "starter" | "pro" | "elite";
+type OnboardingStep = "auth" | "store" | "confirm";
+type AuthMode = "register" | "login";
+type UsernameStatus = "idle" | "checking" | "available" | "taken" | "error";
 
-const schema = z.object({
-  shopName: z.string().trim().min(2, "Nom trop court").max(60),
-  username: z
-    .string()
-    .trim()
-    .min(3, "3 caractères minimum")
-    .max(30)
-    .regex(/^[a-z0-9-]+$/, "lettres minuscules, chiffres et tirets uniquement"),
-  niche: z.string().min(1, "Veuillez choisir une niche"),
-  bio: z.string().trim().max(300).optional(),
-  email: z.string().trim().email("Email invalide").max(255).optional().or(z.literal("")),
-  password: z.string().min(6, "6 caractères minimum").optional().or(z.literal("")),
+const storeSchema = z.object({
+  shopName: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(60, "Le nom est trop long."),
+  username: z.string().trim().regex(/^[a-z0-9-]{3,30}$/, "Utilisez 3 à 30 caractères minuscules, chiffres ou tirets."),
 });
 
-const PLANS = [
-  { id: "free", name: "Free", icon: Sprout, price: "Gratuit", features: ["5 produits", "50 crédits IA", "Comm. 20%"] },
-  { id: "starter", name: "Starter", icon: Rocket, price: "4 999 FCFA", features: ["20 produits", "200 crédits IA", "Comm. 15%"] },
-  { id: "pro", name: "Pro", icon: Star, price: "14 999 FCFA", features: ["Illimité", "Cinema Studio", "Comm. 10%"], recommended: true },
-  { id: "elite", name: "Elite", icon: Crown, price: "49 999 FCFA", features: ["Illimité", "Cinema Studio VIP", "Comm. 5%"] },
-];
-
-const NICHES = [
-  "Business & Finance",
-  "Formation & Éducation",
-  "Tech & IA",
-  "Santé & Bien-être",
-  "Agriculture",
-  "Marketing Digital",
-  "Autre"
+const BENEFITS = [
+  { icon: Store, title: "Votre boutique personnelle", text: "Un lien unique à partager sur WhatsApp, les réseaux sociaux ou vos campagnes." },
+  { icon: Sparkles, title: "Des outils pour avancer", text: "Créez vos produits, vos visuels et vos pages de vente depuis un seul espace." },
+  { icon: ShieldCheck, title: "Vous gardez le contrôle", text: "Choisissez librement les produits à afficher dans votre boutique ou la marketplace." },
 ];
 
 const BecomeSeller = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const { data: existingVendor } = useCurrentVendor();
-  
-  // --- STATE ---
-  const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>((searchParams.get("plan") as PlanId) || "pro");
-  const [form, setForm] = useState({
-    shopName: "",
-    username: "",
-    niche: "",
-    bio: "",
-    email: user?.email || "",
-    password: "",
-  });
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const reduce = useReducedMotion();
+  const { user, loading: authLoading, signUp, signIn, signInWithGoogle, resendConfirmation } = useAuth();
+  const { data: existingVendor, isLoading: vendorLoading } = useCurrentVendor();
+
+  const [step, setStep] = useState<OnboardingStep>(user ? "store" : "auth");
+  const [authMode, setAuthMode] = useState<AuthMode>("register");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [shopName, setShopName] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>("idle");
+  const [authError, setAuthError] = useState("");
+  const [storeError, setStoreError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitStep, setSubmitStep] = useState("");
-  
-  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [resending, setResending] = useState(false);
+  const [createdUrl, setCreatedUrl] = useState("");
+  const requestId = useRef(0);
+  const redirectTo = typeof window === "undefined" ? "/become-a-seller/start?resume=1" : `${window.location.origin}/become-a-seller/start?resume=1`;
 
-  // --- EFFECTS ---
+  const normalizedUsername = normalizeUsername(username);
+  const storeUrl = normalizedUsername ? `mindhubs.fun/store/${normalizedUsername}` : "mindhubs.fun/store/votre-boutique";
+  const initials = useMemo(() => {
+    const value = shopName.trim();
+    return value ? value.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() : "MH";
+  }, [shopName]);
+
   useEffect(() => {
-    if (existingVendor && currentStep !== 3) {
-      navigate("/dashboard");
-    }
-  }, [existingVendor, navigate, currentStep]);
+    if (authLoading || vendorLoading || !user || !existingVendor) return;
+    navigate("/dashboard", { replace: true });
+  }, [authLoading, existingVendor, navigate, user, vendorLoading]);
 
   useEffect(() => {
-    const planFromUrl = searchParams.get("plan") as PlanId;
-    if (planFromUrl && PLANS.some(p => p.id === planFromUrl)) {
-      setSelectedPlan(planFromUrl);
-      setCurrentStep(2); // Skip step 1 if plan in URL
-    }
-  }, [searchParams]);
+    if (authLoading) return;
+    if (user && !existingVendor) setStep("store");
+    if (!user && searchParams.get("resume") !== "1") setStep("auth");
+  }, [authLoading, existingVendor, searchParams, user]);
 
-  // Real-time username check
   useEffect(() => {
-    const checkUsername = async () => {
-      if (form.username.length < 3) {
-        setUsernameStatus("idle");
-        return;
-      }
-      setUsernameStatus("checking");
-      const { data } = await supabase.from("vendors").select("id").eq("username", form.username).maybeSingle();
-      setUsernameStatus(data ? "taken" : "available");
-    };
+    if (!shopName || usernameTouched) return;
+    setUsername(slugifyShopName(shopName));
+  }, [shopName, usernameTouched]);
 
-    const timer = setTimeout(checkUsername, 500);
-    return () => clearTimeout(timer);
-  }, [form.username]);
+  useEffect(() => {
+    const value = normalizeUsername(username);
+    const currentRequest = ++requestId.current;
 
-  // --- HELPERS ---
-  const slugify = (s: string) =>
-    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const storeInitials = useMemo(() => 
-    form.shopName ? form.shopName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "MH", 
-  [form.shopName]);
-
-  // --- ACTIONS ---
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = schema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.errors[0].message);
+    if (value.length < 3) {
+      setUsernameStatus("idle");
       return;
     }
 
-    if (usernameStatus === "taken") {
-      toast.error("Ce nom d'utilisateur est déjà pris");
+    setUsernameStatus("checking");
+    const timer = window.setTimeout(async () => {
+      try {
+        const available = await isUsernameAvailable(value, user?.id);
+        if (currentRequest === requestId.current) setUsernameStatus(available ? "available" : "taken");
+      } catch {
+        if (currentRequest === requestId.current) setUsernameStatus("error");
+      }
+    }, 420);
+
+    return () => window.clearTimeout(timer);
+  }, [user?.id, username]);
+
+  const handleAuthSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthError("");
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      setAuthError("Saisissez une adresse email valide.");
+      return;
+    }
+    if (password.length < 6) {
+      setAuthError("Le mot de passe doit contenir au moins 6 caractères.");
       return;
     }
 
     setSubmitting(true);
     try {
-      setSubmitStep("⚙ Création du compte...");
-      let userId = user?.id;
+      const result = authMode === "register"
+        ? await signUp(normalizedEmail, password, normalizedEmail.split("@")[0], redirectTo)
+        : await signIn(normalizedEmail, password);
 
-      if (!userId) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
-          options: { data: { full_name: form.shopName } },
-        });
-        if (signUpError) throw signUpError;
-        userId = signUpData.user?.id;
+      if (result.error) {
+        setAuthError(result.error.message);
+        return;
       }
 
-      setSubmitStep("🏪 Installation de la boutique...");
-      
-      let avatarUrl = null;
-      if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const filePath = `${userId}/${Math.random()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-          avatarUrl = publicUrl;
-        }
+      if (authMode === "register" && result.needsConfirmation) {
+        setPendingEmail(normalizedEmail);
+        setStep("confirm");
+        toast.success("Compte créé", { description: "Vérifiez votre email pour continuer." });
+      } else {
+        setStep("store");
+        toast.success(authMode === "register" ? "Compte créé" : "Connexion réussie");
       }
-
-      const { data: newVendor, error: vendorError } = await supabase
-        .from("vendors")
-        .upsert({
-          user_id: userId,
-          username: form.username,
-          shop_name: form.shopName,
-          description: `Niche: ${form.niche} | ${form.bio}`,
-          avatar_url: avatarUrl,
-        }, { onConflict: 'user_id' })
-        .select()
-        .single();
-
-      if (vendorError) throw vendorError;
-      const vendorId = newVendor.id;
-
-      // Assign vendor role
-      await supabase.from("user_roles").upsert({ user_id: userId, role: "vendor" }, { onConflict: 'user_id,role' });
-
-      // Create subscription
-      await (supabase as any).from("vendor_subscriptions").upsert({
-        vendor_id: vendorId,
-        plan: selectedPlan,
-        status: selectedPlan === 'free' ? 'active' : 'pending'
-      }, { onConflict: 'vendor_id' });
-
-      // Initialize credits with 0
-      await (supabase as any).from("vendor_credits").upsert({
-        vendor_id: vendorId,
-        balance: 0
-      }, { onConflict: 'vendor_id' });
-
-      setSubmitStep("✓ Presque prêt !");
-      await queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
-      
-      setTimeout(() => {
-        setCurrentStep(3);
-        setSubmitting(false);
-      }, 1500);
-
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création");
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Une erreur est survenue. Réessayez.");
+    } finally {
       setSubmitting(false);
     }
   };
 
-  // --- RENDER HELPERS ---
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center gap-4 mb-12">
-      {[1, 2, 3].map((s) => (
-        <div key={s} className="flex items-center">
-          <div className={`h-10 w-10 rounded-full flex items-center justify-center font-black transition-all duration-500 ${
-            currentStep === s ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-110" :
-            currentStep > s ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
-          }`}>
-            {currentStep > s ? <Check size={20} /> : s}
-          </div>
-          {s < 3 && <div className={`w-12 h-1 mx-2 rounded-full ${currentStep > s ? "bg-emerald-500" : "bg-muted"}`} />}
-        </div>
-      ))}
-    </div>
-  );
+  const handleGoogle = async () => {
+    setAuthError("");
+    setSubmitting(true);
+    const result = await signInWithGoogle(redirectTo);
+    if (result.error) {
+      setAuthError(result.error.message);
+      setSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!pendingEmail) return;
+    setResending(true);
+    const result = await resendConfirmation(pendingEmail, redirectTo);
+    if (result.error) toast.error(result.error.message);
+    else toast.success("Email renvoyé", { description: "Vérifiez votre boîte de réception." });
+    setResending(false);
+  };
+
+  const handleStoreSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStoreError("");
+
+    if (!user) {
+      setStep("auth");
+      setStoreError("Connectez-vous pour créer votre boutique.");
+      return;
+    }
+
+    const parsed = storeSchema.safeParse({ shopName, username: normalizedUsername });
+    if (!parsed.success) {
+      setStoreError(parsed.error.issues[0]?.message || "Vérifiez les informations de votre boutique.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const available = await isUsernameAvailable(normalizedUsername, user.id);
+      if (!available) {
+        setUsernameStatus("taken");
+        setStoreError("Cette URL est déjà utilisée. Choisissez-en une autre.");
+        return;
+      }
+
+      const result = await initializeSeller({ userId: user.id, shopName, username: normalizedUsername });
+      const url = `${window.location.origin}/store/${normalizedUsername}`;
+      setCreatedUrl(url);
+      await queryClient.invalidateQueries({ queryKey: ["current-vendor"] });
+      toast.success("Votre boutique est prête");
+      navigate("/dashboard", { replace: true, state: { sellerOnboarding: true, vendorId: result.vendorId } });
+    } catch (error) {
+      setStoreError(error instanceof Error ? error.message : "Impossible de créer la boutique. Réessayez.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const copyStoreUrl = async () => {
+    if (!createdUrl) return;
+    try {
+      await navigator.clipboard.writeText(createdUrl);
+      toast.success("Lien copié");
+    } catch {
+      toast.error("Impossible de copier le lien");
+    }
+  };
+
+  const stepNumber = step === "auth" || step === "confirm" ? 1 : 2;
+  const motionTransition = reduce ? { duration: 0.01 } : { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const };
 
   return (
-    <div className="min-h-screen bg-background aurora-bg selection:bg-primary/30">
-      <SEO title="Devenir Vendeur – Créez Votre Boutique Digitale" description="Devenez vendeur sur MindHub et créez votre boutique de produits digitaux en 3 étapes. Formations, e-books, kits business. Outils IA inclus. Commissions jusqu'à 90%. Afrique francophone." path="/become-a-seller" keywords="devenir vendeur en ligne Afrique, créer boutique digitale, vendre formations en ligne, vendre e-books Afrique, revenus passifs digital, plateforme vendeur Bénin Sénégal Côte d'Ivoire" />
-      <Navbar />
+    <div className="min-h-screen overflow-hidden bg-background text-foreground">
+      <SEO
+        title="Créer sa boutique en ligne | MindHubs"
+        description="Créez votre boutique MindHubs, vendez vos produits digitaux ou physiques et partagez votre lien vendeur."
+        path="/become-a-seller/start"
+        keywords="créer boutique en ligne, vendre produits digitaux, vendre produits physiques, MindHubs vendeur"
+      />
 
-      <main className="pt-28 pb-20 container mx-auto px-4">
-        <StepIndicator />
+      <main className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-24 sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute left-1/2 top-8 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-cyan/10 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-64 w-64 rounded-full bg-brand-magenta/5 blur-3xl" aria-hidden="true" />
 
-        <AnimatePresence mode="wait">
-          {/* STEP 1 : SELECTION DU PLAN */}
-          {currentStep === 1 && (
-            <motion.div 
-              key="step1"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-5xl mx-auto space-y-12"
-            >
-              <div className="text-center space-y-4">
-                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter">Quel créateur êtes-vous ?</h1>
-                <p className="text-muted-foreground text-lg">Choisissez votre plan — vous pouvez upgrader à tout moment.</p>
-              </div>
+        <div className="relative grid w-full items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(380px,460px)] lg:gap-20">
+          <section className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-cyan">
+              <Sparkles className="size-3.5" aria-hidden="true" /> Lancement rapide
+            </div>
+            <h1 className="max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-0.045em] sm:text-5xl lg:text-6xl">Votre boutique en ligne commence ici.</h1>
+            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">Créez votre espace vendeur, ajoutez vos produits et partagez votre lien quand vous êtes prêt. Commencez gratuitement, puis activez les outils dont vous avez besoin.</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {PLANS.map((plan) => {
-                  const Icon = plan.icon;
-                  const isSelected = selectedPlan === plan.id;
-                  return (
-                    <motion.div
-                      key={plan.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setSelectedPlan(plan.id as PlanId)}
-                      className={`cursor-pointer relative p-6 rounded-[2rem] border-2 transition-all duration-300 flex flex-col items-center text-center space-y-4 ${
-                        isSelected ? "border-primary bg-primary/10 shadow-xl" : "border-white/5 bg-card/50 hover:border-primary/50"
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-4 right-4 h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                          <Check size={14} strokeWidth={4} />
-                        </div>
-                      )}
-                      {plan.recommended && (
-                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-zinc-950 font-black text-[10px] uppercase">Recommandé</Badge>
-                      )}
-                      <div className={`p-4 rounded-2xl ${isSelected ? "bg-primary text-zinc-950" : "bg-muted text-muted-foreground"}`}>
-                        <Icon size={32} />
-                      </div>
-                      <div>
-                        <h3 className="font-black text-xl">{plan.name}</h3>
-                        <p className="text-primary font-bold text-sm">{plan.price}</p>
-                      </div>
-                      <div className="space-y-2 w-full">
-                        {plan.features.map((f, i) => (
-                          <div key={i} className="text-[10px] font-bold text-muted-foreground flex items-center gap-2">
-                            <CheckCircle2 size={12} className="text-emerald-500" /> {f}
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-col items-center gap-6">
-                <Button 
-                  onClick={() => setCurrentStep(2)}
-                  className="h-16 px-12 rounded-2xl text-xl font-black gap-3 btn-glow"
-                >
-                  Continuer avec le plan {PLANS.find(p => p.id === selectedPlan)?.name} <ArrowRight />
-                </Button>
-                <Link to="/pricing" target="_blank" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
-                  Voir le détail des plans <Eye size={14} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 2 : CONFIGURATION BOUTIQUE */}
-          {currentStep === 2 && (
-            <motion.div 
-              key="step2"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-start"
-            >
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <h2 className="text-4xl font-black tracking-tight">Créez votre boutique</h2>
-                  <p className="text-muted-foreground font-medium">Quelques détails pour commencer à vendre.</p>
+            <div className="mt-9 space-y-4">
+              {BENEFITS.map(({ icon: Icon, title, text }) => (
+                <div key={title} className="flex gap-3">
+                  <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan"><Icon className="size-4" aria-hidden="true" /></span>
+                  <div><h2 className="text-sm font-semibold">{title}</h2><p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground">{text}</p></div>
                 </div>
+              ))}
+            </div>
 
-                <form onSubmit={handleFinalSubmit} className="space-y-6">
-                  {/* Avatar Upload */}
-                  <div className="flex flex-col items-center gap-4">
-                    <div 
-                      onClick={() => avatarInputRef.current?.click()}
-                      className="group relative h-24 w-24 rounded-3xl cursor-pointer overflow-hidden border-2 border-dashed border-primary/30 hover:border-primary transition-all"
-                    >
-                      {avatarPreview ? (
-                        <img src={avatarPreview} alt="Preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex flex-col items-center justify-center bg-primary/5 text-primary">
-                          <span className="text-3xl font-black">{storeInitials}</span>
-                          <Camera size={16} className="absolute bottom-1 right-1 bg-primary text-zinc-950 p-1 rounded-lg" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <Upload className="text-white" size={24} />
-                      </div>
-                    </div>
-                    <input ref={avatarInputRef} type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                    <p className="text-[10px] font-black uppercase text-muted-foreground">Photo de profil</p>
-                  </div>
+            <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-subtle">
+              <span className="inline-flex items-center gap-1.5"><LockKeyhole className="size-3.5" aria-hidden="true" /> Données protégées</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="size-3.5" aria-hidden="true" /> Aucune carte bancaire requise</span>
+            </div>
+          </section>
 
-                  <div className="grid gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Nom de la boutique</Label>
-                      <Input 
-                        placeholder="Ex: Vision Digital"
-                        className="h-12 rounded-xl font-bold"
-                        value={form.shopName}
-                        onChange={(e) => setForm({ ...form, shopName: e.target.value, username: form.username || slugify(e.target.value) })}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">URL personnalisée</Label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase opacity-50">mindhubs.fun/store/</span>
-                        <Input 
-                          placeholder="votre-boutique"
-                          className="h-12 pl-36 rounded-xl font-black lowercase"
-                          value={form.username}
-                          onChange={(e) => setForm({ ...form, username: slugify(e.target.value) })}
-                          required
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold">
-                          {usernameStatus === "checking" && "⏳"}
-                          {usernameStatus === "available" && <span className="text-emerald-500">✓ Disponible</span>}
-                          {usernameStatus === "taken" && <span className="text-destructive">✗ Déjà pris</span>}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Niche principale</Label>
-                      <Select onValueChange={(v) => setForm({ ...form, niche: v })}>
-                        <SelectTrigger className="h-12 rounded-xl font-bold">
-                          <SelectValue placeholder="Choisir un domaine" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-white/10 bg-zinc-900">
-                          {NICHES.map(n => <SelectItem key={n} value={n} className="font-bold">{n}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Bio (300 chars max)</Label>
-                      <Textarea 
-                        placeholder="Parlez-nous de votre expertise..."
-                        className="rounded-xl resize-none font-medium h-24"
-                        value={form.bio}
-                        onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                        maxLength={300}
-                      />
-                      <div className="text-[10px] text-right font-bold text-muted-foreground">{form.bio.length}/300</div>
-                    </div>
-
-                    {!user && (
-                      <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email</Label>
-                          <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="h-12 rounded-xl" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mot de passe</Label>
-                          <Input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="h-12 rounded-xl" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <Button type="submit" disabled={submitting} className="w-full h-16 rounded-2xl font-black text-xl gap-3 btn-glow">
-                    {submitting ? (
-                      <div className="flex items-center gap-3">
-                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Settings size={20} /></motion.div>
-                        {submitStep}
-                      </div>
-                    ) : (
-                      <>Créer ma boutique →</>
-                    )}
-                  </Button>
-                </form>
+          <section className="w-full">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-2xl shadow-black/20 sm:p-7">
+              <div className="mb-7">
+                <div className="mb-4 flex items-center justify-between text-xs font-medium text-muted-foreground"><span>Étape {stepNumber} sur 2</span><span>{stepNumber === 1 ? "Votre accès" : "Votre boutique"}</span></div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`Progression : étape ${stepNumber} sur 2`} role="progressbar" aria-valuemin={1} aria-valuemax={2} aria-valuenow={stepNumber}><motion.div className="h-full rounded-full bg-brand-cyan" animate={{ width: `${stepNumber * 50}%` }} transition={motionTransition} /></div>
               </div>
 
-              {/* LIVE PREVIEW */}
-              <div className="sticky top-32 space-y-6">
-                <div className="text-center">
-                  <Badge variant="outline" className="px-3 py-1 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest">Aperçu en direct</Badge>
-                </div>
-                <div className="p-8 rounded-[3rem] bg-card border border-primary/20 shadow-2xl space-y-6 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4 opacity-20"><Sparkles size={40} className="text-primary" /></div>
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="h-24 w-24 rounded-[2rem] bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/20 flex items-center justify-center shadow-inner overflow-hidden">
-                      {avatarPreview ? (
-                        <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-3xl font-black text-primary">{storeInitials}</span>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-2xl font-black">{form.shopName || "Votre Boutique"}</h3>
-                      <div className="flex items-center justify-center gap-2">
-                        <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-tighter">
-                          Plan {PLANS.find(p => p.id === selectedPlan)?.name}
-                        </Badge>
-                        {form.niche && <Badge variant="outline" className="text-[9px] border-white/10 uppercase tracking-tighter">{form.niche}</Badge>}
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 italic">
-                      {form.bio || "Votre bio s'affichera ici pour inspirer confiance à vos clients..."}
-                    </p>
-                    <div className="w-full pt-4 grid grid-cols-2 gap-3 opacity-50">
-                      <div className="h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest">0 Produit</div>
-                      <div className="h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest">0 Vente</div>
-                    </div>
-                    <Button disabled className="w-full h-12 rounded-xl bg-white/5 text-muted-foreground border-dashed border-white/10 mt-4">Voir la boutique</Button>
-                  </div>
-                </div>
-                <p className="text-center text-[10px] font-bold text-muted-foreground">Voici exactement ce que verront vos clients</p>
-              </div>
-            </motion.div>
-          )}
+              <AnimatePresence mode="wait" initial={false}>
+                {step === "auth" && (
+                  <motion.div key="auth" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={motionTransition}>
+                    <div className="mb-6"><h2 className="text-2xl font-semibold tracking-[-0.03em]">{authMode === "register" ? "Créez votre accès vendeur" : "Ravi de vous revoir"}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{authMode === "register" ? "Un compte suffit pour gérer votre boutique, vos produits et vos ventes." : "Connectez-vous pour continuer la création de votre boutique."}</p></div>
+                    <Button type="button" variant="outline" className="h-11 w-full" onClick={handleGoogle} disabled={submitting}><span className="grid size-5 place-items-center rounded-full bg-white text-xs font-bold text-slate-900">G</span>Continuer avec Google</Button>
+                    <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" /><span>ou avec votre email</span><span className="h-px flex-1 bg-border" /></div>
+                    <form onSubmit={handleAuthSubmit} className="space-y-4">
+                      <div className="space-y-2"><Label htmlFor="seller-email">Adresse email</Label><div className="relative"><Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input id="seller-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="vous@exemple.com" autoComplete="email" className="pl-10" /></div></div>
+                      <div className="space-y-2"><Label htmlFor="seller-password">Mot de passe</Label><div className="relative"><LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input id="seller-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="6 caractères minimum" autoComplete={authMode === "register" ? "new-password" : "current-password"} className="pl-10" /></div></div>
+                      {authError ? <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">{authError}</p> : null}
+                      <Button type="submit" className="h-11 w-full" disabled={submitting}>{submitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <UserRound className="size-4" aria-hidden="true" />}{submitting ? "Connexion en cours…" : authMode === "register" ? "Créer mon compte" : "Se connecter"}{!submitting ? <ArrowRight className="ml-auto size-4" aria-hidden="true" /> : null}</Button>
+                    </form>
+                    <button type="button" onClick={() => { setAuthMode(authMode === "register" ? "login" : "register"); setAuthError(""); }} className="mt-5 flex min-h-11 w-full items-center justify-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">{authMode === "register" ? "Vous avez déjà un compte ?" : "Pas encore de compte ?"} <span className="font-medium text-brand-cyan">{authMode === "register" ? "Se connecter" : "Créer un compte"}</span></button>
+                  </motion.div>
+                )}
 
-          {/* STEP 3 : SUCCESS SCREEN */}
-          {currentStep === 3 && (
-            <motion.div 
-              key="step3"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-2xl mx-auto text-center space-y-12 py-12"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 animate-ping opacity-20"><CheckCircle2 size={120} className="text-emerald-500 mx-auto" /></div>
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", damping: 12 }}
-                  className="relative z-10"
-                >
-                  <CheckCircle2 size={120} className="text-emerald-500 mx-auto" strokeWidth={1} />
-                </motion.div>
-              </div>
+                {step === "confirm" && (
+                  <motion.div key="confirm" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={motionTransition} className="text-center">
+                    <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-brand-cyan/20 bg-brand-cyan/10 text-brand-cyan"><Mail className="size-6" aria-hidden="true" /></div>
+                    <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em]">Vérifiez votre boîte mail</h2>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">Nous avons envoyé un lien de confirmation à <strong className="font-medium text-foreground">{pendingEmail}</strong>. Après confirmation, vous pourrez créer votre boutique.</p>
+                    <div className="mt-6 space-y-3"><Button type="button" className="h-11 w-full" onClick={handleResend} disabled={resending}>{resending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />} {resending ? "Envoi en cours…" : "Renvoyer l’email"}</Button><button type="button" onClick={() => { setStep("auth"); setAuthError(""); }} className="min-h-11 text-sm text-muted-foreground transition-colors hover:text-foreground">Modifier l’adresse</button></div>
+                    <p className="mt-7 text-xs leading-5 text-text-subtle">Le lien vous ramènera automatiquement ici. Pensez à vérifier vos courriers indésirables.</p>
+                  </motion.div>
+                )}
 
-              <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
-                  Votre boutique <br /> <span className="text-gradient-primary">est en ligne ! 🚀</span>
-                </h1>
-                <p className="text-muted-foreground font-medium">Félicitations {form.shopName}, votre aventure de créateur commence maintenant.</p>
-              </div>
+                {step === "store" && (
+                  <motion.div key="store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={motionTransition}>
+                    <div className="mb-6"><h2 className="text-2xl font-semibold tracking-[-0.03em]">Créez votre boutique</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Deux informations suffisent pour commencer. Vous pourrez personnaliser le reste depuis votre dashboard.</p></div>
+                    <form onSubmit={handleStoreSubmit} className="space-y-5">
+                      <div className="space-y-2"><Label htmlFor="shop-name">Nom de boutique</Label><Input id="shop-name" value={shopName} onChange={(event) => setShopName(event.target.value)} placeholder="Ex. Atelier Digital" autoComplete="organization" maxLength={60} autoFocus /><p className="text-xs text-text-subtle">Ce nom sera affiché sur votre boutique et vos fiches produits.</p></div>
+                      <div className="space-y-2"><Label htmlFor="shop-username">URL de votre boutique</Label><div className="flex overflow-hidden rounded-lg border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background"><span className="flex shrink-0 items-center border-r border-input px-3 text-xs text-muted-foreground">mindhubs.fun/store/</span><input id="shop-username" value={username} onChange={(event) => { setUsername(normalizeUsername(event.target.value)); setUsernameTouched(true); }} className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none" aria-describedby="shop-url-status" autoComplete="off" spellCheck={false} /></div><div id="shop-url-status" className="min-h-5 text-xs" aria-live="polite">{usernameStatus === "checking" ? <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="size-3 animate-spin" /> Vérification de la disponibilité…</span> : null}{usernameStatus === "available" ? <span className="inline-flex items-center gap-1.5 text-success"><Check className="size-3.5" /> Cette adresse est disponible</span> : null}{usernameStatus === "taken" ? <span className="text-destructive">Cette adresse est déjà utilisée.</span> : null}{usernameStatus === "error" ? <span className="text-warning">La disponibilité n’a pas pu être vérifiée. Réessayez.</span> : null}</div></div>
+                      <div className="rounded-2xl border border-border bg-surface-secondary/60 p-4"><div className="flex items-center gap-3"><div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-cyan text-sm font-semibold text-background">{shopName.trim() ? initials : <MindHubsMark size={22} variant="current" decorative />}</div><div className="min-w-0"><p className="truncate text-sm font-medium">{shopName.trim() || "Votre boutique"}</p><p className="truncate text-xs text-muted-foreground">{storeUrl}</p></div></div><div className="mt-4 flex items-center gap-2 text-xs text-text-subtle"><ExternalLink className="size-3.5" aria-hidden="true" /> Votre lien sera public après la création.</div></div>
+                      {storeError ? <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">{storeError}</p> : null}
+                      <Button type="submit" className="h-11 w-full" disabled={submitting || usernameStatus === "checking"}>{submitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Store className="size-4" aria-hidden="true" />}{submitting ? "Création en cours…" : "Créer ma boutique"}{!submitting ? <ArrowRight className="ml-auto size-4" aria-hidden="true" /> : null}</Button>
+                    </form>
+                    <p className="mt-5 text-center text-xs leading-5 text-text-subtle">Vous commencerez avec le plan gratuit. Les options avancées et les plans payants restent accessibles depuis le dashboard.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 space-y-4">
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Lien de votre boutique</p>
-                <div className="flex items-center gap-2 p-3 bg-black/40 rounded-xl border border-white/5 group">
-                  <code className="flex-1 text-sm font-bold text-primary truncate">mindhubs.fun/store/{form.username}</code>
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(`mindhubs.fun/store/${form.username}`);
-                      toast.success("URL copiée !");
-                    }}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <Copy size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {selectedPlan !== "free" && (
-                <div className="p-6 rounded-[2rem] bg-primary/5 border border-primary/20 text-left space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary rounded-lg text-zinc-950"><Star size={20} /></div>
-                    <h4 className="font-black">Activez votre plan {PLANS.find(p => p.id === selectedPlan)?.name}</h4>
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                    Pour profiter de tous les avantages, effectuez votre paiement par Orange Money ou Wave au <span className="text-white font-black underline">+225 00 00 00 00</span>.
-                  </p>
-                  <Button variant="outline" className="w-full rounded-xl border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest">
-                    J'ai effectué le paiement
-                  </Button>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button asChild className="h-16 rounded-2xl font-black text-lg gap-2 btn-glow">
-                  <Link to="/dashboard/new-product"><PlusCircle size={20} /> Ajouter mon 1er produit</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-16 rounded-2xl font-black text-lg gap-2 border-white/10">
-                  <Link to={`/store/${form.username}`}><LayoutDashboard size={20} /> Voir ma boutique</Link>
-                </Button>
-                <Button asChild variant="ghost" className="h-12 rounded-xl text-muted-foreground font-bold hover:text-white col-span-full">
-                  <Link to="/dashboard/settings">Configurer mon profil</Link>
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-text-subtle"><Link to="/faq" className="transition-colors hover:text-foreground">Besoin d’aide ?</Link><span aria-hidden="true">·</span><Link to="/conditions-generales" className="transition-colors hover:text-foreground">Conditions</Link>{createdUrl ? <button type="button" onClick={copyStoreUrl} className="inline-flex items-center gap-1 text-brand-cyan"><Copy className="size-3" /> Copier le lien</button> : null}</div>
+          </section>
+        </div>
       </main>
-
-      <FooterSection />
     </div>
   );
 };

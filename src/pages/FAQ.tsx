@@ -48,9 +48,9 @@ const FAQ = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="FAQ – Questions Fréquentes"
-        description="Retrouvez toutes les réponses à vos questions sur MindHub : paiement Mobile Money, accès aux formations digitales, remboursement, support client. Formations Afrique francophone."
+        description="Retrouvez toutes les réponses à vos questions sur MindHubs : paiement Mobile Money, accès aux formations digitales, remboursement, support client. Formations Afrique francophone."
         path="/faq"
-        keywords="FAQ MindHub, questions formations en ligne Afrique, paiement mobile money, remboursement formation, accès formation digitale, support client MindHub"
+        keywords="FAQ MindHubs, questions formations en ligne Afrique, paiement mobile money, remboursement formation, accès formation digitale, support client MindHubs"
         faq={faqCategories.flatMap(cat => cat.items.map(item => ({ question: item.q, answer: item.a })))}
       />
       <Navbar />

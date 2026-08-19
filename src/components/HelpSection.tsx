@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import MindHubsLogo from "@/components/brand/MindHubsLogo";
 
 const HelpSection = () => {
   return (
@@ -9,11 +10,7 @@ const HelpSection = () => {
         <AnimateOnScroll>
           <div className="stat-card rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 flex flex-col md:flex-row gap-6 sm:gap-8 items-center max-w-4xl mx-auto text-center md:text-left">
             <div className="hidden md:block shrink-0">
-              <div className="text-2xl font-bold">
-                <span className="text-foreground">MIND</span>
-                <span className="text-gradient-brand">✦</span>
-                <span className="text-accent">HUB</span>
-              </div>
+              <MindHubsLogo size="md" />
             </div>
             <div className="space-y-2 flex-1">
               <h3 className="text-lg sm:text-xl font-bold text-foreground">Besoin d'aide ?</h3>

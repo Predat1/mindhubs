@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
@@ -21,26 +22,45 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-type OrderStatus = "pending" | "confirmed" | "delivered" | "cancelled";
+type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
+type FulfillmentClient = {
+  from: (table: string) => {
+    update: (values: { status: OrderStatus }) => {
+      eq: (column: string, value: string) => Promise<{ error: { message: string } | null }>;
+    };
+  };
+};
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; cls: string; icon: typeof Clock; dot: string }> = {
   pending: {
     label: "En attente",
-    cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30",
+    cls: "bg-warning/15 text-warning border-warning/30",
     icon: Clock,
-    dot: "bg-yellow-500",
+    dot: "bg-warning",
   },
   confirmed: {
     label: "Confirmée",
-    cls: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+    cls: "bg-info/15 text-info border-info/30",
     icon: CheckCircle2,
-    dot: "bg-blue-500",
+    dot: "bg-info",
+  },
+  processing: {
+    label: "En préparation",
+    cls: "bg-info/15 text-info border-info/30",
+    icon: Package,
+    dot: "bg-info",
+  },
+  shipped: {
+    label: "Expédiée",
+    cls: "bg-info/15 text-info border-info/30",
+    icon: Truck,
+    dot: "bg-info",
   },
   delivered: {
     label: "Livrée",
-    cls: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30",
+    cls: "bg-success/15 text-success border-success/30",
     icon: Truck,
-    dot: "bg-green-500",
+    dot: "bg-success",
   },
   cancelled: {
     label: "Annulée",
@@ -50,7 +70,7 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; cls: string; icon: typ
   },
 };
 
-const STATUS_ORDER: OrderStatus[] = ["pending", "confirmed", "delivered", "cancelled"];
+const STATUS_ORDER: OrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
 
 const formatDate = (s: string) =>
   new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
@@ -120,10 +140,13 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
 
   const updateStatus = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: newStatus })
-      .eq("id", orderId);
+    const currentOrder = orders.find((order) => order.id === orderId);
+    const result = currentOrder?.fulfillment_id
+      ? await (supabase as unknown as FulfillmentClient).from("vendor_order_fulfillments").update({ status: newStatus }).eq("id", currentOrder.fulfillment_id)
+      : newStatus === "processing" || newStatus === "shipped"
+        ? { error: new Error("Le suivi fulfillment n'est pas encore disponible pour cette commande historique.") }
+        : await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
+    const { error } = result;
     setUpdatingId(null);
 
     if (error) {
@@ -140,6 +163,11 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
   const copyId = (id: string) => {
     navigator.clipboard.writeText(id);
     toast.success("ID copié");
+  };
+
+  const copyShopLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}${shopUrl}`);
+    toast.success("Lien de boutique copié");
   };
 
   const counts = useMemo(() => {
@@ -176,7 +204,9 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
                       const Icon = cfg.icon;
                       const desc: Record<typeof s, string> = {
                         pending: "Commande reçue, à confirmer avec le client.",
-                        confirmed: "Paiement validé, prête à expédier.",
+                        confirmed: "Paiement validé, prête à être préparée.",
+                        processing: "Commande en préparation par le vendeur.",
+                        shipped: "Commande expédiée au client.",
                         delivered: "Produit remis au client, vente finalisée.",
                         cancelled: "Commande annulée par vous ou le client.",
                       } as const;
@@ -202,8 +232,8 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* Keep empty sales screens focused; expose metrics once there is data. */}
+        {orders.length > 0 ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <KpiCard
             icon={TrendingUp}
             label="Revenus (hors annulées)"
@@ -214,24 +244,24 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
             icon={Clock}
             label="En attente"
             value={String(kpis.pending)}
-            accent="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400"
+            accent="bg-warning/15 text-warning"
           />
           <KpiCard
             icon={Truck}
             label="Livrées"
             value={String(kpis.delivered)}
-            accent="bg-green-500/15 text-green-700 dark:text-green-400"
+            accent="bg-success/15 text-success"
           />
           <KpiCard
             icon={Users}
             label="Clients uniques"
             value={String(kpis.uniqueCustomers)}
-            accent="bg-blue-500/15 text-blue-700 dark:text-blue-400"
+            accent="bg-info/15 text-info"
           />
-        </div>
+        </div> : null}
 
         {/* Filters */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {orders.length > 0 ? <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -271,7 +301,7 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
               </button>
             ))}
           </div>
-        </div>
+        </div> : null}
 
         {/* Table */}
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -299,6 +329,12 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
                   ? "Essayez d'ajuster vos filtres."
                   : "Vos prochaines commandes apparaîtront ici."}
               </p>
+              {!search && statusFilter === "all" ? (
+                <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                  <Link to="/dashboard/products" className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Créer un produit</Link>
+                  <button type="button" onClick={copyShopLink} className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted">Partager ma boutique</button>
+                </div>
+              ) : null}
             </div>
           ) : (
             <>
@@ -394,6 +430,9 @@ const VendorSalesInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; s
                       <div className="mt-1 flex items-center justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-2">
                           <StatusBadge status={o.status} />
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold text-muted-foreground">
+                            {o.source_channel === "storefront" ? "Boutique" : o.source_channel === "social" ? "Réseaux" : "Marketplace"}
+                          </span>
                           <span className="truncate text-[10px] text-muted-foreground">
                             {formatDate(o.created_at)}
                           </span>

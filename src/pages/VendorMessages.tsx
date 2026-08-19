@@ -129,7 +129,7 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
                   </Avatar>
                   <div>
                     <h3 className="text-sm font-bold">{selectedChat.customer_name}</h3>
-                    <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest flex items-center gap-1">
+                    <p className="text-[10px] text-success font-black uppercase tracking-widest flex items-center gap-1">
                       En ligne
                     </p>
                   </div>
@@ -154,7 +154,7 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
                       return (
                         <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[70%] space-y-1`}>
-                            <div className={`p-4 rounded-2xl text-sm font-medium shadow-sm ${isMe ? "bg-primary text-white rounded-tr-none" : "bg-card border border-white/5 rounded-tl-none"}`}>
+                            <div className={`p-4 rounded-2xl text-sm font-medium shadow-sm ${isMe ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-card border border-border rounded-tl-none"}`}>
                               {msg.content}
                             </div>
                             <div className={`flex items-center gap-1.5 px-1 ${isMe ? "justify-end" : "justify-start"}`}>
@@ -188,7 +188,7 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
                     <Button 
                       onClick={handleSend}
                       disabled={!msgInput.trim() || isSending}
-                      className="h-10 w-10 rounded-xl bg-primary text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:scale-100 flex items-center justify-center"
+                      className="h-10 w-10 rounded-xl bg-primary text-primary-foreground hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:scale-100 flex items-center justify-center"
                     >
                       {isSending ? <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send size={18} />}
                     </Button>

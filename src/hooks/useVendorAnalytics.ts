@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVendorProducts } from "./useVendors";
 import { format, subDays, startOfDay, endOfDay, differenceInDays } from "date-fns";
+import { MINDHUBS_COLORS } from "@/lib/design-tokens";
 
 export interface AnalyticsData {
   totalViews: number;
@@ -170,8 +171,8 @@ export const useVendorAnalytics = (vendorId: string | undefined, timeRange: stri
       const returningUsers = Object.values(userOrders).filter(count => count > 1).length;
       const totalUsers = Object.keys(userOrders).length;
       const newVsReturning = [
-        { name: "Nouveaux", value: totalUsers - returningUsers, color: "#7C3AED" },
-        { name: "Récurrents", value: returningUsers, color: "#10B981" }
+        { name: "Nouveaux", value: totalUsers - returningUsers, color: MINDHUBS_COLORS.info },
+        { name: "Récurrents", value: returningUsers, color: MINDHUBS_COLORS.success }
       ];
 
       // Traffic Sources

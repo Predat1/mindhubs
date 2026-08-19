@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { compressImage } from "@/lib/imageCompression";
-import { motion, AnimatePresence } from "framer-motion";
+import { DEFAULT_VENDOR_BRAND_COLOR } from "@/lib/design-tokens";
+import { motion, AnimatePresence } from "motion/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
@@ -31,7 +32,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
     description: vendor.description || "",
     avatar_url: vendor.avatar_url || "",
     banner_url: vendor.banner_url || "",
-    primary_color: vendor.primary_color || "#F59E0B",
+    primary_color: vendor.primary_color || DEFAULT_VENDOR_BRAND_COLOR,
     standalone_mode: vendor.standalone_mode || false,
   });
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
       description: vendor.description || "",
       avatar_url: vendor.avatar_url || "",
       banner_url: vendor.banner_url || "",
-      primary_color: vendor.primary_color || "#F59E0B",
+      primary_color: vendor.primary_color || DEFAULT_VENDOR_BRAND_COLOR,
       standalone_mode: vendor.standalone_mode || false,
     });
   }, [vendor]);
@@ -257,7 +258,7 @@ const VendorSettingsInner = ({ vendor }: { vendor: Vendor }) => {
                                   </div>
                                 )}
                              </div>
-                             <label className="absolute -bottom-2 -right-2 h-12 w-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-primary/90 transition-colors border-4 border-background">
+                             <label className="absolute -bottom-2 -right-2 h-12 w-12 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-primary/90 transition-colors border-4 border-background">
                                 {uploading ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
                              </label>

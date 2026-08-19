@@ -6,7 +6,7 @@ import SEO from "@/components/SEO";
 const ConditionsGenerales = () => {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Conditions Générales de Vente" description="Consultez les conditions générales de vente de MindHub." path="/conditions-generales" />
+      <SEO title="Conditions Générales de Vente" description="Consultez les conditions générales de vente de MindHubs." path="/conditions-generales" />
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">

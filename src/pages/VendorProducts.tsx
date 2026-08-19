@@ -8,32 +8,44 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVendorProducts } from "@/hooks/useVendors";
+import { useSaveProductPublication, useVendorProductPublications } from "@/hooks/useProductPublications";
 import { useVendorProductStats } from "@/hooks/useVendorOrders";
 import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon, Store, Globe, EyeOff } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { isDemoMode } from "@/lib/demoMode";
+
+type ProductFilterStatus = "all" | "published" | "draft";
+type ProductFilterChannel = "all" | "storefront" | "marketplace";
+type ProductSort = "recent" | "sales" | "views" | "alpha";
+type ProductStatsRow = { product_id: string; total_views?: number | null; total_purchases?: number | null };
 
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
   const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);
+  const { data: publications = [] } = useVendorProductPublications(vendorId);
+  const savePublication = useSaveProductPublication(vendorId);
   const { data: stats = [] } = useVendorProductStats(products?.map((p) => p.id) || []);
   const { canAddProduct, maxProducts, plan } = useVendorSubscription(vendorId);
+  const storefrontDefaultVisible = publications.length === 0;
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"recent" | "sales" | "views" | "alpha">("recent");
-  const [filterStatus, setFilterStatus] = useState<"all" | "published" | "draft">("all");
+  const [sortBy, setSortBy] = useState<ProductSort>("recent");
+  const [filterStatus, setFilterStatus] = useState<ProductFilterStatus>("all");
+  const [filterChannel, setFilterChannel] = useState<ProductFilterChannel>("all");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   const statsMap = useMemo(() => {
     const map: Record<string, { views: number; sales: number }> = {};
-    const safeStats = Array.isArray(stats) ? stats : [];
+    const safeStats = (Array.isArray(stats) ? stats : []) as ProductStatsRow[];
     
-    safeStats.forEach((s: any) => {
+    safeStats.forEach((s) => {
       if (s && s.product_id) {
         map[s.product_id] = { 
           views: s.total_views || 0, 
@@ -43,6 +55,36 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
     });
     return map;
   }, [stats]);
+
+  const publicationMap = useMemo(() => {
+    const map: Record<string, { storefront?: string; marketplace?: string }> = {};
+    publications.forEach((publication) => {
+      map[publication.product_id] = {
+        ...map[publication.product_id],
+        [publication.channel]: publication.status,
+      };
+    });
+    return map;
+  }, [publications]);
+
+  const setChannelStatus = async (productId: string, channel: "storefront" | "marketplace") => {
+    const current = publicationMap[productId]?.[channel];
+    const isVisible = current === "published" || current === "pending_review" || (channel === "storefront" && storefrontDefaultVisible);
+    try {
+      await savePublication.mutateAsync({
+        product_id: productId,
+        channel,
+        status: isVisible ? "hidden" : channel === "marketplace" ? "pending_review" : "published",
+        published_at: isVisible ? null : new Date().toISOString(),
+      });
+      toast({
+        title: isVisible ? "Canal masqué" : channel === "marketplace" ? "Produit envoyé en revue" : "Produit visible dans votre boutique",
+        description: channel === "marketplace" && !isVisible ? "La marketplace vérifiera votre fiche avant sa mise en avant." : undefined,
+      });
+    } catch (error) {
+      toast({ title: "Canal indisponible", description: (error as Error).message, variant: "destructive" });
+    }
+  };
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
@@ -67,19 +109,22 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
   const filtered = useMemo(() => {
     const arr = (products || []).filter((p) => {
       const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
-      const matchStatus = filterStatus === "all" || (p as any).status === filterStatus;
-      return matchSearch && matchStatus;
+      const matchStatus = filterStatus === "all" || p.status === filterStatus;
+          const channelState = publicationMap[p.id] || {};
+          const channelVisible = channelState[filterChannel] === "published" || channelState[filterChannel] === "pending_review" || (filterChannel === "storefront" && storefrontDefaultVisible);
+          const matchChannel = filterChannel === "all" || channelVisible;
+      return matchSearch && matchStatus && matchChannel;
     });
     arr.sort((a, b) => {
       if (sortBy === "alpha") return a.title.localeCompare(b.title);
       if (sortBy === "sales") return (statsMap[b.id]?.sales || 0) - (statsMap[a.id]?.sales || 0);
       if (sortBy === "views") return (statsMap[b.id]?.views || 0) - (statsMap[a.id]?.views || 0);
-      const da = (a as any).created_at ? new Date((a as any).created_at).getTime() : 0;
-      const db = (b as any).created_at ? new Date((b as any).created_at).getTime() : 0;
+      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
       return db - da;
     });
     return arr;
-  }, [products, search, filterStatus, sortBy, statsMap]);
+  }, [products, search, filterStatus, filterChannel, sortBy, statsMap, publicationMap, storefrontDefaultVisible]);
 
   return (
     <DashboardLayout variant="vendor" title="Gestion des Produits" shopName={shopName} shopUrl={shopUrl}>
@@ -94,15 +139,16 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {!canAddProduct && (
-              <p className="text-[10px] font-black uppercase text-rose-500 bg-rose-500/10 px-3 py-2 rounded-xl border border-rose-500/20">
+            {!canAddProduct && maxProducts !== -1 && !isDemoMode && (
+              <p className="text-[10px] font-black uppercase text-destructive bg-destructive/10 px-3 py-2 rounded-xl border border-destructive/20">
                 Limite {plan} atteinte ({products.length}/{maxProducts})
               </p>
             )}
+            {isDemoMode && !canAddProduct ? <p className="text-[10px] font-medium text-muted-foreground">Création désactivée en mode démo</p> : null}
             <Button asChild disabled={!canAddProduct} className={`rounded-2xl h-12 px-6 font-black gap-2 ${!canAddProduct ? 'opacity-50 cursor-not-allowed grayscale' : 'btn-glow'}`}>
               <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
                 {canAddProduct ? <Plus size={18} /> : <Zap size={18} />} 
-                {canAddProduct ? "Ajouter un produit" : "Upgrader pour ajouter"}
+                {canAddProduct ? "Ajouter un produit" : isDemoMode ? "Mode démo" : "Upgrader pour ajouter"}
               </Link>
             </Button>
           </div>
@@ -114,32 +160,51 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une formation..."
-              className="pl-11 h-12 rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm"
+              placeholder="Rechercher un produit..."
+              className="h-11 rounded-xl pl-11"
             />
           </div>
-          <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
-            <SelectTrigger className="h-12 w-[160px] rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm">
-              <SelectValue placeholder="Statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="published">Publiés</SelectItem>
-              <SelectItem value="draft">Brouillons</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-            <SelectTrigger className="h-12 w-[180px] rounded-2xl border-white/5 bg-card/50 backdrop-blur-sm">
-              <SlidersHorizontal size={14} className="text-muted-foreground" />
-              <SelectValue placeholder="Trier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Plus récents</SelectItem>
-              <SelectItem value="sales">Plus de ventes</SelectItem>
-              <SelectItem value="views">Plus de vues</SelectItem>
-              <SelectItem value="alpha">Alphabétique</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-11 rounded-xl gap-2"><SlidersHorizontal size={15} /> Filtres</Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72 space-y-4 rounded-xl">
+              <div>
+                <p className="mb-2 text-xs font-semibold">Statut</p>
+                <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as ProductFilterStatus)}>
+                  <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder="Statut" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="published">Publiés</SelectItem>
+                    <SelectItem value="draft">Brouillons</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold">Canal</p>
+                <Select value={filterChannel} onValueChange={(v) => setFilterChannel(v as ProductFilterChannel)}>
+                  <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder="Canal" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les canaux</SelectItem>
+                    <SelectItem value="storefront">Ma boutique</SelectItem>
+                    <SelectItem value="marketplace">Marketplace</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold">Trier par</p>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as ProductSort)}>
+                  <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder="Trier" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Plus récents</SelectItem>
+                    <SelectItem value="sales">Plus de ventes</SelectItem>
+                    <SelectItem value="views">Plus de vues</SelectItem>
+                    <SelectItem value="alpha">Alphabétique</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {productsLoading ? (
@@ -184,11 +249,34 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                          )}
                        </div>
                     </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {([
+                        { channel: "storefront" as const, label: "Boutique", icon: Store },
+                        { channel: "marketplace" as const, label: "Marketplace", icon: Globe },
+                      ]).map(({ channel, label, icon: Icon }) => {
+                        const status = publicationMap[p.id]?.[channel];
+                        const visible = status === "published" || status === "pending_review" || (channel === "storefront" && storefrontDefaultVisible);
+                        return (
+                          <button
+                            key={channel}
+                            type="button"
+                            onClick={() => setChannelStatus(p.id, channel)}
+                            disabled={savePublication.isPending}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold transition ${visible ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/30"}`}
+                            title={visible ? `Masquer de ${label}` : `Publier dans ${label}`}
+                          >
+                            {visible ? <Icon size={11} /> : <EyeOff size={11} />}
+                            {label}: {status === "pending_review" ? "En revue" : visible ? "Publié" : "Masqué"}
+                          </button>
+                        );
+                      })}
+                    </div>
                     
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
                        <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
                          <span className="flex items-center gap-1.5"><Eye size={14} className="text-primary" /> {s.views}</span>
-                         <span className="flex items-center gap-1.5"><ShoppingCart size={14} className="text-emerald-500" /> {s.sales}</span>
+                         <span className="flex items-center gap-1.5"><ShoppingCart size={14} className="text-success" /> {s.sales}</span>
                        </div>
                        <div className="flex items-center gap-1">
                          <Button variant="ghost" size="icon" onClick={() => copyLink(p.id)} title="Copier le lien de vente" className="rounded-xl hover:bg-primary/10 hover:text-primary">

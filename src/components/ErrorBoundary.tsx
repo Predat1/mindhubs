@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "./ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import MindHubsMark from "@/components/brand/MindHubsMark";
 
 interface Props {
   children: ReactNode;
@@ -31,9 +32,10 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4 text-center space-y-6 overflow-hidden">
-          <div className="h-20 w-20 bg-destructive/10 rounded-full flex items-center justify-center text-destructive animate-bounce">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 text-destructive">
             <AlertTriangle size={40} />
           </div>
+          <MindHubsMark size={42} decorative />
           <div className="space-y-3 max-w-md">
             <h1 className="text-3xl font-black tracking-tighter">Oups ! Système Interrompu</h1>
             <p className="text-muted-foreground font-medium text-sm leading-relaxed">

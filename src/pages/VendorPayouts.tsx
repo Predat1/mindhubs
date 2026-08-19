@@ -101,7 +101,7 @@ export default function VendorPayouts() {
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Solde Disponible</p>
             <div className="flex items-center justify-between">
               <h3 className="text-3xl font-black">{(vendor as any)?.balance_fcfa?.toLocaleString() || 0} <span className="text-sm">FCFA</span></h3>
-              <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-success">
                 <DollarSign size={20} />
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function VendorPayouts() {
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">En cours de retrait</p>
             <div className="flex items-center justify-between">
               <h3 className="text-3xl font-black">{pendingAmount.toLocaleString()} <span className="text-sm">FCFA</span></h3>
-              <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                <div className="h-10 w-10 rounded-full bg-info/10 flex items-center justify-center text-info">
                 <Clock size={20} />
               </div>
             </div>
@@ -183,9 +183,9 @@ export default function VendorPayouts() {
                   />
                 </div>
 
-                <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-3">
-                  <AlertCircle size={18} className="text-amber-500 shrink-0" />
-                  <p className="text-[10px] text-amber-500/80 font-medium leading-relaxed">
+                <div className="p-4 rounded-2xl bg-warning/5 border border-warning/10 flex gap-3">
+                  <AlertCircle size={18} className="text-warning shrink-0" />
+                  <p className="text-[10px] text-warning/80 font-medium leading-relaxed">
                     Les retraits sont traités sous 24h à 48h ouvrables. Assurez-vous que le numéro est correct.
                   </p>
                 </div>
@@ -231,9 +231,9 @@ export default function VendorPayouts() {
                     <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-muted/10 hover:bg-muted/20 transition-all">
                       <div className="flex items-center gap-4">
                         <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                          p.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : 
+                          p.status === 'completed' ? 'bg-success/10 text-success' :
                           p.status === 'rejected' ? 'bg-destructive/10 text-destructive' : 
-                          'bg-blue-500/10 text-blue-500'
+                          'bg-info/10 text-info'
                         }`}>
                           {p.status === 'completed' ? <CheckCircle2 size={24} /> : 
                            p.status === 'rejected' ? <XCircle size={24} /> : 
@@ -251,9 +251,9 @@ export default function VendorPayouts() {
                       </div>
                       <div className="text-right">
                         <Badge className={`rounded-full text-[9px] font-black px-3 ${
-                          p.status === 'completed' ? 'bg-emerald-500/20 text-emerald-500' : 
+                          p.status === 'completed' ? 'bg-success/20 text-success' :
                           p.status === 'rejected' ? 'bg-destructive/20 text-destructive' : 
-                          'bg-blue-500/20 text-blue-500'
+                          'bg-info/20 text-info'
                         }`}>
                           {p.status === 'pending' ? 'EN ATTENTE' : 
                            p.status === 'processing' ? 'TRAITEMENT' :

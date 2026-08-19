@@ -7,7 +7,7 @@
  * Valeurs calibrées pour refléter la valeur ajoutée et couvrir les coûts d'infrastructure.
  */
 export const CREDIT_COSTS: Record<string, number> = {
-  // --- Creator Lab ---
+  // --- Recherche et structuration ---
   'spy-research':   25,  // Veille marché profonde (Perplexity)
   'validate':       10,  // Validation d'idée (Sandbox)
   'plan':           30,  // Architecture produit (Architect)
@@ -16,13 +16,13 @@ export const CREDIT_COSTS: Record<string, number> = {
   'remix':           5,  // Angles de différenciation
   'pivots':          5,  // Pivots stratégiques
   
-  // --- Ads Studio ---
+  // --- Création de contenus ---
   'product-image-3d': 50, // Mockup 3D Premium (Architect / Ads)
   'ad-creative':      30, // Visuel Pub FB optimisé (Réduit de 40 à 30)
   'ad-copy':          5,  // Pack Copywriting Ads (Réduit de 10 à 5)
   'ad-targeting':     5,  // Ciblage Audience Expert (Réduit de 10 à 5)
   
-  // --- Factory (DigitalProductFactory) ---
+  // --- Génération d'offres ---
   'factory-niche':   10, // Analyse de niche (Réduit de 15 à 10)
   'factory-kit':     20, // Génération kit complet (Réduit de 25 à 20)
 };

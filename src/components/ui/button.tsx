@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion, useReducedMotion } from "motion/react";
 
 import { cn } from "@/lib/utils";
+import { SPRING_PRESS } from "@/lib/ease";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -18,9 +20,9 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-[42px] px-4 py-2",
-        sm: "h-8 rounded-full px-3",
-        lg: "h-[42px] rounded-full px-7",
-        icon: "h-[42px] w-[42px]",
+        sm: "h-9 rounded-lg px-3",
+        lg: "h-11 rounded-lg px-7",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {
@@ -39,7 +41,26 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    const reduce = useReducedMotion();
+    const classes = cn(buttonVariants({ variant, size, className }));
+
+    if (asChild) {
+      return (
+        <motion.div whileTap={reduce ? undefined : { scale: 0.98 }} transition={SPRING_PRESS}>
+          <Comp className={classes} ref={ref} {...props} />
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.button
+        whileTap={reduce || props.disabled ? undefined : { scale: 0.98 }}
+        transition={SPRING_PRESS}
+        className={classes}
+        ref={ref}
+        {...props}
+      />
+    );
   },
 );
 Button.displayName = "Button";

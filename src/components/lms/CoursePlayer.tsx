@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 interface Lesson {
   id: string;
@@ -180,7 +180,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
                           >
                             <div onClick={(e) => { e.stopPropagation(); toggleComplete(lesson.id); }}>
                               {completedLessons.includes(lesson.id) 
-                                ? <CheckCircle2 size={16} className="text-emerald-500" />
+                                ? <CheckCircle2 size={16} className="text-success" />
                                 : <Circle size={16} className="opacity-40" />
                               }
                             </div>

@@ -14,7 +14,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 export const OnboardingProgress = () => {
   const { data: vendor } = useCurrentVendor();
@@ -95,8 +95,8 @@ export const OnboardingProgress = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
              {steps.map((step) => (
-               <div key={step.id} className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${step.done ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-muted/10 border-white/5 opacity-60'}`}>
-                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${step.done ? 'bg-emerald-500 text-white' : 'bg-background text-muted-foreground'}`}>
+               <div key={step.id} className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${step.done ? 'bg-success/5 border-success/20' : 'bg-muted/10 border-border opacity-60'}`}>
+                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${step.done ? 'bg-success text-success-foreground' : 'bg-background text-muted-foreground'}`}>
                      {step.done ? <CheckCircle2 size={20} /> : <step.icon size={20} />}
                   </div>
                   <span className="text-[9px] font-bold text-center leading-tight">{step.label}</span>

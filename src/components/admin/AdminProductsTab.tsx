@@ -17,7 +17,7 @@ import { categories as CATEGORIES, allProducts as STATIC_PRODUCTS } from "@/data
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 
 interface Props {
@@ -50,6 +50,7 @@ const AdminProductsTab = ({ logAction }: Props) => {
   const [deleteConfirm, setDeleteConfirm] = useState<{id:string;label:string}|null>(null);
   const [deleting, setDeleting] = useState(false);
   const [featureDraft, setFeatureDraft] = useState("");
+  const [publicationFilter, setPublicationFilter] = useState<"all" | "pending_review" | "published" | "hidden">("all");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ─── Queries ───
@@ -104,6 +105,40 @@ const AdminProductsTab = ({ logAction }: Props) => {
       return data || [];
     },
   });
+
+  const { data: publications = [], refetch: refetchPublications } = useQuery({
+    queryKey: ["admin-product-publications"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("product_publications")
+        .select("id, product_id, vendor_id, channel, status, moderation_note, updated_at, products(title, image_url), vendors(shop_name, username)")
+        .eq("channel", "marketplace")
+        .order("updated_at", { ascending: false });
+      if (error) return [];
+      return data || [];
+    },
+  });
+
+  const pendingPublications = publications.filter((publication: any) => publication.status === "pending_review").length;
+
+  const updatePublication = async (publication: any, status: "published" | "hidden") => {
+    const note = status === "hidden" ? window.prompt("Motif de masquage (facultatif)", publication.moderation_note || "") : null;
+    const { error } = await (supabase as any)
+      .from("product_publications")
+      .update({
+        status,
+        moderation_note: note || (status === "published" ? null : publication.moderation_note),
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", publication.id);
+    if (error) {
+      toast.error("Impossible de mettre à jour la publication", { description: error.message });
+      return;
+    }
+    toast.success(status === "published" ? "Publication marketplace acceptée" : "Publication marketplace masquée");
+    refetchPublications();
+    logAction("MARKETPLACE_PUBLICATION", `${publication.product_id} → ${status}`);
+  };
 
   // ─── Stats ───
   const stats = useMemo(() => {
@@ -227,9 +262,9 @@ const AdminProductsTab = ({ logAction }: Props) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Produits", value: stats.total, icon: Package, color: "text-primary" },
-          { label: "Publiés", value: stats.published, icon: Globe, color: "text-emerald-500" },
-          { label: "Brouillons", value: stats.draft, icon: FileEdit, color: "text-amber-500" },
-          { label: "En vedette", value: stats.featured, icon: Star, color: "text-yellow-500" },
+          { label: "Publiés", value: stats.published, icon: Globe, color: "text-success" },
+          { label: "Brouillons", value: stats.draft, icon: FileEdit, color: "text-warning" },
+          { label: "En vedette", value: stats.featured, icon: Star, color: "text-brand-magenta" },
         ].map((s, i) => (
           <div key={i} className="stat-card rounded-2xl p-5 border-glow">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-muted/50 mb-3 ${s.color}`}><s.icon size={18} /></div>
@@ -258,6 +293,46 @@ const AdminProductsTab = ({ logAction }: Props) => {
         <Button onClick={() => setEditing({...EMPTY})} className="rounded-2xl gap-2 font-black">
           <Plus size={18} /> Nouveau produit
         </Button>
+      </div>
+
+      {/* Marketplace moderation */}
+      <div className="rounded-3xl border border-border bg-card p-5 space-y-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Globe size={18} className="text-primary" />
+              <h3 className="font-black">Publications marketplace</h3>
+              {pendingPublications > 0 && <Badge className="bg-warning/15 text-warning border-warning/20">{pendingPublications} à vérifier</Badge>}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">La modération masque le canal marketplace sans supprimer le produit ou la boutique.</p>
+          </div>
+          <select value={publicationFilter} onChange={(event) => setPublicationFilter(event.target.value as typeof publicationFilter)} className="h-10 rounded-xl bg-muted/20 border border-border px-3 text-xs font-bold">
+            <option value="all">Toutes les publications</option>
+            <option value="pending_review">En attente</option>
+            <option value="published">Publiées</option>
+            <option value="hidden">Masquées</option>
+          </select>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {publications.filter((publication: any) => publicationFilter === "all" || publication.status === publicationFilter).slice(0, 12).map((publication: any) => (
+            <div key={publication.id} className="flex items-center gap-3 rounded-2xl border border-border bg-muted/20 p-3">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
+                {publication.products?.image_url && <img src={publication.products.image_url} alt="" className="h-full w-full object-cover" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold">{publication.products?.title || publication.product_id}</p>
+                <p className="truncate text-[10px] text-muted-foreground">{publication.vendors?.shop_name || "Vendeur"}</p>
+                <Badge variant="outline" className="mt-1 text-[9px] uppercase">{publication.status === "pending_review" ? "En revue" : publication.status === "published" ? "Publié" : "Masqué"}</Badge>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                {publication.status === "pending_review" && <Button size="icon" variant="ghost" className="h-8 w-8 text-success" onClick={() => updatePublication(publication, "published")} aria-label="Accepter"><CheckCircle2 size={15} /></Button>}
+                {publication.status !== "hidden" && <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => updatePublication(publication, "hidden")} aria-label="Masquer"><X size={15} /></Button>}
+                {publication.status === "hidden" && <Button size="icon" variant="ghost" className="h-8 w-8 text-success" onClick={() => updatePublication(publication, "published")} aria-label="Réactiver"><Globe size={15} /></Button>}
+              </div>
+            </div>
+          ))}
+          {publications.length === 0 && <p className="text-xs text-muted-foreground">Aucune publication marketplace détectée. Appliquez la migration de distribution pour activer cette vue.</p>}
+        </div>
       </div>
 
       {/* Table */}
@@ -295,7 +370,7 @@ const AdminProductsTab = ({ logAction }: Props) => {
                   <td className="p-4">
                     <span className="text-xs font-bold">
                       {p.isStatic ? (
-                        <Badge variant="secondary" className="text-[8px] bg-blue-500/10 text-blue-500 border-blue-500/20">SYSTÈME</Badge>
+                        <Badge variant="secondary" className="text-[8px] bg-info/10 text-info border-info/20">SYSTÈME</Badge>
                       ) : (
                         (p.vendors as any)?.shop_name || <span className="text-muted-foreground italic">Admin</span>
                       )}
@@ -307,12 +382,12 @@ const AdminProductsTab = ({ logAction }: Props) => {
                     {p.old_price && p.old_price !== p.price && <p className="text-[10px] text-muted-foreground line-through">{formatCurrency(p.old_price)}</p>}
                   </td>
                   <td className="p-4 text-center">
-                    <button onClick={() => toggleStatus(p)} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase transition-all ${p.status === "published" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border border-amber-500/20"}`}>
+                    <button onClick={() => toggleStatus(p)} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase transition-all ${p.status === "published" ? "bg-success/10 text-success border border-success/20" : "bg-warning/10 text-warning border border-warning/20"}`}>
                       {p.status === "published" ? "PUBLIÉ" : "BROUILLON"}
                     </button>
                   </td>
                   <td className="p-4 text-center">
-                    <button onClick={() => toggleFeatured(p)} className={`p-2 rounded-lg transition-all ${p.featured ? "bg-yellow-500/10 text-yellow-500" : "bg-muted/30 text-muted-foreground hover:text-yellow-500"}`}>
+                    <button onClick={() => toggleFeatured(p)} className={`p-2 rounded-lg transition-all ${p.featured ? "bg-brand-magenta/10 text-brand-magenta" : "bg-muted/30 text-muted-foreground hover:text-brand-magenta"}`}>
                       <Star size={16} fill={p.featured ? "currentColor" : "none"} />
                     </button>
                   </td>
@@ -414,13 +489,13 @@ const AdminProductsTab = ({ logAction }: Props) => {
                 <div className="flex items-center gap-6 pt-2">
                   <div className="flex items-center gap-3">
                     <Switch checked={editing.status === "published"} onCheckedChange={v => setEditing({...editing, status: v ? "published" : "draft"})} />
-                    <span className={`text-xs font-black uppercase ${editing.status === "published" ? "text-emerald-500" : "text-amber-500"}`}>
+                    <span className={`text-xs font-black uppercase ${editing.status === "published" ? "text-success" : "text-warning"}`}>
                       {editing.status === "published" ? "Publié" : "Brouillon"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Switch checked={editing.featured || false} onCheckedChange={v => setEditing({...editing, featured: v})} />
-                    <span className={`text-xs font-black uppercase ${editing.featured ? "text-yellow-500" : "text-muted-foreground"}`}>
+                    <span className={`text-xs font-black uppercase ${editing.featured ? "text-brand-magenta" : "text-muted-foreground"}`}>
                       {editing.featured ? "En vedette ⭐" : "Normal"}
                     </span>
                   </div>

@@ -7,7 +7,7 @@ import {
   Zap,
   Info
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -93,13 +93,13 @@ const ExpertChat = ({ vendorId, vendorName, vendorUsername, vendorAvatar }: Prop
             className="bg-card border border-border shadow-2xl rounded-3xl w-[350px] sm:w-[400px] h-[500px] flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Chat Header */}
-            <div className="p-4 bg-gradient-to-r from-primary to-accent text-white flex items-center justify-between">
+            <div className="p-4 bg-primary text-primary-foreground flex items-center justify-between">
               <div className="flex items-center gap-3">
                  <div className="relative">
                     <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
                        {vendorAvatar ? <img src={vendorAvatar} alt={vendorName} className="h-full w-full object-cover" /> : vendorName[0]}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-primary" />
+                    <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-success rounded-full border-2 border-primary" />
                  </div>
                  <div>
                     <h4 className="text-sm font-bold leading-none">{vendorName}</h4>
@@ -108,7 +108,7 @@ const ExpertChat = ({ vendorId, vendorName, vendorUsername, vendorAvatar }: Prop
                     </p>
                  </div>
               </div>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full h-8 w-8" onClick={() => setIsOpen(false)}>
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 rounded-full h-8 w-8" onClick={() => setIsOpen(false)}>
                  <X size={18} />
               </Button>
             </div>
@@ -187,7 +187,7 @@ const ExpertChat = ({ vendorId, vendorName, vendorUsername, vendorAvatar }: Prop
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="h-16 w-16 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 btn-glow group relative"
+            className="h-16 w-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 btn-glow group relative"
           >
              <MessageSquare size={28} />
              

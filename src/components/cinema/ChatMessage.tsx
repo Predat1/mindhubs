@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Bot, User, Sparkles } from "lucide-react";
 import VideoResult from "./VideoResult";
 
@@ -37,7 +37,7 @@ const ChatMessage = ({ msg, onRate, onRegenerate }: ChatMessageProps) => {
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
         isUser
           ? "bg-primary/20 text-primary"
-          : "bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 text-violet-400"
+          : "bg-gradient-to-br from-primary/20 to-brand-magenta/20 text-primary"
       }`}>
         {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
       </div>
@@ -61,7 +61,7 @@ const ChatMessage = ({ msg, onRate, onRegenerate }: ChatMessageProps) => {
               : "bg-muted/60 backdrop-blur-sm border border-white/5 text-foreground rounded-tl-sm"
           }`}>
             {msg.role === "assistant" && msg.reasoning && (
-              <div className="flex items-center gap-1.5 text-xs text-violet-400 mb-2 pb-2 border-b border-white/5">
+              <div className="flex items-center gap-1.5 text-xs text-primary mb-2 pb-2 border-b border-border">
                 <Sparkles className="w-3 h-3" />
                 <span>{msg.reasoning}</span>
               </div>

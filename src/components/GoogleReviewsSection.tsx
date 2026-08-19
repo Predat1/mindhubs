@@ -1,6 +1,6 @@
 import { Star, CheckCircle2 } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 // Internal BadgeCheck replacement to avoid import issues if not available in lucide-react
 const BadgeCheck = ({ className }: { className?: string }) => (
@@ -11,7 +11,7 @@ const BadgeCheck = ({ className }: { className?: string }) => (
 );
 
 const Button = ({ children, variant, className, onClick }: any) => (
-  <button onClick={onClick} className={`inline-flex items-center justify-center gap-2 transition-all active:scale-95 ${variant === "outline" ? "border" : "bg-primary text-white"} ${className}`}>
+  <button onClick={onClick} className={`inline-flex items-center justify-center gap-2 transition-all active:scale-95 ${variant === "outline" ? "border" : "bg-primary text-primary-foreground"} ${className}`}>
     {children}
   </button>
 );
@@ -19,7 +19,7 @@ const Button = ({ children, variant, className, onClick }: any) => (
 const reviews = [
   { name: "Issa Kharou", text: "Les formations sont très complètes et bien structurées. J'ai beaucoup appris en peu de temps.", avatar: "https://i.pravatar.cc/150?u=issa" },
   { name: "Olive Larivière", text: "Excellente plateforme, le contenu est de qualité et le support est très réactif.", avatar: "https://i.pravatar.cc/150?u=olive" },
-  { name: "Fadi Nidé", text: "Je recommande vivement MindHub. Les prix sont imbattables pour la qualité proposée.", avatar: "https://i.pravatar.cc/150?u=fadi" },
+  { name: "Fadi Nidé", text: "Je recommande vivement MindHubs. Les prix sont imbattables pour la qualité proposée.", avatar: "https://i.pravatar.cc/150?u=fadi" },
   { name: "Amadou Sow", text: "Une révolution pour mon business de dropshipping. Les kits sont ultra complets et actionnables.", avatar: "https://i.pravatar.cc/150?u=amadou" },
   { name: "Mariam Koné", text: "Le pack formation anglais m'a permis de décrocher un job à l'international. Merci !", avatar: "https://i.pravatar.cc/150?u=mariam" },
   { name: "Koffi Mensah", text: "Support client exceptionnel et produits de très haute qualité. Je ne regrette pas mon achat.", avatar: "https://i.pravatar.cc/150?u=koffi" },
@@ -42,7 +42,7 @@ const GoogleReviewsSection = () => {
           <div className="flex flex-col items-center gap-2">
             <div className="flex justify-center gap-1">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={28} className="text-amber-500 fill-amber-500" />
+                <Star key={i} size={28} className="text-primary fill-primary" />
               ))}
             </div>
             <p className="text-sm font-bold text-muted-foreground">Note moyenne de 4.9/5 basée sur +500 avis</p>
@@ -110,7 +110,7 @@ const GoogleReviewsSection = () => {
                   </div>
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, j) => (
-                      <Star key={j} size={10} className="text-amber-500 fill-amber-500" />
+                      <Star key={j} size={10} className="text-primary fill-primary" />
                     ))}
                   </div>
                 </div>

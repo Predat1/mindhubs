@@ -22,7 +22,7 @@ import {
   CheckCircle2, XCircle, Truck, MailCheck, Store, LayoutDashboard,
   KeyRound, ArrowLeft, Zap, Sparkles, ShieldCheck, Loader2
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Sun, Moon } from "lucide-react";
@@ -46,9 +46,9 @@ interface UserOrder {
 }
 
 const statusConfig = {
-  pending: { label: "En attente", icon: Clock, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+  pending: { label: "En attente", icon: Clock, color: "text-warning bg-warning/10 border-warning/20" },
   confirmed: { label: "Confirmée", icon: CheckCircle2, color: "text-primary bg-primary/10 border-primary/20" },
-  delivered: { label: "Livrée", icon: Truck, color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
+  delivered: { label: "Livrée", icon: Truck, color: "text-success bg-success/10 border-success/20" },
   cancelled: { label: "Annulée", icon: XCircle, color: "text-destructive bg-destructive/10 border-destructive/20" },
 };
 
@@ -182,7 +182,7 @@ const MonCompte = () => {
 
     return (
       <div className="min-h-screen bg-background aurora-bg">
-        <SEO title="Espace Membre Mindhubs" description="Gérez votre compte MindHub, vos achats et vos informations personnelles." path="/mon-compte" keywords="compte mindhub, espace membre, mes achats formations, profil expert, connexion mindhubs" />
+        <SEO title="Espace Membre MindHubs" description="Gérez votre compte MindHubs, vos achats et vos informations personnelles." path="/mon-compte" keywords="compte MindHubs, espace membre, mes achats formations, profil expert, connexion MindHubs" />
         <Navbar />
         <main className="pt-28 pb-20">
           <div className="container mx-auto px-4 max-w-4xl space-y-8">
@@ -210,14 +210,14 @@ const MonCompte = () => {
                         <Badge variant="outline" className="border-white/5 bg-white/5 text-muted-foreground px-3 py-1 font-bold text-[10px] gap-2">
                            <Calendar size={12} /> Inscrit le {memberSince}
                         </Badge>
-                        <Badge variant="outline" className={`px-3 py-1 font-bold text-[10px] gap-2 ${emailVerified ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-500" : "border-amber-500/20 bg-amber-500/5 text-amber-500"}`}>
+                        <Badge variant="outline" className={`px-3 py-1 font-bold text-[10px] gap-2 ${emailVerified ? "border-success/20 bg-success/5 text-success" : "border-warning/20 bg-warning/5 text-warning"}`}>
                            <Shield size={12} /> {emailVerified ? "Profil Certifié" : "Email en attente"}
                         </Badge>
                      </div>
                   </div>
                     <Button
                       variant="outline"
-                      className="rounded-2xl h-12 px-6 border-white/10 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 font-black text-xs uppercase tracking-widest transition-all"
+                      className="rounded-2xl h-12 px-6 border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 font-black text-xs uppercase tracking-widest transition-all"
                       onClick={async () => {
                         await signOut();
                         toast({ title: "Déconnexion", description: "À bientôt sur Mindhubs !" });
@@ -247,7 +247,7 @@ const MonCompte = () => {
                            </p>
                         </div>
                         <Button asChild className="w-full h-12 rounded-xl btn-glow font-black text-xs uppercase tracking-widest">
-                           <Link to={currentVendor ? "/dashboard" : "/become-a-seller"}>
+                           <Link to={currentVendor ? "/dashboard" : "/become-a-seller/start"}>
                               {currentVendor ? "Accéder au Studio" : "Démarrer Maintenant"}
                            </Link>
                         </Button>
@@ -398,7 +398,7 @@ const MonCompte = () => {
   // ============= AUTH FORMS (Login/Register) =============
   return (
     <div className="min-h-screen bg-background aurora-bg">
-      <SEO title="Connexion Expert – Mindhubs" description="Connectez-vous ou créez votre compte MindHub." path="/mon-compte" />
+        <SEO title="Connexion – MindHubs" description="Connectez-vous ou créez votre compte MindHubs." path="/mon-compte" />
       <Navbar />
       <main className="pt-28 pb-20 flex items-center min-h-[90vh]">
         <div className="container mx-auto px-4 max-w-lg">
@@ -430,8 +430,8 @@ const MonCompte = () => {
             </div>
             <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="w-full">
               <TabsList className="grid grid-cols-2 w-full mb-10 h-14 bg-white/5 rounded-2xl p-1 border border-white/5">
-                <TabsTrigger value="login" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">Connexion</TabsTrigger>
-                <TabsTrigger value="register" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">Inscription</TabsTrigger>
+                <TabsTrigger value="login" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Connexion</TabsTrigger>
+                <TabsTrigger value="register" className="rounded-xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Inscription</TabsTrigger>
               </TabsList>
 
               <div className="space-y-8">
