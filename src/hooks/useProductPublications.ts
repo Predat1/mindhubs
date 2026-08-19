@@ -12,6 +12,11 @@ export interface ProductPublication {
   channel: PublicationChannel;
   status: PublicationStatus;
   published_at?: string | null;
+  moderation_note?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  hidden_at?: string | null;
+  updated_at?: string;
   sort_order?: number;
 }
 
@@ -25,7 +30,7 @@ export const useVendorProductPublications = (vendorId: string | undefined) => {
       if (isDemoMode && vendorId === DEMO_VENDOR_ID) return demoPublications;
       const { data, error } = await (supabase as any)
         .from("product_publications")
-        .select("id, product_id, vendor_id, channel, status, published_at, sort_order")
+        .select("id, product_id, vendor_id, channel, status, published_at, moderation_note, reviewed_at, reviewed_by, hidden_at, updated_at, sort_order")
         .eq("vendor_id", vendorId)
         .order("sort_order");
       if (error) throw error;

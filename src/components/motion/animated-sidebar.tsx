@@ -229,6 +229,7 @@ function MobileSidebar({
     <AnimatePresence>
       {context.openMobile ? (
         <motion.div
+          key="mobile-sidebar"
           className="pointer-events-auto fixed inset-0 z-50 md:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -248,7 +249,7 @@ function MobileSidebar({
             aria-label={ariaLabel}
             tabIndex={-1}
             className={cn(
-              "absolute inset-y-0 flex h-dvh w-[var(--sidebar-width-mobile)] max-w-[88vw] flex-col overflow-hidden border-border bg-background shadow-2xl",
+              "absolute inset-y-0 flex h-dvh w-[min(18rem,88vw)] max-w-[88vw] flex-col overflow-hidden border-border bg-background shadow-2xl",
               side === "left" ? "left-0 border-r" : "right-0 border-l",
               className,
             )}
@@ -337,7 +338,11 @@ export const AnimatedSidebar = forwardRef<HTMLElement, AnimatedSidebarProps>(fun
       animate={{ width }}
       transition={context.reduce ? { duration: 0.01 } : { type: "spring", stiffness: 380, damping: 35, mass: 0.75 }}
       style={style}
-      className={cn("group/sidebar relative hidden h-svh shrink-0 md:block will-change-[width]", className)}
+      className={cn(
+        "group/sidebar fixed inset-y-0 z-40 hidden h-svh shrink-0 md:block will-change-[width]",
+        side === "left" ? "left-0" : "right-0",
+        className,
+      )}
     >
       <motion.div
         initial={false}
@@ -361,10 +366,25 @@ export const AnimatedSidebar = forwardRef<HTMLElement, AnimatedSidebarProps>(fun
 });
 
 export const AnimatedSidebarInset = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(function AnimatedSidebarInset(
-  { className, ...props },
+  { className, style, ...props },
   ref,
 ) {
-  return <main ref={ref} data-slot="sidebar-inset" className={cn("relative flex min-w-0 flex-1 flex-col bg-background", className)} {...props} />;
+  const context = useAnimatedSidebar();
+  const sidebarOffset = context.isMobile ? undefined : context.open ? "var(--sidebar-width)" : "var(--sidebar-width-icon)";
+
+  return (
+    <main
+      ref={ref}
+      data-slot="sidebar-inset"
+      className={cn("relative flex min-h-svh min-w-0 flex-1 flex-col bg-background", className)}
+      style={{
+        ...style,
+        marginLeft: sidebarOffset,
+        transition: context.reduce ? "none" : "margin-left 280ms cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+      {...props}
+    />
+  );
 });
 
 export const AnimatedSidebarHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function AnimatedSidebarHeader(

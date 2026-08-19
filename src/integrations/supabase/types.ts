@@ -231,6 +231,9 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          digital_asset_name: string | null
+          digital_asset_path: string | null
+          digital_asset_size: number | null
           featured: boolean
           id: string
           image_url: string
@@ -254,6 +257,9 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          digital_asset_name?: string | null
+          digital_asset_path?: string | null
+          digital_asset_size?: number | null
           featured?: boolean
           id: string
           image_url?: string
@@ -277,6 +283,9 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          digital_asset_name?: string | null
+          digital_asset_path?: string | null
+          digital_asset_size?: number | null
           featured?: boolean
           id?: string
           image_url?: string

@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Bell, ShoppingBag, CreditCard, MessageSquare, CheckCircle, AlertCircle, Info, Loader2 } from "lucide-react";
+import { Bell, ShoppingBag, CreditCard, CheckCircle, Info, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useVendorNotifications, type VendorNotification } from "@/hooks/useVendorNotifications";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const getRelativeTime = (dateString: string) => {
@@ -34,10 +33,14 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-accent transition-colors">
+        <button
+          type="button"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} non lues` : "Notifications"}
+          className="relative grid size-10 place-items-center rounded-xl border border-border bg-muted/50 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           <Bell size={20} className="text-muted-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background">
+            <span aria-live="polite" aria-atomic="true" className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full border-2 border-background bg-primary text-[9px] font-black text-primary-foreground">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -47,7 +50,8 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
         <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
           <h3 className="text-xs font-black uppercase tracking-widest">Notifications</h3>
           {unreadCount > 0 && (
-            <button 
+            <button
+              type="button"
               onClick={() => markAllAsRead()} 
               className="text-[9px] font-black uppercase text-primary hover:underline"
             >

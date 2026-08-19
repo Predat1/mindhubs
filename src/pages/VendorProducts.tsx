@@ -13,7 +13,7 @@ import { useVendorProductStats } from "@/hooks/useVendorOrders";
 import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon, Store, Globe, EyeOff } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon, Store, Globe, EyeOff, RefreshCw, AlertCircle } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -28,12 +28,11 @@ type ProductSort = "recent" | "sales" | "views" | "alpha";
 type ProductStatsRow = { product_id: string; total_views?: number | null; total_purchases?: number | null };
 
 const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string; shopName: string; shopUrl: string }) => {
-  const { data: products = [], refetch, isLoading: productsLoading } = useVendorProducts(vendorId);
-  const { data: publications = [] } = useVendorProductPublications(vendorId);
+  const { data: products = [], refetch, isLoading: productsLoading, isError: productsError } = useVendorProducts(vendorId);
+  const { data: publications = [], isError: publicationsError, refetch: refetchPublications } = useVendorProductPublications(vendorId);
   const savePublication = useSaveProductPublication(vendorId);
   const { data: stats = [] } = useVendorProductStats(products?.map((p) => p.id) || []);
   const { canAddProduct, maxProducts, plan } = useVendorSubscription(vendorId);
-  const storefrontDefaultVisible = publications.length === 0;
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<ProductSort>("recent");
@@ -57,11 +56,12 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
   }, [stats]);
 
   const publicationMap = useMemo(() => {
-    const map: Record<string, { storefront?: string; marketplace?: string }> = {};
+    const map: Record<string, { storefront?: string; marketplace?: string; marketplaceNote?: string | null }> = {};
     publications.forEach((publication) => {
       map[publication.product_id] = {
         ...map[publication.product_id],
         [publication.channel]: publication.status,
+        ...(publication.channel === "marketplace" ? { marketplaceNote: publication.moderation_note } : {}),
       };
     });
     return map;
@@ -69,7 +69,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
 
   const setChannelStatus = async (productId: string, channel: "storefront" | "marketplace") => {
     const current = publicationMap[productId]?.[channel];
-    const isVisible = current === "published" || current === "pending_review" || (channel === "storefront" && storefrontDefaultVisible);
+    const isVisible = current === "published" || current === "pending_review";
     try {
       await savePublication.mutateAsync({
         product_id: productId,
@@ -110,8 +110,8 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
     const arr = (products || []).filter((p) => {
       const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
       const matchStatus = filterStatus === "all" || p.status === filterStatus;
-          const channelState = publicationMap[p.id] || {};
-          const channelVisible = channelState[filterChannel] === "published" || channelState[filterChannel] === "pending_review" || (filterChannel === "storefront" && storefrontDefaultVisible);
+          const channelStatus = publicationMap[p.id]?.[filterChannel];
+          const channelVisible = channelStatus === "published" || channelStatus === "pending_review";
           const matchChannel = filterChannel === "all" || channelVisible;
       return matchSearch && matchStatus && matchChannel;
     });
@@ -124,7 +124,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
       return db - da;
     });
     return arr;
-  }, [products, search, filterStatus, filterChannel, sortBy, statsMap, publicationMap, storefrontDefaultVisible]);
+  }, [products, search, filterStatus, filterChannel, sortBy, statsMap, publicationMap]);
 
   return (
     <DashboardLayout variant="vendor" title="Gestion des Produits" shopName={shopName} shopUrl={shopUrl}>
@@ -144,13 +144,18 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                 Limite {plan} atteinte ({products.length}/{maxProducts})
               </p>
             )}
-            {isDemoMode && !canAddProduct ? <p className="text-[10px] font-medium text-muted-foreground">Création désactivée en mode démo</p> : null}
-            <Button asChild disabled={!canAddProduct} className={`rounded-2xl h-12 px-6 font-black gap-2 ${!canAddProduct ? 'opacity-50 cursor-not-allowed grayscale' : 'btn-glow'}`}>
-              <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
-                {canAddProduct ? <Plus size={18} /> : <Zap size={18} />} 
-                {canAddProduct ? "Ajouter un produit" : isDemoMode ? "Mode démo" : "Upgrader pour ajouter"}
-              </Link>
-            </Button>
+            {isDemoMode && !canAddProduct ? (
+              <Button disabled className="h-12 rounded-2xl px-6 font-black opacity-60 grayscale">
+                <Zap size={18} aria-hidden="true" /> Ajout désactivé en démo
+              </Button>
+            ) : (
+              <Button asChild disabled={!canAddProduct} className={`h-12 rounded-2xl px-6 font-black ${!canAddProduct ? "cursor-not-allowed opacity-50 grayscale" : "btn-glow"}`}>
+                <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
+                  {canAddProduct ? <Plus size={18} aria-hidden="true" /> : <Zap size={18} aria-hidden="true" />}
+                  {canAddProduct ? "Ajouter un produit" : "Upgrader pour ajouter"}
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -207,6 +212,13 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
           </Popover>
         </div>
 
+        {(productsError || publicationsError) && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><p className="text-sm font-bold text-destructive">Impossible de charger tout le catalogue</p><p className="mt-1 text-xs text-muted-foreground">Vos produits ne sont pas supprimés. Réessayez dans quelques instants.</p></div>
+            <Button variant="outline" size="sm" onClick={() => { refetch(); refetchPublications(); }} className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"><RefreshCw size={14} /> Réessayer</Button>
+          </div>
+        )}
+
         {productsLoading ? (
           <DashboardSkeleton variant="cards" count={3} />
         ) : filtered.length === 0 ? (
@@ -256,7 +268,7 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                         { channel: "marketplace" as const, label: "Marketplace", icon: Globe },
                       ]).map(({ channel, label, icon: Icon }) => {
                         const status = publicationMap[p.id]?.[channel];
-                        const visible = status === "published" || status === "pending_review" || (channel === "storefront" && storefrontDefaultVisible);
+                        const visible = status === "published" || status === "pending_review";
                         return (
                           <button
                             key={channel}
@@ -267,11 +279,17 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                             title={visible ? `Masquer de ${label}` : `Publier dans ${label}`}
                           >
                             {visible ? <Icon size={11} /> : <EyeOff size={11} />}
-                            {label}: {status === "pending_review" ? "En revue" : visible ? "Publié" : "Masqué"}
+                            {label}: {status === "pending_review" ? "En revue" : status === "published" ? "Publié" : status === "hidden" ? "Masqué" : "Non configuré"}
                           </button>
                         );
                       })}
                     </div>
+                    {publicationMap[p.id]?.marketplaceNote && (
+                      <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-[11px] text-warning">
+                        <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                        <span><strong>Note marketplace :</strong> {publicationMap[p.id]?.marketplaceNote}</span>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
                        <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-muted-foreground">

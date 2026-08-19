@@ -33,8 +33,8 @@ export const NotificationBell = () => {
   useEffect(() => {
     // Fetch initial notifications
     const fetchNotifications = async () => {
-      const { data } = await (supabase as any)
-        .from("global_notifications")
+      const { data } = await supabase
+        .from("global_notifications" as never)
         .select("*")
         .order("created_at", { ascending: false })
         .limit(20);
@@ -60,7 +60,7 @@ export const NotificationBell = () => {
           
           toast.info(newNotif.title, {
             description: newNotif.message,
-            icon: <Bell className="text-primary animate-pulse" size={16} />,
+            icon: <Bell className="text-primary" size={16} />,
           });
         }
       )
@@ -106,10 +106,14 @@ export const NotificationBell = () => {
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button className="relative h-10 w-10 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-primary transition-all border border-white/5">
+        <button
+          type="button"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} non lues` : "Notifications"}
+          className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-muted/40 text-muted-foreground transition-all hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground shadow-sm ring-2 ring-background animate-pulse">
+            <span aria-live="polite" aria-atomic="true" className="absolute right-1.5 top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground shadow-sm ring-2 ring-background">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

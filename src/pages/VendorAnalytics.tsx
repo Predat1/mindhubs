@@ -66,12 +66,9 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
         {/* Header with Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-semibold tracking-[-0.03em] flex items-center gap-3 sm:text-4xl">
-               Analytiques
-            </h2>
             <p className="text-muted-foreground">Comprenez vos ventes, vos canaux et les produits qui progressent.</p>
           </div>
-          <div className="flex items-center gap-3 bg-card/30 p-2 rounded-2xl border border-white/5">
+          <div className="flex items-center gap-3 bg-card/30 p-2 rounded-2xl border border-border">
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="w-[160px] rounded-xl border-none bg-transparent font-bold">
                 <Calendar className="mr-2 h-4 w-4 text-primary" />
@@ -84,7 +81,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                 <SelectItem value="90d">90 derniers jours</SelectItem>
               </SelectContent>
             </Select>
-            <div className="w-px h-6 bg-white/10" />
+            <div className="w-px h-6 bg-border" />
             <Button onClick={exportToCSV} disabled={!hasAnalyticsData} variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors" aria-label="Exporter les analytiques">
               <Download size={18} />
             </Button>
@@ -127,7 +124,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                  { label: "Panier Moyen", val: formatCurrency(metrics.avgOrderValue), icon: CreditCard, color: "text-warning", trend: hasAnalyticsData ? "+2.1%" : null },
                  { label: "Revenu / Visiteur", val: formatCurrency(metrics.revenuePerVisitor), icon: TrendingUp, color: "text-info", trend: hasAnalyticsData ? "+0.8%" : null },
                ].map((m, i) => (
-                 <Card key={i} className="border-white/5 bg-card/40 backdrop-blur-xl overflow-hidden relative group hover:border-primary/20 transition-all">
+                 <Card key={i} className="border-border bg-card/40 overflow-hidden relative group hover:border-primary/20 transition-all">
                     <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
                        <m.icon size={80} />
                     </div>
@@ -145,7 +142,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
             </div>
 
             {hasAnalyticsData ? <Tabs defaultValue="overview" className="space-y-8">
-               <TabsList className="bg-card/30 border border-white/5 p-1 rounded-2xl h-auto flex flex-wrap gap-1">
+               <TabsList className="bg-card/30 border border-border p-1 rounded-2xl h-auto flex flex-wrap gap-1">
                   <TabsTrigger value="overview" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Vue d'Ensemble</TabsTrigger>
                   <TabsTrigger value="conversion" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tunnel de Conversion</TabsTrigger>
                   <TabsTrigger value="products" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Performance Produits</TabsTrigger>
@@ -154,7 +151,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
 
                <TabsContent value="overview" className="space-y-6 outline-none">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Card className="lg:col-span-2 border-white/5 bg-card/40 backdrop-blur-xl">
+                    <Card className="lg:col-span-2 border-border bg-card/40">
                       <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                           <CardTitle className="text-xl font-black">Ventes & Trafic</CardTitle>
@@ -185,7 +182,7 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                     </Card>
 
                     <div className="space-y-6">
-                       <Card className="border-white/5 bg-card/40 backdrop-blur-xl">
+                       <Card className="border-border bg-card/40">
                           <CardHeader className="pb-2">
                              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Clock size={14} className="text-primary" /> Engagement
@@ -202,13 +199,13 @@ const VendorAnalyticsInner = ({ vendor }: { vendor: Vendor }) => {
                                    <p className="text-[10px] font-bold text-muted-foreground">Pages / session</p>
                                 </div>
                              </div>
-                             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                             <div className="w-full h-1.5 bg-muted/30 rounded-full overflow-hidden">
                                 <div className="h-full bg-primary" style={{ width: '65%' }} />
                              </div>
                           </CardContent>
                        </Card>
 
-                       <Card className="border-white/5 bg-card/40 backdrop-blur-xl flex-1">
+                       <Card className="border-border bg-card/40 flex-1">
                          <CardHeader>
                             <CardTitle className="text-lg font-black flex items-center gap-2"><Globe size={18} className="text-primary" /> Trafic</CardTitle>
                          </CardHeader>

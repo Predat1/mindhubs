@@ -34,6 +34,7 @@ import {
   Upload,
   Loader2,
   Check,
+  CheckCircle2,
   Image as ImageIcon,
   Tag,
   FileText,
@@ -49,7 +50,6 @@ import {
   Globe,
   FileEdit,
   FileArchive,
-  Link as LinkIcon,
   Layers,
   Palette,
   GripVertical,
@@ -63,6 +63,7 @@ import { RichDescriptionEditor } from "@/components/products/RichDescriptionEdit
 import CourseBuilder from "@/components/vendor/lms/CourseBuilder";
 import ProductCard from "@/components/ProductCard";
 import { useVendorSubscription } from "@/hooks/useSubscription";
+import { parseProductAmount, validateProduct, type ProductValidationResult } from "@/lib/productValidation";
 
 import { categories as CATEGORIES, type Category } from "@/data/products";
 
@@ -83,21 +84,21 @@ const STEPS: {
 }[] = [
   {
     key: "info",
-    label: "Informations",
+    label: "Offre",
     icon: FileText,
-    desc: "Titre, catégorie & description",
+    desc: "Type, titre & description",
   },
   {
     key: "media",
-    label: "Visuels",
+    label: "Contenu",
     icon: ImageIcon,
-    desc: "Image principale du produit",
+    desc: "Visuels & livraison",
   },
   {
     key: "pricing",
-    label: "Prix",
+    label: "Prix & logistique",
     icon: DollarSign,
-    desc: "Prix de vente & promo",
+    desc: "Prix, stock & livraison",
   },
   {
     key: "curriculum",
@@ -107,9 +108,9 @@ const STEPS: {
   },
   {
     key: "details",
-    label: "Détails",
+    label: "Publication",
     icon: Sparkles,
-    desc: "Caractéristiques & paiement",
+    desc: "Canaux & vérification finale",
   },
 ];
 
@@ -123,6 +124,9 @@ interface FormState {
   image_url: string;
   image_urls: string[];
   payment_link: string;
+  digital_asset_path: string;
+  digital_asset_name: string;
+  digital_asset_size: string;
   key_features: string[];
   product_mode: "digital" | "physical" | "hybrid";
   sku: string;
@@ -142,6 +146,9 @@ const emptyForm: FormState = {
   image_url: "",
   image_urls: [],
   payment_link: "",
+  digital_asset_path: "",
+  digital_asset_name: "",
+  digital_asset_size: "",
   key_features: [],
   product_mode: "digital",
   sku: "",
@@ -150,8 +157,6 @@ const emptyForm: FormState = {
   status: "published",
   is_lms: false,
 };
-
-const DRAFT_KEY = "vendor:product:draft:v1";
 
 const Inner = ({
   vendorId,
@@ -169,6 +174,7 @@ const Inner = ({
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const { canAddProduct, max_products: maxProducts, product_count: productCount, plan } = useVendorSubscription(vendorId);
+  const draftKey = `vendor:product:draft:v2:${vendorId}:${id ?? "new"}`;
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [step, setStep] = useState<StepKey>("info");
@@ -179,13 +185,13 @@ const Inner = ({
   const [aiFeatLoading, setAiFeatLoading] = useState(false);
   const [aiImgLoading, setAiImgLoading] = useState(false);
   const [aiEditLoading, setAiEditLoading] = useState(false);
-  const [aiPriceLoading, setAiPriceLoading] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [imageStyle, setImageStyle] = useState("classic");
   const [variantCount, setVariantCount] = useState<number>(3);
   const [variants, setVariants] = useState<string[]>([]);
   const [showVariants, setShowVariants] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [editPrompt, setEditPrompt] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
@@ -193,6 +199,12 @@ const Inner = ({
     storefront: true,
     marketplace: false,
   });
+  const [publicationStatuses, setPublicationStatuses] = useState<Record<"storefront" | "marketplace", string | undefined>>({
+    storefront: undefined,
+    marketplace: undefined,
+  });
+  const initialFormRef = useRef<FormState | null>(null);
+  const [validation, setValidation] = useState<ProductValidationResult | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const lastSavedRef = useRef<string>("");
 
@@ -201,14 +213,14 @@ const Inner = ({
     if (isEdit) return;
     
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const raw = localStorage.getItem(draftKey);
       if (raw) {
         const parsed = JSON.parse(raw) as FormState;
         if (
           parsed &&
           (parsed.title || parsed.description || parsed.image_url)
         ) {
-          setForm(parsed);
+          setForm({ ...emptyForm, ...parsed });
           setDraftRestored(true);
           toast.info("Brouillon restauré", {
             description:
@@ -219,20 +231,21 @@ const Inner = ({
     } catch {
       /* ignore */
     }
-  }, [isEdit]);
+  }, [draftKey, isEdit]);
 
   // ===== Persistence: save form state to localStorage on every change (debounced)
   useEffect(() => {
     if (isEdit) return;
     const serialized = JSON.stringify(form);
-    if (serialized !== lastSavedRef.current && lastSavedRef.current !== "") {
+    if (serialized === JSON.stringify(emptyForm) && lastSavedRef.current === "") return;
+    if (serialized !== lastSavedRef.current) {
       setSaveState("saving");
       setIsDirty(true);
     }
     const t = setTimeout(() => {
       try {
         if (serialized !== lastSavedRef.current) {
-          localStorage.setItem(DRAFT_KEY, serialized);
+          localStorage.setItem(draftKey, serialized);
           lastSavedRef.current = serialized;
           setSaveState("saved");
           // Reset to idle after 2s for a "saved ✓" → "" transition
@@ -243,7 +256,7 @@ const Inner = ({
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [form, isEdit]);
+  }, [draftKey, form, isEdit]);
 
   // ===== Warn before leaving if unsaved changes exist
   useEffect(() => {
@@ -258,7 +271,7 @@ const Inner = ({
 
   const clearLocalDraft = () => {
     try {
-      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(draftKey);
     } catch {
       /* ignore */
     }
@@ -394,53 +407,10 @@ const Inner = ({
     }
   };
 
-  // ===== AI Smart Pricing
-  const generateAIPrice = async () => {
-    if (form.title.trim().length < 3) {
-      toast.error("Titre requis", {
-        description: "Saisissez au moins 3 caractères.",
-      });
-      return;
-    }
-    setAiPriceLoading(true);
-    try {
-      // Re-using the features function with a specific hint to get a price suggestion
-      const { data, error } = await supabase.functions.invoke(
-        "generate-product-features",
-        {
-          body: {
-            title: form.title,
-            description:
-              "Donne uniquement 2 prix en FCFA (ex: Prix normal: 15000, Prix promo: 9900). Produit: " +
-              form.description,
-            category: form.category,
-          },
-        },
-      );
-      if (error) throw error;
-
-      // Fallback pseudo-logic since we don't have a dedicated edge function returning strict JSON
-      // This is a simulation of the AI returning a smart price.
-      const basePrice = Math.floor(Math.random() * 10 + 5) * 1000;
-      const promoPrice = basePrice - 100; // e.g. 9900 instead of 10000
-      const oldPrice = basePrice * 1.5;
-
-      setForm((f) => ({
-        ...f,
-        price: `${promoPrice} FCFA`,
-        old_price: `${oldPrice} FCFA`,
-      }));
-      toast.success("Prix suggéré par l'IA ✨");
-    } catch (e: unknown) {
-      toast.error("Erreur IA", { description: (e as Error).message });
-    } finally {
-      setAiPriceLoading(false);
-    }
-  };
-
   // ===== Load product if editing
   useEffect(() => {
     if (!isEdit || !id) return;
+    setDistribution({ storefront: false, marketplace: false });
     (async () => {
       const { data } = await supabase
         .from("products")
@@ -448,7 +418,7 @@ const Inner = ({
         .eq("id", id)
         .maybeSingle();
       if (data) {
-        setForm({
+        const loadedForm: FormState = {
           id: data.id,
           title: data.title,
           description: data.description || "",
@@ -458,6 +428,9 @@ const Inner = ({
           image_url: data.image_url,
           image_urls: (data.image_urls as string[]) || [],
           payment_link: data.payment_link || "",
+          digital_asset_path: (data as Record<string, unknown>).digital_asset_path as string || "",
+          digital_asset_name: (data as Record<string, unknown>).digital_asset_name as string || "",
+          digital_asset_size: String((data as Record<string, unknown>).digital_asset_size || ""),
           key_features: data.key_features || [],
           product_mode: ((data as Record<string, unknown>).product_mode as FormState["product_mode"]) || "digital",
           sku: ((data as Record<string, unknown>).sku as string) || "",
@@ -466,7 +439,9 @@ const Inner = ({
           status:
             ((data as Record<string, unknown>).status as "draft" | "published") || "published",
           is_lms: (data as any).is_lms || false,
-        });
+        };
+        setForm(loadedForm);
+        initialFormRef.current = loadedForm;
 
         const { data: publications } = await (supabase as any)
           .from("product_publications")
@@ -474,30 +449,54 @@ const Inner = ({
           .eq("product_id", id)
           .eq("vendor_id", vendorId);
         if (Array.isArray(publications) && publications.length > 0) {
+          setPublicationStatuses({
+            storefront: publications.find((p: any) => p.channel === "storefront")?.status,
+            marketplace: publications.find((p: any) => p.channel === "marketplace")?.status,
+          });
           setDistribution({
             storefront: publications.some((p: any) => p.channel === "storefront" && p.status !== "hidden" && p.status !== "archived"),
             marketplace: publications.some((p: any) => p.channel === "marketplace" && p.status !== "hidden" && p.status !== "archived"),
           });
+        } else {
+          setPublicationStatuses({ storefront: undefined, marketplace: undefined });
         }
       }
     })();
   }, [id, isEdit, vendorId]);
 
   // ===== Step validation
+  const publishValidation = useMemo(
+    () => validateProduct({
+      title: form.title,
+      description: form.description,
+      category: form.category,
+      imageUrl: form.image_url,
+      price: form.price,
+      oldPrice: form.old_price,
+      productMode: form.product_mode,
+      digitalAssetPath: form.digital_asset_path,
+      digitalAssetName: form.digital_asset_name,
+      inventoryQuantity: form.inventory_quantity,
+      shippingNotes: form.shipping_notes,
+      distribution,
+    }),
+    [form, distribution],
+  );
   const stepValid = useMemo(
     () => ({
       info: form.title.trim().length >= 3,
-      media: !!form.image_url,
-      pricing: form.price.trim().length > 0,
-      details: true,
+      media: !!form.image_url && ((form.product_mode === "physical") || !!form.digital_asset_path || !!form.digital_asset_name),
+      pricing: parseProductAmount(form.price) !== null && ((form.product_mode === "digital") || (form.inventory_quantity.trim() !== "" && !!form.shipping_notes.trim())),
+      curriculum: true,
+      details: publishValidation.valid,
     }),
-    [form],
+    [form, publishValidation.valid],
   );
 
-  const allValid = stepValid.info && stepValid.media && stepValid.pricing;
+  const allValid = publishValidation.valid;
   const currentStepIndex = STEPS.findIndex((s) => s.key === step);
-  const progress =
-    (Object.values(stepValid).filter(Boolean).length / (form.is_lms ? STEPS.length : STEPS.length - 1)) * 100;
+  const visibleSteps = STEPS.filter((s) => s.key !== "curriculum" || form.is_lms);
+  const progress = (visibleSteps.filter((item) => stepValid[item.key]).length / visibleSteps.length) * 100;
 
   const goNext = () => {
     let nextIdx = currentStepIndex + 1;
@@ -595,17 +594,20 @@ const Inner = ({
 
     // Plan Limit Guard for NEW products (admin bypasses this check)
     const isAdminUser = (await supabase.auth.getUser()).data.user?.email === 'mobifranck94@gmail.com';
-    if (!isEdit && finalStatus === "published" && !canAddProduct && !isAdminUser) {
+    if (!isEdit && !canAddProduct && !isAdminUser) {
       toast.error("Limite de plan atteinte", {
-        description: `Votre plan ${plan} permet max ${maxProducts} produits. Passez au plan supérieur.`,
+        description: `Votre plan ${plan} permet max ${maxProducts} produits. Passez au plan supérieur pour enregistrer ce produit.`,
         action: { label: "Upgrader", onClick: () => navigate('/pricing') }
       });
       return;
     }
-    // Drafts can be saved with minimal info, published requires full validation
+    // Les brouillons demandent seulement un titre ; la publication utilise la checklist complète.
     if (finalStatus === "published" && !allValid) {
+      setValidation(publishValidation);
+      const firstMissing = Object.entries(publishValidation.missingByStep).find(([, items]) => items.length > 0)?.[0];
+      setStep(firstMissing === "content" ? "media" : firstMissing === "pricing" ? "pricing" : firstMissing === "publication" ? "details" : "info");
       toast.error("Champs requis manquants", {
-        description: "Pour publier : titre, image et prix obligatoires.",
+        description: Object.values(publishValidation.fields)[0] || "Corrigez les éléments signalés avant de publier.",
       });
       return;
     }
@@ -616,6 +618,8 @@ const Inner = ({
       return;
     }
     setSaving(true);
+    let persistedStorefrontStatus: string | undefined;
+    let persistedMarketplaceStatus: string | undefined;
     try {
       const slug = (form.id || form.title)
         .toLowerCase()
@@ -634,6 +638,9 @@ const Inner = ({
         image_url: form.image_url || "",
         image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         payment_link: form.payment_link.trim() || null,
+        digital_asset_path: form.digital_asset_path.trim() || null,
+        digital_asset_name: form.digital_asset_name.trim() || null,
+        digital_asset_size: form.digital_asset_size ? Number(form.digital_asset_size) : null,
         key_features: form.key_features,
         product_mode: form.product_mode,
         sku: form.sku.trim() || null,
@@ -652,20 +659,49 @@ const Inner = ({
       // Channel publication is deliberately independent: a seller can keep a product
       // in their own store while hiding it from marketplace discovery.
       try {
+        const initial = initialFormRef.current;
+        const marketplaceMajorChange = !isEdit || !initial || [
+          "title",
+          "description",
+          "category",
+          "price",
+          "old_price",
+          "image_url",
+          "image_urls",
+          "product_mode",
+          "digital_asset_path",
+          "digital_asset_name",
+        ].some((key) => JSON.stringify((form as any)[key]) !== JSON.stringify((initial as any)[key]));
         const publicationStatus = (enabled: boolean, channel: "storefront" | "marketplace") => {
-          if (!enabled) return "hidden";
+          if (!enabled) return finalStatus === "draft" ? "draft" : "hidden";
           if (finalStatus === "draft") return "draft";
+          if (channel === "marketplace" && publicationStatuses.marketplace === "published" && !marketplaceMajorChange) return "published";
           return channel === "marketplace" ? "pending_review" : "published";
         };
+        const storefrontStatus = publicationStatus(distribution.storefront, "storefront");
+        const marketplaceStatus = publicationStatus(distribution.marketplace, "marketplace");
+        persistedStorefrontStatus = storefrontStatus;
+        persistedMarketplaceStatus = marketplaceStatus;
+        const publishedAt = new Date().toISOString();
         const { error: publicationError } = await (supabase as any)
           .from("product_publications")
           .upsert([
-            { product_id: productId, vendor_id: vendorId, channel: "storefront", status: publicationStatus(distribution.storefront, "storefront"), published_at: distribution.storefront && finalStatus === "published" ? new Date().toISOString() : null },
-            { product_id: productId, vendor_id: vendorId, channel: "marketplace", status: publicationStatus(distribution.marketplace, "marketplace"), published_at: distribution.marketplace && finalStatus === "published" ? new Date().toISOString() : null },
+            { product_id: productId, vendor_id: vendorId, channel: "storefront", status: storefrontStatus, published_at: storefrontStatus === "published" ? publishedAt : null },
+            { product_id: productId, vendor_id: vendorId, channel: "marketplace", status: marketplaceStatus, published_at: marketplaceStatus === "published" ? publishedAt : null },
           ], { onConflict: "product_id,channel" });
-        if (publicationError) console.warn("Product channels unavailable until migration is applied:", publicationError.message);
+        if (publicationError) {
+          throw new Error(`Produit enregistré, mais les canaux n'ont pas pu être configurés : ${publicationError.message}`);
+        }
       } catch (publicationError) {
-        console.warn("Product channel publication skipped:", publicationError);
+        clearLocalDraft();
+        setIsDirty(false);
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+        queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
+        toast.warning("Produit enregistré, publication à finaliser", {
+          description: (publicationError as Error).message || "Réessayez depuis la liste de vos produits.",
+        });
+        navigate("/dashboard/products");
+        return;
       }
       const verb = isEdit
         ? "mis à jour"
@@ -673,11 +709,15 @@ const Inner = ({
           ? "sauvegardé en brouillon"
           : "publié";
       toast.success(`Produit ${verb} ✨`, {
-        description: distribution.marketplace && finalStatus === "published"
-          ? "Votre produit est visible dans votre boutique et envoyé en revue pour la marketplace."
-          : distribution.storefront
-            ? "Votre produit est visible dans votre boutique personnelle."
-            : "Votre produit reste masqué jusqu'à sa prochaine publication.",
+        description: finalStatus === "draft"
+          ? "Votre produit reste privé jusqu’à sa publication."
+          : persistedMarketplaceStatus === "pending_review" && persistedStorefrontStatus === "published"
+            ? "Votre produit est visible dans votre boutique et envoyé en revue pour la marketplace."
+            : persistedMarketplaceStatus === "pending_review"
+              ? "Votre produit a été envoyé en revue pour la marketplace."
+              : persistedStorefrontStatus === "published"
+                ? "Votre produit est visible dans votre boutique personnelle."
+                : "Votre produit reste masqué jusqu'à sa prochaine publication.",
       });
       clearLocalDraft();
       setIsDirty(false);
@@ -698,7 +738,7 @@ const Inner = ({
     return Math.round(((o - p) / o) * 100);
   }, [form.price, form.old_price]);
 
-  const isDraft = form.status === "draft";
+  const isDraft = !isEdit || form.status === "draft";
 
   const mockProduct = useMemo(
     () => ({
@@ -721,17 +761,26 @@ const Inner = ({
     if (!user) return;
     setFileUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/digital-products/${Date.now()}.${ext}`;
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const allowed = ["pdf", "zip", "rar", "mp4", "mov", "mp3", "doc", "docx", "xlsx", "pptx"];
+      if (!ext || !allowed.includes(ext)) {
+        throw new Error("Format non pris en charge. Utilisez PDF, ZIP, MP4, MP3, Word, Excel ou PowerPoint.");
+      }
+      if (file.size > 250 * 1024 * 1024) {
+        throw new Error("Le fichier ne doit pas dépasser 250 Mo.");
+      }
+      const path = `${user.id}/digital-products/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage
-        .from("product-images")
-        .upload(path, file, { upsert: false });
+        .from("digital-products")
+        .upload(path, file, { upsert: false, contentType: file.type || undefined });
       if (error) throw error;
-      const { data } = supabase.storage
-        .from("product-images")
-        .getPublicUrl(path);
-      setForm((f) => ({ ...f, payment_link: data.publicUrl }));
-      toast.success("Fichier numérique uploadé avec succès 📦");
+      setForm((f) => ({
+        ...f,
+        digital_asset_path: path,
+        digital_asset_name: file.name,
+        digital_asset_size: String(file.size),
+      }));
+      toast.success("Fichier digital sécurisé ajouté");
     } catch (e: unknown) {
       toast.error("Erreur upload fichier", { description: (e as Error).message });
     } finally {
@@ -800,72 +849,33 @@ const Inner = ({
               </span>
             </div>
 
-            {/* Draft / Published toggle */}
-            <div
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
-                isDraft
-                  ? "border-warning/40 bg-warning/10"
-                  : "border-success/40 bg-success/10"
-              }`}
-            >
-              <FileEdit
-                size={12}
-                className={
-                  isDraft
-                    ? "text-warning"
-                    : "text-muted-foreground/50"
-                }
-              />
-              <Switch
-                checked={!isDraft}
-                onCheckedChange={(v) =>
-                  setForm((f) => ({ ...f, status: v ? "published" : "draft" }))
-                }
-                aria-label="Publié"
-              />
-              <Globe
-                size={12}
-                className={
-                  !isDraft
-                    ? "text-success"
-                    : "text-muted-foreground/50"
-                }
-              />
-              <span
-                className={`text-[10px] font-bold uppercase tracking-wide ${
-                  isDraft
-                    ? "text-warning"
-                    : "text-success"
-                }`}
-              >
-                {isDraft ? "Brouillon" : "Publié"}
-              </span>
-            </div>
-
             <Button
               size="sm"
               variant="outline"
               onClick={() => handleSave("draft")}
               disabled={saving || !form.title.trim()}
             >
-              <FileEdit size={14} /> Brouillon
+              <FileEdit size={14} /> Enregistrer le brouillon
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowPreview(true)}>
+              <Eye size={14} /> Prévisualiser
             </Button>
             <Button
               size="sm"
               onClick={() => handleSave("published")}
-              disabled={saving || !allValid || (!isEdit && !canAddProduct)}
+              disabled={saving || (!isEdit && !canAddProduct)}
             >
               {saving ? (
                 <Loader2 className="animate-spin" size={14} />
               ) : (
                 <Save size={14} />
               )}
-              {isEdit ? "Enregistrer" : "Publier"}
+              Publier selon mes choix
             </Button>
           </div>
         </div>
 
-        {!isEdit && !canAddProduct && (
+        {!isEdit && !canAddProduct && maxProducts !== -1 && (
           <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between">
              <div className="flex items-center gap-3">
                 <AlertCircle className="text-destructive" size={20} />
@@ -979,6 +989,7 @@ const Inner = ({
                         {form.title.length}/150
                       </p>
                     </div>
+                    {validation?.fields.title && <p className="text-xs text-destructive">{validation.fields.title}</p>}
                   </div>
 
                   <div className="space-y-1.5">
@@ -1019,13 +1030,6 @@ const Inner = ({
                         <SelectItem value="hybrid">Offre hybride — physique + digital</SelectItem>
                       </SelectContent>
                     </Select>
-                    {(form.product_mode === "physical" || form.product_mode === "hybrid") && (
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Input value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} placeholder="SKU facultatif" />
-                        <Input type="number" min="0" value={form.inventory_quantity} onChange={(event) => setForm({ ...form, inventory_quantity: event.target.value })} placeholder="Stock disponible" />
-                        <Textarea value={form.shipping_notes} onChange={(event) => setForm({ ...form, shipping_notes: event.target.value })} placeholder="Zones, délais ou conditions de livraison" className="sm:col-span-2" />
-                      </div>
-                    )}
                   </div>
 
                   <div className="space-y-1.5 pt-2">
@@ -1036,6 +1040,7 @@ const Inner = ({
                       title={form.title}
                       category={form.category}
                     />
+                    {validation?.fields.description && <p className="text-xs text-destructive">{validation.fields.description}</p>}
                   </div>
                 </div>
               )}
@@ -1407,6 +1412,31 @@ const Inner = ({
                     </TabsContent>
                   </Tabs>
 
+                  {(form.product_mode === "digital" || form.product_mode === "hybrid") && (
+                    <div className={`space-y-4 rounded-2xl border p-4 ${validation?.fields.digitalAsset ? "border-destructive/50 bg-destructive/5" : "border-primary/20 bg-primary/5"}`}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FileArchive size={17} /></div>
+                        <div>
+                          <h3 className="text-sm font-bold">Fichier livré après l’achat <span className="text-destructive">*</span></h3>
+                          <p className="mt-1 text-xs text-muted-foreground">Ajoutez le PDF, ZIP, vidéo ou document que l’acheteur recevra. Il sera séparé de votre image de couverture.</p>
+                        </div>
+                      </div>
+                      {form.digital_asset_name ? (
+                        <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">
+                          <CheckCircle2 size={18} className="shrink-0 text-success" />
+                          <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{form.digital_asset_name}</p><p className="text-[11px] text-muted-foreground">{form.digital_asset_size ? `${(Number(form.digital_asset_size) / 1024 / 1024).toFixed(1)} Mo` : "Fichier sécurisé"}</p></div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setForm((current) => ({ ...current, digital_asset_path: "", digital_asset_name: "", digital_asset_size: "" }))} className="text-destructive hover:text-destructive"><Trash2 size={14} /> Retirer</Button>
+                        </div>
+                      ) : (
+                        <label className="flex min-h-24 cursor-pointer items-center justify-center rounded-xl border border-dashed border-primary/40 bg-background/40 px-4 text-center transition hover:border-primary hover:bg-primary/5">
+                          <span className="flex flex-col items-center gap-1 text-xs font-semibold"><Upload size={18} className="text-primary" />{fileUploading ? "Upload en cours…" : "Choisir le fichier à livrer"}<span className="text-[10px] font-normal text-muted-foreground">PDF, ZIP, MP4, MP3, Word, Excel ou PowerPoint — 250 Mo max.</span></span>
+                          <input type="file" accept=".pdf,.zip,.rar,.mp4,.mov,.mp3,.doc,.docx,.xlsx,.pptx" className="hidden" disabled={fileUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) uploadDigitalFile(file); event.currentTarget.value = ""; }} />
+                        </label>
+                      )}
+                      {validation?.fields.digitalAsset && <p className="flex items-center gap-1.5 text-xs font-medium text-destructive"><AlertCircle size={13} /> {validation.fields.digitalAsset}</p>}
+                    </div>
+                  )}
+
                   <div className="flex items-start gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
                     <Info size={14} className="mt-0.5 shrink-0 text-primary" />
                     <p>
@@ -1429,21 +1459,6 @@ const Inner = ({
                         valeur.
                       </p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={generateAIPrice}
-                      disabled={aiPriceLoading || form.title.trim().length < 3}
-                      className="h-8 gap-1.5 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 text-xs hover:from-primary/10 hover:to-accent/10"
-                    >
-                      {aiPriceLoading ? (
-                        <Loader2 className="animate-spin" size={12} />
-                      ) : (
-                        <Sparkles size={12} className="text-primary" />
-                      )}
-                      Suggérer un prix (IA)
-                    </Button>
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1460,6 +1475,7 @@ const Inner = ({
                         }
                         placeholder="5000 FCFA"
                       />
+                      {validation?.fields.price && <p className="text-xs text-destructive">{validation.fields.price}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="old_price">Ancien prix (barré)</Label>
@@ -1471,6 +1487,7 @@ const Inner = ({
                         }
                         placeholder="10000 FCFA"
                       />
+                      {validation?.fields.oldPrice && <p className="text-xs text-destructive">{validation.fields.oldPrice}</p>}
                     </div>
                   </div>
 
@@ -1489,6 +1506,17 @@ const Inner = ({
                       </div>
                     </div>
                   )}
+
+                  {(form.product_mode === "physical" || form.product_mode === "hybrid") && (
+                    <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+                      <div><h3 className="text-sm font-bold">Logistique</h3><p className="mt-1 text-xs text-muted-foreground">Ces informations permettent de vendre une offre physique sans configuration cachée.</p></div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1.5"><Label htmlFor="inventory_quantity">Stock disponible <span className="text-destructive">*</span></Label><Input id="inventory_quantity" type="number" min="0" step="1" value={form.inventory_quantity} onChange={(event) => setForm({ ...form, inventory_quantity: event.target.value })} placeholder="Ex. 25" />{validation?.fields.inventoryQuantity && <p className="text-xs text-destructive">{validation.fields.inventoryQuantity}</p>}</div>
+                        <div className="space-y-1.5"><Label htmlFor="sku">SKU <span className="text-[10px] text-muted-foreground">(facultatif)</span></Label><Input id="sku" value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} placeholder="Ex. MH-001" /></div>
+                        <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="shipping_notes">Zones, délais et conditions de livraison <span className="text-destructive">*</span></Label><Textarea id="shipping_notes" value={form.shipping_notes} onChange={(event) => setForm({ ...form, shipping_notes: event.target.value })} placeholder="Ex. Livraison à Cotonou sous 2 à 4 jours…" />{validation?.fields.shippingNotes && <p className="text-xs text-destructive">{validation.fields.shippingNotes}</p>}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1500,11 +1528,31 @@ const Inner = ({
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-lg font-bold text-foreground">
-                      Détails supplémentaires
+                      Vérification et publication
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Ajoutez des arguments de vente et un lien de paiement.
+                      Vérifiez votre offre, choisissez ses canaux et publiez quand vous êtes prêt.
                     </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-muted/20 p-4" aria-live="polite">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div><p className="text-sm font-bold">Checklist de publication</p><p className="text-xs text-muted-foreground">Les éléments en attente vous indiquent exactement quoi corriger.</p></div>
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${publishValidation.valid ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>{publishValidation.valid ? "Prêt à publier" : `${Object.keys(publishValidation.fields).length} élément${Object.keys(publishValidation.fields).length > 1 ? "s" : ""} à corriger`}</span>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {[
+                        ["Offre", publishValidation.missingByStep.offer, "info" as StepKey],
+                        ["Contenu", publishValidation.missingByStep.content, "media" as StepKey],
+                        ["Prix et logistique", publishValidation.missingByStep.pricing, "pricing" as StepKey],
+                        ["Distribution", publishValidation.missingByStep.publication, "details" as StepKey],
+                      ].map(([label, missing, target]) => (
+                        <button type="button" key={label as string} onClick={() => (missing as string[]).length > 0 && setStep(target as StepKey)} className="flex items-center gap-2 rounded-xl border border-border bg-background/60 px-3 py-2 text-left text-xs transition hover:border-primary/50">
+                          {(missing as string[]).length === 0 ? <CheckCircle2 size={14} className="text-success" /> : <AlertCircle size={14} className="text-warning" />}
+                          <span className="min-w-0 flex-1"><span className="font-semibold">{label as string}</span>{(missing as string[]).length > 0 && <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">{(missing as string[]).join(" · ")}</span>}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -1575,58 +1623,6 @@ const Inner = ({
                     )}
                   </div>
 
-                  <div className="space-y-1.5 pt-2">
-                    <Label
-                      htmlFor="payment_link"
-                      className="flex items-center gap-2"
-                    >
-                      <LinkIcon size={14} /> Fichier Numérique ou Lien
-                    </Label>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Input
-                        id="payment_link"
-                        type="url"
-                        value={form.payment_link}
-                        onChange={(e) =>
-                          setForm({ ...form, payment_link: e.target.value })
-                        }
-                        placeholder="https://..."
-                        className="flex-1"
-                      />
-                      <div className="relative">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={fileUploading}
-                          className="w-full sm:w-auto gap-2"
-                        >
-                          {fileUploading ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <FileArchive size={14} />
-                          )}
-                          Uploader un fichier
-                        </Button>
-                        <input
-                          type="file"
-                          accept=".pdf,.zip,.rar,.mp4"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={(e) =>
-                            e.target.files?.[0] &&
-                            uploadDigitalFile(e.target.files[0])
-                          }
-                          title="Uploader un fichier (PDF, ZIP...)"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      Uploadez votre fichier numérique (PDF, ZIP) pour qu'il
-                      soit livré automatiquement, ou insérez un lien de paiement
-                      externe contenant votre produit ailleurs (Lien de paiement
-                      chariow, maketou, Stripe, Calendly etc..).
-                    </p>
-                  </div>
-
                   <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -1634,7 +1630,7 @@ const Inner = ({
                         <Label className="text-sm font-black">Canaux de publication</Label>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Votre boutique vous appartient. La marketplace est facultative et peut apporter du trafic supplémentaire après validation.
+                        La boutique est votre canal direct. La marketplace est facultative, soumise à revue et n’offre aucune garantie de trafic.
                       </p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1644,9 +1640,10 @@ const Inner = ({
                           onCheckedChange={(checked) => setDistribution((current) => ({ ...current, storefront: checked }))}
                           aria-label="Publier dans ma boutique"
                         />
-                        <span>
-                          <span className="flex items-center gap-1.5 text-sm font-bold"><Store size={14} className="text-primary" /> Ma boutique</span>
-                          <span className="mt-1 block text-[11px] text-muted-foreground">Contrôle total et lien personnel partageable.</span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-1.5 text-sm font-bold"><Store size={14} className="text-primary" /> Ma boutique</span>
+                            <span className="mt-1 block text-[11px] text-muted-foreground">Contrôle total et lien personnel partageable.</span>
+                            <span className="mt-1 block text-[10px] font-semibold text-primary">{publicationStatuses.storefront || (distribution.storefront ? "Sera publiée" : "Non sélectionnée")}</span>
                         </span>
                       </label>
                       <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-primary/40">
@@ -1655,22 +1652,24 @@ const Inner = ({
                           onCheckedChange={(checked) => setDistribution((current) => ({ ...current, marketplace: checked }))}
                           aria-label="Proposer dans la marketplace"
                         />
-                        <span>
-                          <span className="flex items-center gap-1.5 text-sm font-bold"><Globe size={14} className="text-primary" /> Marketplace MindHubs</span>
-                          <span className="mt-1 block text-[11px] text-muted-foreground">Découverte gratuite potentielle, soumise aux règles de la plateforme.</span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-1.5 text-sm font-bold"><Globe size={14} className="text-primary" /> Marketplace MindHubs</span>
+                            <span className="mt-1 block text-[11px] text-muted-foreground">Découverte potentielle, soumise aux règles de la plateforme.</span>
+                            <span className="mt-1 block text-[10px] font-semibold text-primary">{publicationStatuses.marketplace || (distribution.marketplace ? "Sera envoyée en revue" : "Non sélectionnée")}</span>
                         </span>
                       </label>
                     </div>
-                    {!distribution.storefront && !distribution.marketplace && (
-                      <p className="flex items-center gap-2 text-xs font-semibold text-warning"><AlertCircle size={14} /> Ce produit restera invisible après publication.</p>
+                    {(!distribution.storefront && !distribution.marketplace) && (
+                      <p className="flex items-center gap-2 text-xs font-semibold text-warning"><AlertCircle size={14} /> Aucun canal sélectionné : le produit restera privé.</p>
                     )}
+                    {validation?.fields.distribution && <p className="flex items-center gap-2 text-xs font-semibold text-destructive"><AlertCircle size={14} /> {validation.fields.distribution}</p>}
                   </div>
                 </div>
               )}
             </div>
 
             {/* Step nav */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="sticky bottom-2 z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <Button
                 variant="outline"
                 onClick={goPrev}
@@ -1686,16 +1685,18 @@ const Inner = ({
                 <Button
                   onClick={() => handleSave("published")}
                   disabled={saving || !allValid}
+                  aria-describedby="publish-help"
                 >
                   {saving ? (
                     <Loader2 className="animate-spin" size={14} />
                   ) : (
                     <Save size={14} />
                   )}
-                  {isEdit ? "Enregistrer" : "Publier le produit"}
+                  Publier selon mes choix
                 </Button>
               )}
             </div>
+            {currentStepIndex >= STEPS.length - 1 && !allValid && <p id="publish-help" className="text-right text-xs text-muted-foreground">Corrigez la checklist avant de publier.</p>}
           </div>
 
           {/* Right: live preview */}
@@ -1747,6 +1748,22 @@ const Inner = ({
           </aside>
         </div>
       </div>
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Eye size={18} className="text-primary" /> Prévisualisation du produit</DialogTitle>
+            <DialogDescription>Cette vue reflète vos dernières modifications. Elle ne publie rien.</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl border border-border bg-muted/20 p-4">
+            <ProductCard product={mockProduct} />
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4 text-sm">
+            <p className="font-semibold">Statut actuel</p>
+            <p className="mt-1 text-xs text-muted-foreground">{isDraft ? "Ce produit est encore privé. Enregistrez-le puis publiez les canaux choisis depuis la dernière étape." : "Ce produit est enregistré. Les changements non sauvegardés sont visibles uniquement dans cet aperçu."}</p>
+          </div>
+          <DialogFooter><Button type="button" onClick={() => setShowPreview(false)}>Continuer l’édition</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* ===== Variants modal ===== */}
       <Dialog open={showVariants} onOpenChange={setShowVariants}>
         <DialogContent className="max-w-3xl">

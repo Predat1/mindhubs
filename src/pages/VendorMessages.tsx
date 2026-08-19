@@ -67,10 +67,10 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
     <DashboardLayout variant="vendor" title="Messages" shopName={vendor.shop_name} shopUrl={`/store/${vendor.username}`}>
       <SEO title="Messages — Inbox Expert" description="Gérez vos leads et répondez à vos clients." path="/dashboard/messages" />
 
-      <div className="h-[calc(100vh-160px)] flex overflow-hidden rounded-2xl border border-white/5 bg-card/50 backdrop-blur-xl shadow-2xl">
+      <div className="h-[calc(100vh-160px)] flex overflow-hidden rounded-2xl border border-border bg-card/50 shadow-2xl">
         
         {/* Sidebar: Chat List */}
-        <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-white/5 bg-background/20">
+        <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-border bg-background/20">
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black tracking-tight">Inbox Expert</h2>
@@ -78,7 +78,7 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
-              <Input placeholder="Rechercher une conversation..." className="pl-9 rounded-xl border-white/5 bg-background/40" />
+              <Input placeholder="Rechercher une conversation..." className="pl-9 rounded-xl border-border bg-background/40" />
             </div>
           </div>
           
@@ -92,10 +92,10 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
                 <button
                   key={chat.id}
                   onClick={() => setSelectedChat(chat)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedChat?.id === chat.id ? "bg-primary/20 border border-primary/20" : "hover:bg-white/5 border border-transparent"}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedChat?.id === chat.id ? "bg-primary/20 border border-primary/20" : "hover:bg-muted/50 border border-transparent"}`}
                 >
                   <div className="relative">
-                    <Avatar className="h-12 w-12 border border-white/10">
+                    <Avatar className="h-12 w-12 border border-border">
                       <AvatarImage src={chat.customer_avatar || ""} />
                       <AvatarFallback>{chat.customer_name?.slice(0, 2) || "CL"}</AvatarFallback>
                     </Avatar>
@@ -121,9 +121,9 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
           {selectedChat ? (
             <>
               {/* Chat Header */}
-              <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-background/40 backdrop-blur-md z-10">
+              <div className="h-16 flex items-center justify-between px-6 border-b border-border bg-background/40 z-10">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9 border border-white/5">
+                  <Avatar className="h-9 w-9 border border-border">
                     <AvatarImage src={selectedChat.customer_avatar || ""} />
                     <AvatarFallback>{selectedChat.customer_name?.slice(0, 2) || "CL"}</AvatarFallback>
                   </Avatar>
@@ -170,8 +170,8 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="p-4 bg-background/40 border-t border-white/5 backdrop-blur-md">
-                <div className="max-w-4xl mx-auto flex items-end gap-3 bg-card border border-white/5 rounded-2xl p-2 focus-within:border-primary/50 transition-all">
+              <div className="p-4 bg-background/40 border-t border-border">
+                <div className="max-w-4xl mx-auto flex items-end gap-3 bg-card border border-border rounded-2xl p-2 focus-within:border-primary/50 transition-all">
                   <div className="flex items-center gap-1 pb-1 px-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><Paperclip size={18} /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary"><ImageIcon size={18} /></Button>
@@ -198,8 +198,8 @@ const VendorMessagesInner = ({ vendor }: { vendor: Vendor }) => {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center space-y-4">
-               <div className="h-24 w-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                 <MessageSquare size={48} className="text-white/20" />
+               <div className="h-24 w-24 rounded-full bg-muted/20 border border-border flex items-center justify-center mb-4">
+                 <MessageSquare size={48} className="text-muted-foreground/50" />
                </div>
                <h3 className="text-xl font-bold text-white">Vos Messages</h3>
                <p className="max-w-md">Sélectionnez une conversation sur la gauche pour commencer à discuter avec vos clients ou autres vendeurs.</p>
