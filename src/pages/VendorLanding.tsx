@@ -56,7 +56,7 @@ const STEPS = [
 const FAQS = [
   { question: "Dois-je publier dans la marketplace ?", answer: "Non. Votre boutique personnelle est votre espace principal. Vous choisissez ensuite les produits que vous souhaitez proposer dans la marketplace." },
   { question: "Puis-je vendre des produits physiques ?", answer: "Oui. MindHubs prend en charge les produits digitaux, physiques et hybrides. Les informations de stock et de livraison sont configurées au niveau du produit." },
-  { question: "Puis-je commencer gratuitement ?", answer: "Oui. La création de boutique commence avec le plan gratuit. Les options avancées et les plans payants restent disponibles lorsque votre activité grandit." },
+  { question: "Puis-je commencer gratuitement ?", answer: "Oui. La création de votre boutique et l’ajout de produits sont accessibles dès votre inscription." },
   { question: "MindHubs garantit-il du trafic ou des ventes ?", answer: "Non. La marketplace apporte une opportunité de découverte, mais les résultats dépendent de votre offre, de votre contenu, de votre prix et de votre promotion." },
 ];
 

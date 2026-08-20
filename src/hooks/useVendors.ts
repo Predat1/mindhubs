@@ -18,8 +18,6 @@ export interface Vendor {
   custom_footer_text: string | null;
   verified: boolean;
   created_at: string;
-  plan?: string;
-  badge?: string;
 }
 
 export const DEMO_VENDOR: Vendor = {
@@ -35,8 +33,6 @@ export const DEMO_VENDOR: Vendor = {
   custom_footer_text: null,
   verified: true,
   created_at: "2026-01-01T00:00:00.000Z",
-  plan: "pro",
-  badge: "Démo",
 };
 
 const mapVendorProduct = (db: any): Product => ({
@@ -68,7 +64,7 @@ export const useVendor = (username: string | undefined) => {
       if (!username) return null;
       if (isDemoMode && username === DEMO_VENDOR.username) return DEMO_VENDOR;
       const { data, error } = await (supabase as any)
-        .from("vendor_subscription_view")
+        .from("vendors")
         .select("*")
         .eq("username", username)
         .maybeSingle();
@@ -85,9 +81,9 @@ export const useVendorById = (id: string | undefined) => {
     queryFn: async (): Promise<Vendor | null> => {
       if (!id) return null;
       const { data, error } = await (supabase as any)
-        .from("vendor_subscription_view")
+        .from("vendors")
         .select("*")
-        .eq("vendor_id", id)
+        .eq("id", id)
         .maybeSingle();
       if (error) throw error;
       return data as unknown as Vendor | null;
@@ -137,6 +133,8 @@ export const usePublishedVendorProducts = (vendorId: string | undefined, channel
         return data.filter((row: any) => row.product).map((row: any) => mapVendorProduct(row.product));
       }
 
+      if (channel === "marketplace") return [];
+
       // Keep existing storefronts readable until the distribution migration is deployed.
       const fallback = await supabase.from("products").select("*").eq("vendor_id", vendorId).eq("status", "published").order("sort_order");
       if (fallback.error) throw fallback.error;
@@ -155,20 +153,6 @@ export const useCurrentVendor = () => {
       if (!user) return null;
       if (isDemoMode) return DEMO_VENDOR;
 
-      // Try the enriched view first
-      try {
-        const { data, error } = await (supabase as any)
-          .from("vendor_subscription_view")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (!error && data) {
-          // vendor_subscription_view uses "vendor_id" — normalize to "id"
-          return { ...data, id: data.vendor_id ?? data.id } as unknown as Vendor;
-        }
-      } catch (_) { /* view may not exist yet */ }
-
-      // Fallback: query vendors table directly
       const { data: fallback, error: fbErr } = await (supabase as any)
         .from("vendors")
         .select("*")

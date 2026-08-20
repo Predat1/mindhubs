@@ -101,16 +101,6 @@ export async function initializeSeller(input: SellerOnboardingInput): Promise<Se
     .upsert({ user_id: input.userId, role: "vendor" }, { onConflict: "user_id,role" });
   if (roleError) throw toOnboardingError(roleError);
 
-  const { error: subscriptionError } = await db
-    .from("vendor_subscriptions")
-    .upsert({ vendor_id: vendorId, plan: "free", status: "active" }, { onConflict: "vendor_id" });
-  if (subscriptionError) throw toOnboardingError(subscriptionError);
-
-  const { error: creditsError } = await db
-    .from("vendor_credits")
-    .upsert({ vendor_id: vendorId, balance: 0 }, { onConflict: "vendor_id" });
-  if (creditsError) throw toOnboardingError(creditsError);
-
   return { vendorId };
 }
 

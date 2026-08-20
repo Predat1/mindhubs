@@ -25,7 +25,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/currency";
 
 // ─── NEW COMPONENTS ───
-import AdminSubscriptionsTab from "@/components/admin/AdminSubscriptionsTab";
 import AdminAnalyticsTab from "@/components/admin/AdminAnalyticsTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
 import AdminVendorsTab from "@/components/admin/AdminVendorsTab";
@@ -33,8 +32,8 @@ import AdminProductsTab from "@/components/admin/AdminProductsTab";
 import AdminMessagesTab from "@/components/admin/AdminMessagesTab";
 
 // ─── Types ───
-type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" | 
-           "subscriptions" | "security" | "analytics" | "settings" | "help" | 
+type Tab = "overview" | "products" | "testimonials" | "orders" | "vendors" |
+           "security" | "analytics" | "settings" | "help" |
            "api-manager" | "logs" | "users" | "messages";
 
 interface ProductForm {
@@ -77,7 +76,14 @@ const Admin = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const currentTab = (searchParams.get("tab") as Tab) || "overview";
+  const requestedTab = searchParams.get("tab");
+  const currentTab = (requestedTab as Tab) || "overview";
+
+  useEffect(() => {
+    if (requestedTab === "subscriptions") {
+      navigate("/admin?tab=vendors", { replace: true });
+    }
+  }, [navigate, requestedTab]);
 
   const [productEditing, setProductEditing] = useState<ProductForm | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
@@ -252,7 +258,7 @@ const Admin = () => {
   // ─── Render ───
   return (
     <DashboardLayout variant="admin">
-      <SEO title="Administration Elite | MindHubs" description="Contrôle total sur l'écosystème MindHubs." />
+      <SEO title="Administration | MindHubs" description="Contrôle opérationnel de l'écosystème MindHubs." />
       
       <div className="max-w-[1600px] mx-auto space-y-8 pb-20">
         <AnimatePresence mode="wait">
@@ -310,9 +316,6 @@ const Admin = () => {
                 </div>
               </div>
             )}
-
-            {/* ─── TAB: SUBSCRIPTIONS (NEW) ─── */}
-            {currentTab === "subscriptions" && <AdminSubscriptionsTab logAction={logAction} />}
 
             {/* ─── TAB: ANALYTICS (NEW) ─── */}
             {currentTab === "analytics" && <AdminAnalyticsTab />}

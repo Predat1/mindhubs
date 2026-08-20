@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   Store, ShieldCheck, ExternalLink, Search, Download, 
   History, ShoppingBag, Package, TrendingUp, DollarSign,
-  ChevronRight, Info, UserCog, BadgeCheck, Loader2, X, Wallet, Trash2
+  ChevronRight, Info, UserCog, BadgeCheck, Loader2, X, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,18 +39,13 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; label: string; type: 'vendor' | 'product' } | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [updatingPlan, setUpdatingPlan] = useState(false);
-  const [grantingCredits, setGrantingCredits] = useState(false);
-  const [creditAmount, setCreditAmount] = useState(100);
-  const [creditDesc, setCreditDesc] = useState("Bonus Admin");
 
   // ─── Queries ───
   const { data: vendors = [], isLoading: vendorsLoading, refetch } = useQuery({
     queryKey: ["admin-vendors-extended"],
     queryFn: async () => {
-      // Joindre les vues pour avoir les infos complètes
       const { data, error } = await (supabase as any)
-        .from('vendor_subscription_view')
+        .from('vendors')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -71,17 +66,15 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
 
   // ─── Vendor Detail Queries (Only when sheet is open) ───
   const { data: vendorDetails, isLoading: detailsLoading } = useQuery({
-    queryKey: ["admin-vendor-details", selectedVendor?.vendor_id],
+    queryKey: ["admin-vendor-details", selectedVendor?.id],
     enabled: !!selectedVendor,
     queryFn: async () => {
-      const vendorId = selectedVendor.vendor_id;
-      const [credits, products, orders] = await Promise.all([
-        (supabase as any).from('credit_transactions').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(10),
+      const vendorId = selectedVendor.id;
+      const [products, orders] = await Promise.all([
         supabase.from('products').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }),
         (supabase as any).from('orders').select('*').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(5)
       ]);
       return {
-        transactions: credits.data || [],
         products: products.data || [],
         orders: orders.data || []
       };
@@ -121,8 +114,8 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
     const total = vendors.length;
     const active = vendors.filter(v => (v.product_count || 0) > 0).length;
     const grossMarketplace = orders.reduce((acc, o) => acc + (Number(o.total_price) || 0), 0);
-    const mhCommission = orders.reduce((acc, o) => acc + (Number(o.total_price) - Number(o.vendor_revenue) || 0), 0);
-    return { total, active, grossMarketplace, mhCommission };
+    const vendorRevenue = orders.reduce((acc, o) => acc + (Number(o.vendor_revenue) || Number(o.total_price) || 0), 0);
+    return { total, active, grossMarketplace, vendorRevenue };
   }, [vendors, orders]);
 
   const filteredVendors = vendors.filter(v => 
@@ -142,57 +135,6 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
     }
   };
 
-  const changePlan = async (vendorId: string, shopName: string, newPlan: string) => {
-    setUpdatingPlan(true);
-    try {
-      // 1. Mettre à jour la table vendor_subscriptions
-      const { error: subError } = await (supabase as any)
-        .from('vendor_subscriptions')
-        .update({ 
-          plan: newPlan,
-          updated_at: new Date().toISOString() 
-        })
-        .eq('vendor_id', vendorId);
-      
-      if (subError) throw subError;
-
-      // 2. Mettre à jour le badge sur le vendeur (optionnel si on utilise la vue, mais bon pour la dénorm)
-      // En fait la vue s'appuie sur vendor_subscriptions.plan donc c'est automatique.
-
-      await logAction('PLAN_CHANGE', `${shopName} → Plan ${newPlan.toUpperCase()}`);
-      toast.success(`Plan mis à jour pour ${shopName}`);
-      refetch();
-    } catch (err: any) {
-      toast.error("Erreur de mise à jour: " + err.message);
-    } finally {
-      setUpdatingPlan(false);
-    }
-  };
-
-  const handleGrantCredits = async (vendorId: string, shopName: string) => {
-    if (creditAmount <= 0) return;
-    setGrantingCredits(true);
-    try {
-      const { data, error } = await supabase.rpc('grant_credits', {
-        p_vendor_id: vendorId,
-        p_amount: creditAmount,
-        p_description: creditDesc,
-        p_type: 'bonus'
-      });
-      
-      if (error) throw error;
-      
-      await logAction('CREDIT_GRANT', `${shopName} : +${creditAmount} credits (${creditDesc})`);
-      toast.success(`${creditAmount} crédits ajoutés à ${shopName}`);
-      setCreditAmount(100);
-      setCreditDesc("Bonus Admin");
-      refetch();
-    } catch (err: any) {
-      toast.error("Erreur d'ajout: " + err.message);
-    } finally {
-      setGrantingCredits(false);
-    }
-  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -201,7 +143,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
         {[
           { label: "Total Vendeurs", value: stats.total, icon: Store, color: "text-primary" },
           { label: "Vendeurs Actifs", value: stats.active, icon: BadgeCheck, color: "text-success" },
-          { label: "Revenu Commissions", value: formatCurrency(stats.mhCommission), icon: TrendingUp, color: "text-brand-magenta" },
+          { label: "Revenu vendeurs", value: formatCurrency(stats.vendorRevenue), icon: TrendingUp, color: "text-success" },
           { label: "Volume Marketplace", value: formatCurrency(stats.grossMarketplace), icon: ShoppingBag, color: "text-info" },
         ].map((s, i) => (
           <div key={i} className="stat-card rounded-2xl p-5 border-glow">
@@ -230,8 +172,6 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
             <thead>
               <tr className="bg-muted/30 border-b border-border">
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Boutique</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Plan</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Crédits</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Produits</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Vérifié</th>
                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Détails</th>
@@ -239,9 +179,9 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
             </thead>
             <tbody className="divide-y divide-white/5">
               {vendorsLoading ? (
-                Array(6).fill(0).map((_, i) => <tr key={i}><td colSpan={6} className="p-4"><Skeleton className="h-12 w-full rounded-xl" /></td></tr>)
+                Array(6).fill(0).map((_, i) => <tr key={i}><td colSpan={4} className="p-4"><Skeleton className="h-12 w-full rounded-xl" /></td></tr>)
               ) : filteredVendors.map((v) => (
-                <tr key={v.vendor_id} className="group hover:bg-muted/30 transition-colors">
+                <tr key={v.id} className="group hover:bg-muted/30 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
@@ -254,17 +194,11 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                     </div>
                   </td>
                   <td className="p-4 text-center">
-                    <Badge className={`font-black text-[9px] uppercase ${v.plan === 'elite' ? 'bg-brand-magenta' : v.plan === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-zinc-500'}`}>
-                       {v.plan}
-                    </Badge>
-                  </td>
-                  <td className="p-4 text-center font-black text-xs text-primary">{v.credit_balance}</td>
-                  <td className="p-4 text-center">
-                    <span className="text-[10px] font-black text-muted-foreground">{v.product_count} / {v.max_products === -1 ? "∞" : v.max_products}</span>
+                    <span className="text-[10px] font-black text-muted-foreground">Catalogue ouvert</span>
                   </td>
                   <td className="p-4 text-center">
                     <button 
-                      onClick={() => toggleVerification(v.vendor_id, v.shop_name, v.verified)}
+                      onClick={() => toggleVerification(v.id, v.shop_name, v.verified)}
                       className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${v.verified ? "bg-success/10 text-success border border-success/20" : "bg-muted/30 text-muted-foreground border border-border hover:border-primary/50"}`}
                     >
                       {v.verified ? "VÉRIFIÉ ✓" : "STANDARD"}
@@ -284,7 +218,7 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: v.vendor_id, label: v.shop_name, type: 'vendor' }); }}
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: v.id, label: v.shop_name, type: 'vendor' }); }}
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -320,97 +254,16 @@ const AdminVendorsTab = ({ logAction }: AdminVendorsTabProps) => {
                <div className="p-10 pt-16 space-y-10">
                   {/* General Info Grid */}
                   <div className="grid grid-cols-2 gap-6">
-                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border relative">
-                        <p className="text-[9px] font-black text-muted-foreground uppercase mb-2">Abonnement Actuel</p>
-                        <div className="flex flex-col gap-3">
-                           <Badge className={`w-fit font-black text-[10px] uppercase ${selectedVendor.plan === 'elite' ? 'bg-brand-magenta shadow-lg shadow-brand-magenta/20' : selectedVendor.plan === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-zinc-500'}`}>
-                              {selectedVendor.plan}
-                           </Badge>
-                           
-                           <div className="space-y-1">
-                              <p className="text-[8px] font-black uppercase text-muted-foreground">Changer de plan :</p>
-                              <div className="flex flex-wrap gap-1">
-                                 {['free', 'starter', 'pro', 'elite'].map((p) => (
-                                    <button
-                                       key={p}
-                                       disabled={updatingPlan || selectedVendor.plan === p}
-                                       onClick={() => changePlan(selectedVendor.vendor_id, selectedVendor.shop_name, p)}
-                                       className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase border transition-all ${selectedVendor.plan === p ? 'bg-primary text-black border-primary' : 'bg-transparent border-white/10 hover:border-primary/50 text-muted-foreground'}`}
-                                    >
-                                       {p}
-                                    </button>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
+                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase">Catalogue</p>
+                        <p className="mt-1 text-lg font-black">Ouvert</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">Catalogue ouvert pour chaque vendeur.</p>
                      </div>
-                      <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
-                         <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>
-                         <p className="text-lg font-black">{new Date(selectedVendor.created_at).toLocaleDateString()}</p>
-                      </div>
-                   </div>
-
-                   {/* Credit Management (Admin ONLY UI) */}
-                   <div className="stat-card p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="text-primary" size={20} />
-                        <h3 className="text-sm font-black uppercase tracking-widest">Gestion des Crédits</h3>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                         <div className="space-y-1">
-                            <label className="text-[8px] font-black uppercase text-muted-foreground">Quantité</label>
-                            <Input 
-                              type="number" 
-                              value={creditAmount} 
-                              onChange={(e) => setCreditAmount(parseInt(e.target.value) || 0)}
-                              className="h-10 bg-card rounded-xl font-black text-primary"
-                            />
-                         </div>
-                         <div className="space-y-1">
-                            <label className="text-[8px] font-black uppercase text-muted-foreground">Motif</label>
-                            <Input 
-                              value={creditDesc} 
-                              onChange={(e) => setCreditDesc(e.target.value)}
-                              className="h-10 bg-card rounded-xl text-xs font-bold"
-                            />
-                         </div>
-                      </div>
-                      
-                      <Button 
-                        onClick={() => handleGrantCredits(selectedVendor.vendor_id, selectedVendor.shop_name)}
-                        disabled={grantingCredits}
-                        className="w-full rounded-xl bg-primary text-black font-black uppercase text-[10px] tracking-widest h-12"
-                      >
-                        {grantingCredits ? <Loader2 className="animate-spin mr-2" /> : <Plus size={14} className="mr-2" />}
-                        Ajouter les Crédits
-                      </Button>
-                   </div>
-
-                  {/* Credits History */}
-                  <div className="space-y-4">
-                     <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-primary">
-                        <Wallet size={16} /> Dernières Transactions
-                     </h3>
-                     <div className="space-y-2">
-                        {detailsLoading ? Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />) : 
-                         vendorDetails?.transactions.length === 0 ? <p className="text-center py-6 text-xs text-muted-foreground uppercase font-black opacity-30">Aucun mouvement de crédits</p> :
-                         vendorDetails?.transactions.map((t: any) => (
-                          <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border text-[11px]">
-                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${t.amount > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                                   {t.amount > 0 ? "+" : ""}{t.amount}
-                                </div>
-                                <div>
-                                   <p className="font-bold">{t.description || "Transaction"}</p>
-                                   <p className="text-[9px] text-muted-foreground">{new Date(t.created_at).toLocaleString()}</p>
-                                </div>
-                             </div>
-                             <Badge variant="outline" className="text-[9px] uppercase font-black">{t.type}</Badge>
-                          </div>
-                        ))}
+                     <div className="stat-card p-4 rounded-2xl bg-muted/30 border-border">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase">Date d'inscription</p>
+                        <p className="text-lg font-black">{new Date(selectedVendor.created_at).toLocaleDateString()}</p>
                      </div>
-                  </div>
+                   </div>
 
                   {/* Products */}
                   <div className="space-y-4">

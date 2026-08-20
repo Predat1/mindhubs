@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bot, ChevronDown, Volume2, Crown, Zap, Coins, Image as ImageIcon } from "lucide-react";
+import { Bot, ChevronDown, Volume2, Crown, Zap, Sparkles, Image as ImageIcon } from "lucide-react";
 import {
   TEXT_TO_VIDEO_MODELS,
   IMAGE_TO_VIDEO_MODELS,
@@ -16,9 +16,9 @@ interface ModelSelectorProps {
 }
 
 const TIER_CONFIG = {
-  premium: { label: "Premium", icon: Crown, color: "text-brand-magenta" },
+  premium: { label: "Avancé", icon: Crown, color: "text-brand-magenta" },
   standard: { label: "Standard", icon: Zap, color: "text-info" },
-  budget: { label: "Budget", icon: Coins, color: "text-success" },
+  budget: { label: "Rapide", icon: Sparkles, color: "text-success" },
 };
 
 const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSelectorProps) => {
@@ -150,9 +150,7 @@ const ModelSelector = ({ selectedModel, mode, onSelect, onModeChange }: ModelSel
                         </div>
                         <p className="text-[10px] text-muted-foreground truncate">{m.description}</p>
                       </div>
-                      <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
-                        {m.creditCost} pts
-                      </span>
+                      {m.hasAudio && <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">Audio</span>}
                     </button>
                   ))}
                 </div>

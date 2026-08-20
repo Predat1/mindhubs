@@ -35,7 +35,7 @@ const protections = [
   {
     icon: Star,
     title: "Accès à Vie Certifié",
-    desc: "Une fois acheté, votre produit reste accessible dans votre espace client pour toujours. Pas d'abonnement caché, pas de frais de renouvellement."
+    desc: "Une fois acheté, votre produit reste accessible dans votre espace client pour toujours, sans frais de renouvellement."
   }
 ];
 

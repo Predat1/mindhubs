@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isDemoMode } from "@/lib/demoMode";
+import { VENDOR_REVENUE_MULTIPLIER } from "@/lib/commerce";
 
 export interface VendorOrderItem {
   id: string;
@@ -31,11 +32,8 @@ export interface VendorOrder {
  * useVendorOrders
  * 
  * WHY: Récupère les commandes pertinentes pour le vendeur et calcule ses revenus réels.
- * [MODIF] Utilise maintenant le taux de commission dynamique du plan (5%, 7% ou 10%).
  */
-export const useVendorOrders = (vendorId: string | undefined, productIds: string[], commissionRate = 0.10) => {
-  const vendorShare = 1 - commissionRate;
-
+export const useVendorOrders = (vendorId: string | undefined, productIds: string[]) => {
   const productIdsKey = productIds.join(",");
   return useQuery({
     queryKey: ["vendor-all-orders", vendorId, productIdsKey],
@@ -76,8 +74,7 @@ export const useVendorOrders = (vendorId: string | undefined, productIds: string
 
           const vendorRevenue = vendorItems.reduce((sum, i) => {
             const priceNum = parseInt(String(i.price || "0").replace(/[^0-9]/g, ""), 10) || 0;
-            // WHY: Application du partage de revenu basé sur le plan (ex: 95% pour Elite)
-            return sum + (priceNum * (i.quantity || 1)) * vendorShare;
+            return sum + (priceNum * (i.quantity || 1)) * VENDOR_REVENUE_MULTIPLIER;
           }, 0);
 
           return {

@@ -1,6 +1,5 @@
 import { useCurrentVendor } from "@/hooks/useVendors";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 import { 
   CheckCircle2, 
   Circle, 
@@ -18,7 +17,6 @@ import { motion, AnimatePresence } from "motion/react";
 
 export const OnboardingProgress = () => {
   const { data: vendor } = useCurrentVendor();
-  const queryClient = useQueryClient();
 
   const onboardingProgress = (vendor as any)?.onboarding_progress;
   if (!vendor || onboardingProgress?.completed) return null;
@@ -40,7 +38,7 @@ export const OnboardingProgress = () => {
   const completedSteps = steps.filter(s => s.done).length;
   const percentage = (completedSteps / steps.length) * 100;
 
-  const claimBonus = async () => {
+  const completeOnboarding = async () => {
     if (completedSteps < steps.length) {
       toast.error("Complétez toutes les étapes pour débloquer votre cadeau !");
       return;
@@ -57,10 +55,7 @@ export const OnboardingProgress = () => {
 
       if (updateError) throw updateError;
 
-      // 2. Grant credits (Handled by a DB function ideally, but simulation here)
-      toast.success("Félicitations ! 50 Crédits IA ajoutés à votre compte.");
-      queryClient.invalidateQueries({ queryKey: ['vendor'] });
-      queryClient.invalidateQueries({ queryKey: ['credits'] });
+      toast.success("Félicitations ! Votre boutique est prête à vendre.");
       
     } catch (error) {
       toast.error("Erreur lors de la réclamation du bonus.");
@@ -82,7 +77,7 @@ export const OnboardingProgress = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">Cadeau de Bienvenue</span>
              </div>
              <h3 className="text-2xl font-black tracking-tighter">Lancez votre <span className="text-gradient-primary">Business</span></h3>
-             <p className="text-sm text-muted-foreground font-medium">Complétez ces 4 étapes simples pour débloquer <span className="text-foreground font-black">50 crédits IA gratuits</span>.</p>
+             <p className="text-sm text-muted-foreground font-medium">Complétez ces 4 étapes simples pour préparer une boutique claire et prête à vendre.</p>
              
              <div className="space-y-2 max-w-md mx-auto md:mx-0">
                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -106,11 +101,11 @@ export const OnboardingProgress = () => {
 
           <div className="shrink-0">
              <Button 
-               onClick={claimBonus}
+               onClick={completeOnboarding}
                disabled={completedSteps < steps.length}
                className={`h-14 rounded-2xl px-8 font-black gap-2 transition-all ${completedSteps === steps.length ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-105' : 'bg-muted text-muted-foreground grayscale'}`}
              >
-                RÉCLAMER BONUS <ChevronRight size={18} />
+                TERMINER LA CONFIGURATION <ChevronRight size={18} />
              </Button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, ShoppingBag, CreditCard, CheckCircle, Info, Loader2 } from "lucide-react";
+import { Bell, ShoppingBag, CreditCard, Info, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useVendorNotifications, type VendorNotification } from "@/hooks/useVendorNotifications";
@@ -25,7 +25,6 @@ export const VendorNotificationBell = ({ vendorId }: { vendorId: string }) => {
       case "sale": return <ShoppingBag size={14} className="text-success" />;
       case "payout": return <CreditCard size={14} className="text-info" />;
       case "system": return <Info size={14} className="text-warning" />;
-      case "subscription": return <CheckCircle size={14} className="text-brand-magenta" />;
       default: return <Bell size={14} className="text-muted-foreground" />;
     }
   };

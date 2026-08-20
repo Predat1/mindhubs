@@ -62,7 +62,6 @@ import {
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import CourseBuilder from "@/components/vendor/lms/CourseBuilder";
 import ProductCard from "@/components/ProductCard";
-import { useVendorSubscription } from "@/hooks/useSubscription";
 import { parseProductAmount, validateProduct, type ProductValidationResult } from "@/lib/productValidation";
 
 import { categories as CATEGORIES, type Category } from "@/data/products";
@@ -173,7 +172,6 @@ const Inner = ({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
-  const { canAddProduct, max_products: maxProducts, product_count: productCount, plan } = useVendorSubscription(vendorId);
   const draftKey = `vendor:product:draft:v2:${vendorId}:${id ?? "new"}`;
 
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -592,15 +590,6 @@ const Inner = ({
   const handleSave = async (overrideStatus?: "draft" | "published") => {
     const finalStatus = overrideStatus ?? form.status;
 
-    // Plan Limit Guard for NEW products (admin bypasses this check)
-    const isAdminUser = (await supabase.auth.getUser()).data.user?.email === 'mobifranck94@gmail.com';
-    if (!isEdit && !canAddProduct && !isAdminUser) {
-      toast.error("Limite de plan atteinte", {
-        description: `Votre plan ${plan} permet max ${maxProducts} produits. Passez au plan supérieur pour enregistrer ce produit.`,
-        action: { label: "Upgrader", onClick: () => navigate('/pricing') }
-      });
-      return;
-    }
     // Les brouillons demandent seulement un titre ; la publication utilise la checklist complète.
     if (finalStatus === "published" && !allValid) {
       setValidation(publishValidation);
@@ -863,7 +852,7 @@ const Inner = ({
             <Button
               size="sm"
               onClick={() => handleSave("published")}
-              disabled={saving || (!isEdit && !canAddProduct)}
+              disabled={saving}
             >
               {saving ? (
                 <Loader2 className="animate-spin" size={14} />
@@ -874,20 +863,6 @@ const Inner = ({
             </Button>
           </div>
         </div>
-
-        {!isEdit && !canAddProduct && maxProducts !== -1 && (
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between">
-             <div className="flex items-center gap-3">
-                <AlertCircle className="text-destructive" size={20} />
-                <p className="text-sm font-medium text-destructive">
-                   Limite de produits atteinte ({productCount}/{maxProducts} sur le plan {plan.toUpperCase()}).
-                </p>
-             </div>
-             <Button onClick={() => navigate('/pricing')} size="sm" variant="destructive" className="rounded-xl font-black text-[10px] uppercase tracking-widest">
-                Passer au plan supérieur
-             </Button>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr,360px]">
           {/* Left: stepper + form */}

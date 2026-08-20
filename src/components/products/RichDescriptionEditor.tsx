@@ -3,7 +3,7 @@ import {
   AlertCircle, ArrowDown, ArrowUp, Bold, CheckCircle2, ChevronDown, Edit3, Eye, HelpCircle,
   Heading2, Highlighter, ImagePlus, Italic, Layers3, Link, List, ListOrdered, Loader2,
   MessageCircle, Minus, MousePointerClick, Palette, Plus, Quote, Sparkles, Star, Trash2,
-  Underline, Upload, Wand2, Wallet, X,
+  Underline, Upload, Wand2, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,16 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useCredits } from "@/hooks/useCredits";
-import { useCurrentVendor } from "@/hooks/useVendors";
-import { CREDIT_COSTS } from "@/constants/credits";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProductContentRenderer } from "@/components/products/ProductContentRenderer";
 import {
   CalloutBlock, ProductContentBlock, ProductContentBlockType, contentToPlainText, createBlockId,
   createInitialContentBlocks, markdownToHtml, parseProductContent, serializeProductContent,
 } from "@/lib/productContent";
-import { useNavigate } from "react-router-dom";
 import { MINDHUBS_COLORS } from "@/lib/design-tokens";
 
 interface RichDescriptionEditorProps {
@@ -69,13 +64,7 @@ export const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({ va
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<"edit" | "preview">("edit");
   const [showBlocks, setShowBlocks] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [showInsufficient, setShowInsufficient] = useState(false);
-  const [pendingMode, setPendingMode] = useState<"generate" | "embellish" | null>(null);
   const lastExternalValue = useRef(value);
-  const navigate = useNavigate();
-  const { data: vendor } = useCurrentVendor();
-  const { balance: credits, spend } = useCredits(vendor?.id);
 
   useEffect(() => {
     if (value === lastExternalValue.current) return;
@@ -138,24 +127,8 @@ export const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({ va
       toast.error("Titre requis", { description: "Saisissez d'abord le titre du produit." });
       return;
     }
-    const cost = CREDIT_COSTS.description;
-    if (credits < cost) {
-      setShowInsufficient(true);
-      return;
-    }
-    setPendingMode(mode);
-    setShowConfirm(true);
-  };
-
-  const confirmGenerateAI = async () => {
-    if (!pendingMode) return;
-    setShowConfirm(false);
     setLoading(true);
-    const mode = pendingMode;
     try {
-      const cost = CREDIT_COSTS.description;
-      const result = await spend({ amount: cost, description: `Génération description IA (${mode}): ${title}`, featureType: "description" }) as any;
-      if (result && !result.success) throw new Error(result.error || "Erreur de crédit");
       const styleName = AI_STYLES.find((style) => style.value === aiStyle)?.label || "Classique";
       const hint = mode === "generate"
         ? `Rédige une description vendeuse pour ce produit avec le style ${styleName}. Utilise du Markdown (gras et listes).`
@@ -219,8 +192,6 @@ export const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({ va
 
       <p className="px-1 text-[11px] text-muted-foreground">💡 Le contenu est enregistré dans votre produit. Vous pouvez le réordonner et le prévisualiser avant publication.</p>
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}><DialogContent className="max-w-sm rounded-3xl"><DialogHeader className="text-center"><div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/15"><Sparkles className="text-primary" /></div><DialogTitle>Confirmer la génération</DialogTitle><DialogDescription>Cette action va consommer <strong>{CREDIT_COSTS.description} crédits</strong>.</DialogDescription></DialogHeader><div className="flex justify-between rounded-2xl bg-muted/50 p-4 text-sm"><span>Solde après l'action</span><strong>{credits - CREDIT_COSTS.description} crédits</strong></div><DialogFooter className="flex-col gap-2 sm:flex-col"><Button type="button" onClick={confirmGenerateAI} className="w-full rounded-full">Confirmer</Button><Button type="button" variant="ghost" onClick={() => setShowConfirm(false)} className="w-full rounded-full">Annuler</Button></DialogFooter></DialogContent></Dialog>
-      <Dialog open={showInsufficient} onOpenChange={setShowInsufficient}><DialogContent className="max-w-sm rounded-3xl"><DialogHeader className="text-center"><div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive"><AlertCircle /></div><DialogTitle>Crédits insuffisants</DialogTitle><DialogDescription>Votre solde actuel ({credits} crédits) ne permet pas d'utiliser l'IA.</DialogDescription></DialogHeader><DialogFooter><Button type="button" onClick={() => { setShowInsufficient(false); navigate("/dashboard/abonnement"); }} className="w-full rounded-full gap-2"><Wallet size={16} /> Recharger maintenant</Button></DialogFooter></DialogContent></Dialog>
     </div>
   );
 };

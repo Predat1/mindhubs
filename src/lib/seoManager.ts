@@ -9,7 +9,6 @@ export const generateSitemap = async (vendors: any[]) => {
   const staticPages = [
     '',
     '/marketplace',
-    '/pricing',
     '/about',
     '/contact',
     '/faq'

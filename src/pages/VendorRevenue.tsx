@@ -5,7 +5,6 @@ import VendorGuard from "@/components/dashboard/VendorGuard";
 import SEO from "@/components/SEO";
 import { useVendorProducts } from "@/hooks/useVendors";
 import { useVendorOrders } from "@/hooks/useVendorOrders";
-import { useVendorSubscription } from "@/hooks/useSubscription";
 import { DollarSign, TrendingUp, ShoppingBag, Calendar, Wallet, ArrowRight, MessageCircle, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +32,6 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
   const queryClient = useQueryClient();
   const { data: products = [] } = useVendorProducts(vendorId);
   const { data: orders = [], isLoading: ordersLoading } = useVendorOrders(vendorId, products.map((p) => p.id));
-  const { plan } = useVendorSubscription(vendorId);
 
   const [isPayoutDialogOpen, setIsPayoutDialogOpen] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("");
@@ -204,11 +202,6 @@ const VendorRevenueInner = ({ vendorId, shopName, shopUrl }: { vendorId: string;
                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                    Un souci avec une vente ou un retrait ? Notre équipe est disponible 7j/7 pour vous aider.
                  </p>
-                 {plan === 'elite' && (
-                    <Badge className="bg-warning text-warning-foreground font-black uppercase text-[8px] tracking-widest">
-                       Priority WhatsApp Support Active
-                    </Badge>
-                 )}
               </div>
               <Button asChild variant="outline" className="mt-8 rounded-xl h-12 border-white/10 hover:bg-white/5 font-black uppercase tracking-widest text-[10px] gap-2">
                 <a href="https://wa.me/2250000000000" target="_blank" rel="noopener noreferrer">

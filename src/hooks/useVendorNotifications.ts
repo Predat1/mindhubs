@@ -6,7 +6,7 @@ export interface VendorNotification {
   vendor_id: string;
   title: string;
   message: string;
-  type: 'sale' | 'system' | 'payout' | 'subscription';
+  type: 'sale' | 'system' | 'payout';
   read: boolean;
   link: string | null;
   created_at: string;

@@ -41,8 +41,6 @@ const VendorRevenue = lazy(() => import("./pages/VendorRevenue.tsx"));
 const VendorPayouts = lazy(() => import("./pages/VendorPayouts.tsx"));
 const VendorAnalytics = lazy(() => import("./pages/VendorAnalytics.tsx"));
 const VendorSettings = lazy(() => import("./pages/VendorSettings.tsx"));
-const Pricing = lazy(() => import("./pages/Pricing.tsx"));
-const VendorSubscription = lazy(() => import("./pages/VendorSubscription.tsx"));
 const VendorMessages = lazy(() => import("./pages/VendorMessages.tsx"));
 const ProtectionAcheteur = lazy(() => import("./pages/ProtectionAcheteur.tsx"));
 const LMSPlayer = lazy(() => import("./pages/LMSPlayer.tsx"));
@@ -104,7 +102,7 @@ const AppContent = () => {
             <Route path="/protection-acheteur" element={<ProtectionAcheteur />} />
             <Route path="/become-a-seller" element={<VendorLanding />} />
             <Route path="/become-a-seller/start" element={<BecomeSeller />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing" element={<Navigate to="/become-a-seller" replace />} />
             <Route path="/login" element={<Navigate to="/mon-compte" replace />} />
             <Route path="*" element={<NotFound />} />
           </Route>
@@ -124,7 +122,7 @@ const AppContent = () => {
             <Route path="/dashboard/analytics" element={<VendorAnalytics />} />
             <Route path="/dashboard/settings" element={<VendorSettings />} />
             <Route path="/dashboard/messages" element={<VendorMessages />} />
-            <Route path="/dashboard/abonnement" element={<VendorSubscription />} />
+            <Route path="/dashboard/abonnement" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
       </Suspense>

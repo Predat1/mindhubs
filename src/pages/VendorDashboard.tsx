@@ -7,7 +7,6 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentVendor, useVendorProducts } from "@/hooks/useVendors";
 import { useVendorOrders } from "@/hooks/useVendorOrders";
-import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ShoppingBag, Users, DollarSign, Package, Copy,
@@ -26,12 +25,6 @@ const VendorDashboard = () => {
   const { data: vendor, isLoading: vendorLoading } = useCurrentVendor();
   const { data: products = [] } = useVendorProducts(vendor?.id);
   const { data: publications = [] } = useVendorProductPublications(vendor?.id);
-  const subscription = useVendorSubscription(vendor?.id);
-  const plan = subscription?.plan;
-  const commissionRate = subscription?.commission_rate ?? 0;
-  const canAddProduct = subscription?.canAddProduct ?? false;
-  const productCount = subscription?.product_count ?? 0;
-  const maxProducts = subscription?.max_products ?? 0;
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -68,7 +61,7 @@ const VendorDashboard = () => {
     enabled: productIds.length > 0,
   });
 
-  const { data: orders = [] } = useVendorOrders(vendor?.id, productIds, commissionRate);
+  const { data: orders = [] } = useVendorOrders(vendor?.id, productIds);
   
   const orderStats = useMemo(() => {
     if (!orders || orders.length === 0) {
@@ -255,14 +248,14 @@ const VendorDashboard = () => {
               label: "Revenu total (Net)", 
               value: <AnimatedNumber value={revenue} suffix=" FCFA" />,
               color: "text-foreground bg-muted",
-              extra: plan !== 'elite' ? <Link to="/pricing" className="text-[9px] font-black text-primary hover:underline mt-2 inline-block">Réduire avec Elite</Link> : null
+              extra: null
             },
             { 
               icon: Package, 
               label: "Produits Actifs", 
-              value: <>{productCount} / {maxProducts === -1 ? '∞' : maxProducts}</>,
+              value: <AnimatedNumber value={products.length} />,
               color: "text-foreground bg-muted",
-              extra: !canAddProduct && maxProducts !== -1 ? <Link to="/pricing" className="text-[9px] font-black text-destructive hover:underline mt-2 inline-block">Limite atteinte. Upgrader ?</Link> : null
+              extra: null
             },
             {
               icon: ShoppingBag,

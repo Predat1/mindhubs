@@ -4,7 +4,6 @@ import {
   BarChart3,
   ArrowDownToLine,
   CircleUserRound,
-  CreditCard,
   ExternalLink,
   HelpCircle,
   Home,
@@ -92,7 +91,6 @@ export const VENDOR_NAV: SidebarItem[] = [
   { label: "Revenus", href: "/dashboard/revenue", icon: WalletCards, group: "more" },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, group: "more" },
   { label: "Retraits", href: "/dashboard/payouts", icon: ArrowDownToLine, group: "more" },
-  { label: "Abonnement", href: "/dashboard/abonnement", icon: CreditCard, group: "more" },
   { label: "Profil & Boutique", href: "/dashboard/settings", icon: Settings, group: "more" },
 ];
 
@@ -103,7 +101,6 @@ export const ADMIN_NAV: SidebarItem[] = [
   { label: "Vendeurs", href: "/admin?tab=vendors", icon: Store, group: "main" },
   { label: "Analytiques", href: "/admin?tab=analytics", icon: BarChart3, group: "main" },
   { label: "Messages", href: "/admin?tab=messages", icon: MessageSquare, group: "more" },
-  { label: "Abonnements", href: "/admin?tab=subscriptions", icon: CreditCard, group: "more" },
   { label: "Utilisateurs", href: "/admin?tab=users", icon: Users, group: "more" },
   { label: "API Manager", href: "/admin?tab=api-manager", icon: Zap, group: "more" },
   { label: "Logs d'audit", href: "/admin?tab=logs", icon: Info, group: "more" },
@@ -126,7 +123,6 @@ const VENDOR_ROUTE_META: DashboardRouteMeta[] = [
   { title: "Revenus", navHref: "/dashboard/revenue", matches: (pathname) => pathname === "/dashboard/revenue" },
   { title: "Messages", navHref: "/dashboard/messages", matches: (pathname) => pathname === "/dashboard/messages" },
   { title: "Analytiques", navHref: "/dashboard/analytics", matches: (pathname) => pathname === "/dashboard/analytics" },
-  { title: "Abonnement", navHref: "/dashboard/abonnement", matches: (pathname) => pathname === "/dashboard/abonnement" },
   { title: "Retraits", navHref: "/dashboard/payouts", matches: (pathname) => pathname === "/dashboard/payouts" },
   { title: "Profil & Boutique", navHref: "/dashboard/settings", matches: (pathname) => pathname === "/dashboard/settings" },
 ];
@@ -137,7 +133,6 @@ const ADMIN_TAB_META: Record<string, DashboardRouteMeta> = {
   vendors: { title: "Vendeurs", navHref: "/admin?tab=vendors", matches: () => true },
   analytics: { title: "Analytiques", navHref: "/admin?tab=analytics", matches: () => true },
   messages: { title: "Messages", navHref: "/admin?tab=messages", matches: () => true },
-  subscriptions: { title: "Abonnements", navHref: "/admin?tab=subscriptions", matches: () => true },
   users: { title: "Utilisateurs", navHref: "/admin?tab=users", matches: () => true },
   "api-manager": { title: "API Manager", navHref: "/admin?tab=api-manager", matches: () => true },
   logs: { title: "Logs d'audit", navHref: "/admin?tab=logs", matches: () => true },
@@ -156,7 +151,7 @@ function useVendorLiveBadges(enabled: boolean) {
   const { data: vendor } = useCurrentVendor();
   const { data: products = [] } = useVendorProducts(enabled ? vendor?.id : undefined);
   const productIds = useMemo(() => (Array.isArray(products) ? products.map((product) => product.id) : []), [products]);
-  const { data: orders = [] } = useVendorOrders(enabled && productIds.length ? vendor?.id : undefined, productIds, 0.1);
+  const { data: orders = [] } = useVendorOrders(enabled && productIds.length ? vendor?.id : undefined, productIds);
 
   return useMemo(() => {
     if (!enabled || !Array.isArray(orders)) return {} as Record<string, string>;

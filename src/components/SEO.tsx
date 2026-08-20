@@ -27,7 +27,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   "a-propos": "À propos",
   contact: "Contact",
   faq: "FAQ",
-  pricing: "Tarifs",
   experts: "Experts",
   "become-a-seller": "Devenir Vendeur",
   "conditions-generales": "CGV",

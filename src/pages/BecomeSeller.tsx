@@ -308,7 +308,7 @@ const BecomeSeller = () => {
                       {storeError ? <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">{storeError}</p> : null}
                       <Button type="submit" className="h-11 w-full" disabled={submitting || usernameStatus === "checking"}>{submitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Store className="size-4" aria-hidden="true" />}{submitting ? "Création en cours…" : "Créer ma boutique"}{!submitting ? <ArrowRight className="ml-auto size-4" aria-hidden="true" /> : null}</Button>
                     </form>
-                    <p className="mt-5 text-center text-xs leading-5 text-text-subtle">Vous commencerez avec le plan gratuit. Les options avancées et les plans payants restent accessibles depuis le dashboard.</p>
+                    <p className="mt-5 text-center text-xs leading-5 text-text-subtle">Votre boutique est gratuite à créer. Vous gardez le contrôle de vos produits et de vos canaux de publication.</p>
                   </motion.div>
                 )}
               </AnimatePresence>

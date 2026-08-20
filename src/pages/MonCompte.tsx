@@ -20,13 +20,14 @@ import {
   User, Mail, Lock, LogOut, Eye, EyeOff, ShoppingBag,
   Calendar, Shield, BookOpen, ArrowRight, Package, Clock,
   CheckCircle2, XCircle, Truck, MailCheck, Store, LayoutDashboard,
-  KeyRound, ArrowLeft, Zap, Sparkles, ShieldCheck, Loader2
+  KeyRound, ArrowLeft, Sparkles, ShieldCheck, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Sun, Moon } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import MindHubsMark from "@/components/brand/MindHubsMark";
 
 interface OrderItem {
   product_id: string;
@@ -194,7 +195,7 @@ const MonCompte = () => {
               className="glass-card rounded-[3rem] p-8 md:p-12 relative overflow-hidden"
             >
                <div className="absolute top-0 right-0 p-8">
-                  <Badge className="bg-primary/20 text-primary border-none px-4 py-1.5 font-black text-[10px] tracking-widest uppercase">Membre Elite</Badge>
+                  <Badge className="bg-primary/20 text-primary border-none px-4 py-1.5 font-black text-[10px] tracking-widest uppercase">Compte actif</Badge>
                </div>
                
                <div className="flex flex-col md:flex-row items-center gap-8">
@@ -407,8 +408,8 @@ const MonCompte = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center mb-8 space-y-4"
           >
-             <div className="h-14 w-14 bg-primary rounded-xl flex items-center justify-center text-primary-foreground mx-auto shadow-2xl shadow-primary/20">
-                <Zap size={28} fill="currentColor" />
+             <div className="grid h-14 w-14 place-items-center rounded-2xl border border-primary/30 bg-card shadow-2xl shadow-primary/10" aria-label="MindHubs">
+                <MindHubsMark size={32} variant="current" decorative />
              </div>
              <h1 className="text-3xl font-extrabold tracking-tighter">VOTRE PORTAIL <span className="text-primary italic">EXPERT</span></h1>
           </motion.div>
@@ -498,10 +499,10 @@ const MonCompte = () => {
                           <PasswordStrength password={password} />
                        </div>
                        <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-wider text-center">
-                          En rejoignant l'Elite, vous acceptez nos <Link to="/conditions-generales" className="text-primary hover:underline">CGU</Link> et notre <Link to="/politique-confidentialite" className="text-primary hover:underline">Confidentialité</Link>.
+                          En créant votre compte MindHubs, vous acceptez nos <Link to="/conditions-generales" className="text-primary hover:underline">CGU</Link> et notre <Link to="/politique-confidentialite" className="text-primary hover:underline">Confidentialité</Link>.
                        </p>
                        <Button type="submit" className="w-full h-14 rounded-2xl btn-glow font-black text-lg uppercase tracking-tighter" disabled={submitting}>
-                          {submitting ? <Loader2 className="animate-spin" /> : "Créer mon Compte Elite"}
+                          {submitting ? <Loader2 className="animate-spin" /> : "Créer mon compte"}
                        </Button>
                     </form>
                  </TabsContent>

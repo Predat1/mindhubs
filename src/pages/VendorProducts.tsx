@@ -10,17 +10,15 @@ import { Input } from "@/components/ui/input";
 import { useVendorProducts } from "@/hooks/useVendors";
 import { useSaveProductPublication, useVendorProductPublications } from "@/hooks/useProductPublications";
 import { useVendorProductStats } from "@/hooks/useVendorOrders";
-import { useVendorSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, Zap, SlidersHorizontal, LayoutGrid, List as ListIcon, Store, Globe, EyeOff, RefreshCw, AlertCircle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingCart, Package, Copy, SlidersHorizontal, LayoutGrid, List as ListIcon, Store, Globe, EyeOff, RefreshCw, AlertCircle } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { isDemoMode } from "@/lib/demoMode";
 
 type ProductFilterStatus = "all" | "published" | "draft";
 type ProductFilterChannel = "all" | "storefront" | "marketplace";
@@ -32,7 +30,6 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
   const { data: publications = [], isError: publicationsError, refetch: refetchPublications } = useVendorProductPublications(vendorId);
   const savePublication = useSaveProductPublication(vendorId);
   const { data: stats = [] } = useVendorProductStats(products?.map((p) => p.id) || []);
-  const { canAddProduct, maxProducts, plan } = useVendorSubscription(vendorId);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<ProductSort>("recent");
@@ -139,23 +136,11 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {!canAddProduct && maxProducts !== -1 && !isDemoMode && (
-              <p className="text-[10px] font-black uppercase text-destructive bg-destructive/10 px-3 py-2 rounded-xl border border-destructive/20">
-                Limite {plan} atteinte ({products.length}/{maxProducts})
-              </p>
-            )}
-            {isDemoMode && !canAddProduct ? (
-              <Button disabled className="h-12 rounded-2xl px-6 font-black opacity-60 grayscale">
-                <Zap size={18} aria-hidden="true" /> Ajout désactivé en démo
-              </Button>
-            ) : (
-              <Button asChild disabled={!canAddProduct} className={`h-12 rounded-2xl px-6 font-black ${!canAddProduct ? "cursor-not-allowed opacity-50 grayscale" : "btn-glow"}`}>
-                <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
-                  {canAddProduct ? <Plus size={18} aria-hidden="true" /> : <Zap size={18} aria-hidden="true" />}
-                  {canAddProduct ? "Ajouter un produit" : "Upgrader pour ajouter"}
-                </Link>
-              </Button>
-            )}
+            <Button asChild className="h-12 rounded-2xl px-6 font-black btn-glow">
+              <Link to="/dashboard/new-product">
+                <Plus size={18} aria-hidden="true" /> Ajouter un produit
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -233,10 +218,9 @@ const VendorProductsInner = ({ vendorId, shopName, shopUrl }: { vendorId: string
                </p>
             </div>
             {!search && (
-              <Button asChild disabled={!canAddProduct} className={`rounded-2xl h-12 px-8 font-black ${!canAddProduct ? 'opacity-50 grayscale' : ''}`}>
-                <Link to={canAddProduct ? "/dashboard/new-product" : "/pricing"}>
-                  {canAddProduct ? <Plus size={18} /> : <Zap size={18} />} 
-                  {canAddProduct ? "Créer mon premier produit" : "Upgrader mon plan"}
+              <Button asChild className="rounded-2xl h-12 px-8 font-black">
+                <Link to="/dashboard/new-product">
+                  <Plus size={18} /> Créer mon premier produit
                 </Link>
               </Button>
             )}
