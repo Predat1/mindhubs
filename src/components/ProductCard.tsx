@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/data/products";
-import { ArrowUpRight, BadgeCheck, ImageOff, Package, ShoppingBag, Store, Truck } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, ExternalLink, ImageOff, Package, ShoppingBag, Store, Truck } from "lucide-react";
 import BuyPopup from "@/components/BuyPopup";
 import { usePrefetchProduct } from "@/hooks/useProducts";
 import { motion, useReducedMotion } from "motion/react";
@@ -30,6 +30,7 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
   const prefetch = usePrefetchProduct();
   const reduce = useReducedMotion();
   const productMode = product.productMode || "digital";
+  const isExternalCheckout = product.checkoutMode === "external" && Boolean(product.paymentLink);
   const isOutOfStock = (productMode === "physical" || productMode === "hybrid") && product.inventoryQuantity === 0;
   const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const hasDiscount = parseCurrency(product.oldPrice) > parseCurrency(product.price);
@@ -39,7 +40,18 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
   const handleBuy = () => {
     if (isOutOfStock) return;
     trackProductClick(product.id);
+    if (isExternalCheckout && product.paymentLink) {
+      sessionStorage.setItem("mindhubs:last-source", sourceChannel);
+      window.location.assign(product.paymentLink);
+      return;
+    }
     setPopupOpen(true);
+  };
+
+  const handleExternalCheckout = () => {
+    if (!product.paymentLink) return;
+    trackProductClick(product.id);
+    sessionStorage.setItem("mindhubs:last-source", sourceChannel);
   };
 
   const handleDetailClick = () => {
@@ -146,12 +158,23 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
                   type="button"
                   onClick={handleBuy}
                   disabled={isOutOfStock}
-                  aria-label={isOutOfStock ? `${product.title} est en rupture de stock` : isFree ? `Obtenir gratuitement ${product.title}` : `Acheter ${product.title}`}
+                  aria-label={isOutOfStock ? `${product.title} est en rupture de stock` : isExternalCheckout ? `Payer sur Chariow pour ${product.title}` : isFree ? `Obtenir gratuitement ${product.title}` : `Acheter ${product.title}`}
                   className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                 >
-                  <ShoppingBag size={15} aria-hidden="true" />
-                  <span className="hidden sm:inline">{isFree ? "Obtenir" : "Acheter"}</span>
+                  {isExternalCheckout ? <ExternalLink size={15} aria-hidden="true" /> : <ShoppingBag size={15} aria-hidden="true" />}
+                  <span className="hidden sm:inline">{isExternalCheckout ? "Payer" : isFree ? "Obtenir" : "Acheter"}</span>
                 </button>
+              ) : isExternalCheckout && product.paymentLink ? (
+                <a
+                  href={product.paymentLink}
+                  onClick={handleExternalCheckout}
+                  target="_self"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Payer
+                  <ExternalLink size={14} aria-hidden="true" />
+                </a>
               ) : (
                 <Link
                   to={detailHref}
@@ -167,7 +190,7 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
         </div>
       </motion.article>
 
-      {showQuickBuy ? <BuyPopup product={product} sourceChannel={sourceChannel} open={popupOpen} onClose={() => setPopupOpen(false)} /> : null}
+      {showQuickBuy && !isExternalCheckout ? <BuyPopup product={product} sourceChannel={sourceChannel} open={popupOpen} onClose={() => setPopupOpen(false)} /> : null}
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { ExternalLink, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 interface Props {
@@ -7,9 +7,10 @@ interface Props {
   onBuy: () => void;
   price: string;
   oldPrice?: string;
+  external?: boolean;
 }
 
-const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
+const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice, external = false }: Props) => {
   const [visible, setVisible] = useState(false);
 
   const priceNum = parseFloat(price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
@@ -59,8 +60,8 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
             onClick={onBuy}
             className="btn-primary-brand flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs shadow-glow whitespace-nowrap"
           >
-            <ShoppingCart size={16} />
-            ACHETER
+            {external ? <ExternalLink size={16} aria-hidden="true" /> : <ShoppingCart size={16} aria-hidden="true" />}
+            {external ? "PAYER" : "ACHETER"}
           </button>
         </div>
       </div>
@@ -86,8 +87,8 @@ const StickyProductCTA = ({ productTitle, onBuy, price, oldPrice }: Props) => {
             onClick={onBuy}
             className="btn-primary-brand flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-xs shadow-glow"
           >
-            <ShoppingCart size={14} />
-            ACHETER
+            {external ? <ExternalLink size={14} aria-hidden="true" /> : <ShoppingCart size={14} aria-hidden="true" />}
+            {external ? "PAYER" : "ACHETER"}
           </button>
         </div>
       </div>

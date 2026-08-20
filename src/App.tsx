@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { MotionConfig } from "motion/react";
@@ -11,40 +11,91 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Loader2 } from "lucide-react";
 import MindHubsMark from "@/components/brand/MindHubsMark";
 
+const CHUNK_RELOAD_KEY = "mindhubs:chunk-reload";
+
+function clearChunkReloadMarker() {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+  } catch {
+    // Some privacy modes can make sessionStorage unavailable. The import
+    // still works normally; only the recovery marker is skipped.
+  }
+}
+
+function reloadAfterChunkFailure() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    if (window.sessionStorage.getItem(CHUNK_RELOAD_KEY) === "1") {
+      window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      return false;
+    }
+
+    window.sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
+    window.location.reload();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Vite can keep a stale module URL in an already-open tab after a deployment
+ * or HMR update. Retry exactly once with a full reload, then let the normal
+ * error boundary handle a genuine import error instead of creating a loop.
+ */
+function lazyWithRetry<T extends ComponentType<any>>(importer: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const module = await importer();
+      clearChunkReloadMarker();
+      return module;
+    } catch (error) {
+      if (reloadAfterChunkFailure()) {
+        await new Promise<never>(() => undefined);
+      }
+
+      throw error;
+    }
+  });
+}
+
 // Lazy-loaded pages
-const Index = lazy(() => import("./pages/Index.tsx"));
-const Boutique = lazy(() => import("./pages/Boutique.tsx"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail.tsx"));
-const CartPage = lazy(() => import("./pages/CartPage.tsx"));
-const About = lazy(() => import("./pages/About.tsx"));
-const Contact = lazy(() => import("./pages/Contact.tsx"));
-const MonCompte = lazy(() => import("./pages/MonCompte.tsx"));
-const MyPurchases = lazy(() => import("./pages/MyPurchases.tsx"));
-const StudentDashboard = lazy(() => import("./pages/StudentDashboard.tsx"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
-const ConditionsGenerales = lazy(() => import("./pages/ConditionsGenerales.tsx"));
-const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite.tsx"));
-const PolitiqueRemboursement = lazy(() => import("./pages/PolitiqueRemboursement.tsx"));
-const PolitiqueLivraison = lazy(() => import("./pages/PolitiqueLivraison.tsx"));
-const FAQ = lazy(() => import("./pages/FAQ.tsx"));
-const Admin = lazy(() => import("./pages/Admin.tsx"));
-const Checkout = lazy(() => import("./pages/Checkout.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const BecomeSeller = lazy(() => import("./pages/BecomeSeller.tsx"));
-const VendorLanding = lazy(() => import("./pages/VendorLanding.tsx"));
-const VendorStore = lazy(() => import("./pages/VendorStore.tsx"));
-const VendorDashboard = lazy(() => import("./pages/VendorDashboard.tsx"));
-const VendorProductForm = lazy(() => import("./pages/VendorProductForm.tsx"));
-const VendorSales = lazy(() => import("./pages/VendorSales.tsx"));
-const VendorProducts = lazy(() => import("./pages/VendorProducts.tsx"));
-const VendorCustomers = lazy(() => import("./pages/VendorCustomers.tsx"));
-const VendorRevenue = lazy(() => import("./pages/VendorRevenue.tsx"));
-const VendorPayouts = lazy(() => import("./pages/VendorPayouts.tsx"));
-const VendorAnalytics = lazy(() => import("./pages/VendorAnalytics.tsx"));
-const VendorSettings = lazy(() => import("./pages/VendorSettings.tsx"));
-const VendorMessages = lazy(() => import("./pages/VendorMessages.tsx"));
-const ProtectionAcheteur = lazy(() => import("./pages/ProtectionAcheteur.tsx"));
-const LMSPlayer = lazy(() => import("./pages/LMSPlayer.tsx"));
+const Index = lazyWithRetry(() => import("./pages/Index.tsx"));
+const Boutique = lazyWithRetry(() => import("./pages/Boutique.tsx"));
+const ProductDetail = lazyWithRetry(() => import("./pages/ProductDetail.tsx"));
+const CartPage = lazyWithRetry(() => import("./pages/CartPage.tsx"));
+const About = lazyWithRetry(() => import("./pages/About.tsx"));
+const Contact = lazyWithRetry(() => import("./pages/Contact.tsx"));
+const MonCompte = lazyWithRetry(() => import("./pages/MonCompte.tsx"));
+const MyPurchases = lazyWithRetry(() => import("./pages/MyPurchases.tsx"));
+const StudentDashboard = lazyWithRetry(() => import("./pages/StudentDashboard.tsx"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword.tsx"));
+const ConditionsGenerales = lazyWithRetry(() => import("./pages/ConditionsGenerales.tsx"));
+const PolitiqueConfidentialite = lazyWithRetry(() => import("./pages/PolitiqueConfidentialite.tsx"));
+const PolitiqueRemboursement = lazyWithRetry(() => import("./pages/PolitiqueRemboursement.tsx"));
+const PolitiqueLivraison = lazyWithRetry(() => import("./pages/PolitiqueLivraison.tsx"));
+const FAQ = lazyWithRetry(() => import("./pages/FAQ.tsx"));
+const Admin = lazyWithRetry(() => import("./pages/Admin.tsx"));
+const Checkout = lazyWithRetry(() => import("./pages/Checkout.tsx"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound.tsx"));
+const BecomeSeller = lazyWithRetry(() => import("./pages/BecomeSeller.tsx"));
+const VendorLanding = lazyWithRetry(() => import("./pages/VendorLanding.tsx"));
+const VendorStore = lazyWithRetry(() => import("./pages/VendorStore.tsx"));
+const VendorDashboard = lazyWithRetry(() => import("./pages/VendorDashboard.tsx"));
+const VendorProductForm = lazyWithRetry(() => import("./pages/VendorProductForm.tsx"));
+const VendorSales = lazyWithRetry(() => import("./pages/VendorSales.tsx"));
+const VendorProducts = lazyWithRetry(() => import("./pages/VendorProducts.tsx"));
+const VendorCustomers = lazyWithRetry(() => import("./pages/VendorCustomers.tsx"));
+const VendorRevenue = lazyWithRetry(() => import("./pages/VendorRevenue.tsx"));
+const VendorPayouts = lazyWithRetry(() => import("./pages/VendorPayouts.tsx"));
+const VendorAnalytics = lazyWithRetry(() => import("./pages/VendorAnalytics.tsx"));
+const VendorSettings = lazyWithRetry(() => import("./pages/VendorSettings.tsx"));
+const VendorMessages = lazyWithRetry(() => import("./pages/VendorMessages.tsx"));
+const ProtectionAcheteur = lazyWithRetry(() => import("./pages/ProtectionAcheteur.tsx"));
+const LMSPlayer = lazyWithRetry(() => import("./pages/LMSPlayer.tsx"));
 
 import ScrollToTop from "./components/ScrollToTop.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";

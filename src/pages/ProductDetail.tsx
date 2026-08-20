@@ -15,7 +15,7 @@ import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck, Zap, ShieldCheck, Share2, Sparkles, Lock, Clock } from "lucide-react";
+import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck, Zap, ShieldCheck, Share2, Sparkles, Lock, Clock, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -80,6 +80,7 @@ const ProductDetail = () => {
   const { data: vendorProducts = [] } = useVendorProducts(product?.vendorId);
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [currentImage, setCurrentImage] = useState(0);
+  const isExternalCheckout = product?.checkoutMode === "external" && Boolean(product.paymentLink);
 
   // LMS Curriculum data
   const { data: chapters = [] } = useQuery<CurriculumChapter[]>({
@@ -158,6 +159,13 @@ const ProductDetail = () => {
     }
   };
 
+  const handleExternalCheckout = () => {
+    if (!product?.paymentLink) return;
+    trackProductClick(product.id);
+    sessionStorage.setItem("mindhubs:last-source", sourceChannel || "direct");
+    window.location.assign(product.paymentLink);
+  };
+
   if (isLoading && !product) {
     return (
       <div className="min-h-screen bg-background aurora-bg">
@@ -202,7 +210,11 @@ const ProductDetail = () => {
   const isPhysical = product.productMode === "physical";
   const isHybrid = product.productMode === "hybrid";
   const isOutOfStock = (isPhysical || isHybrid) && product.inventoryQuantity === 0;
-  const deliveryLabel = isPhysical || isHybrid ? "Livraison selon les modalités du vendeur" : "Accès digital après confirmation du paiement";
+  const deliveryLabel = isExternalCheckout
+    ? "Paiement et livraison via Chariow"
+    : isPhysical || isHybrid
+      ? "Livraison selon les modalités du vendeur"
+      : "Accès digital après confirmation du paiement";
 
   return (
     <div className="min-h-screen bg-background aurora-bg">
@@ -259,7 +271,11 @@ const ProductDetail = () => {
                     </Badge>
                   )}
                   <div className="aspect-square">
-                    <img src={allImages[currentImage]} alt={product.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img
+                      src={allImages[currentImage]}
+                      alt={product.title}
+                      className={`w-full h-full transition-transform duration-700 group-hover:scale-110 ${product.id === "formations-550-logiciels" && currentImage > 0 ? "object-contain bg-[#061d4f]" : "object-cover"}`}
+                    />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none" />
                </div>
@@ -272,7 +288,7 @@ const ProductDetail = () => {
                         onClick={() => setCurrentImage(i)}
                         className={`w-24 h-24 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${i === currentImage ? "border-primary scale-105" : "border-border opacity-60 hover:opacity-100"}`}
                       >
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        <img src={img} alt="" className={`w-full h-full ${product.id === "formations-550-logiciels" && i > 0 ? "object-contain bg-[#061d4f]" : "object-cover"}`} />
                       </button>
                     ))}
                  </div>
@@ -309,7 +325,7 @@ const ProductDetail = () => {
                <div className="glass-card rounded-2xl p-6 md:p-8 space-y-8">
                   <div className="flex items-end gap-4">
                      <div className="space-y-1">
-                        {!isFree && <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{formatCurrency(product.oldPrice)}</p>}
+                        {!isFree && product.oldPrice && <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{formatCurrency(product.oldPrice)}</p>}
                         <p className="text-5xl font-black text-foreground tracking-tighter">{isFree ? "Gratuit" : formatCurrency(product.price)}</p>
                      </div>
                      {discountPct > 0 && (
@@ -318,7 +334,7 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-muted-foreground">
-                     <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-success" /> Protection acheteur</span>
+                     <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-success" /> {isExternalCheckout ? "Paiement sur Chariow" : "Protection acheteur"}</span>
                      <span className="flex items-center gap-2"><Clock size={14} /> {deliveryLabel}</span>
                      {(isPhysical || isHybrid) && product.inventoryQuantity !== undefined && (
                        <span className={isOutOfStock ? "text-destructive" : "text-success"}>
@@ -328,16 +344,34 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="space-y-4">
-                     <Button
-                       onClick={handleBuyNow}
-                       disabled={isOutOfStock}
-                       className="w-full h-14 rounded-xl btn-glow font-semibold text-base gap-3 disabled:cursor-not-allowed disabled:opacity-60"
-                     >
-                        {isOutOfStock ? "Produit indisponible" : isFree ? "Obtenir gratuitement" : product.vendorId ? "Ajouter au panier et continuer" : "Obtenir mon accès"} <Zap size={22} fill="currentColor" />
-                     </Button>
+                     {isExternalCheckout && product.paymentLink ? (
+                       <Button asChild className="w-full h-14 rounded-xl btn-glow font-semibold text-base gap-3">
+                         <a
+                           href={product.paymentLink}
+                           onClick={handleExternalCheckout}
+                           target="_self"
+                           rel="noopener noreferrer"
+                         >
+                           Payer sur Chariow <ExternalLink size={20} aria-hidden="true" />
+                         </a>
+                       </Button>
+                     ) : (
+                       <Button
+                         onClick={handleBuyNow}
+                         disabled={isOutOfStock}
+                         className="w-full h-14 rounded-xl btn-glow font-semibold text-base gap-3 disabled:cursor-not-allowed disabled:opacity-60"
+                       >
+                          {isOutOfStock ? "Produit indisponible" : isFree ? "Obtenir gratuitement" : product.vendorId ? "Ajouter au panier et continuer" : "Obtenir mon accès"} <Zap size={22} fill="currentColor" />
+                       </Button>
+                     )}
+                     {isExternalCheckout ? (
+                       <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                         Vous serez redirigé vers Chariow pour finaliser le paiement et recevoir le produit.
+                       </p>
+                     ) : null}
                      <div className="flex flex-wrap items-center justify-center gap-6">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                           <ShieldCheck size={14} className="text-primary" /> Sécurisé par SSL
+                           <ShieldCheck size={14} className="text-primary" /> {isExternalCheckout ? "Paiement externe" : "Sécurisé par SSL"}
                         </div>
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                            <Zap size={14} className="text-warning" /> {deliveryLabel}
@@ -365,7 +399,7 @@ const ProductDetail = () => {
                   )}
                </div>
 
-               <TrustBlock productMode={product.productMode} />
+               {!isExternalCheckout ? <TrustBlock productMode={product.productMode} /> : null}
             </motion.div>
           </div>
         </div>
@@ -443,21 +477,37 @@ const ProductDetail = () => {
                        </div>
                        <div className="space-y-6">
                            <h3 className="text-2xl font-black flex items-center gap-3"><ShieldCheck className="text-primary" /> Paiement & Sécurité</h3>
-                           <div className="space-y-6 rounded-3xl border border-primary/20 bg-primary/5 p-6">
-                              <div className="flex flex-wrap gap-3 justify-center">
-                                 <img src={payMtn} className="h-8 w-auto rounded shadow-sm" alt="MTN" />
-                                 <img src={payMoov} className="h-8 w-auto rounded shadow-sm" alt="Moov" />
-                                 <img src={payOrange} className="h-8 w-auto rounded shadow-sm" alt="Orange" />
-                                 <img src={payWave} className="h-8 w-auto rounded shadow-sm" alt="Wave" />
-                                 <img src={payVisa} className="h-8 w-auto rounded shadow-sm" alt="Visa" />
-                                 <img src={payMastercard} className="h-8 w-auto rounded shadow-sm" alt="Mastercard" />
-                              </div>
-                              <div className="space-y-3 border-t border-primary/10 pt-4">
-                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><ShieldCheck size={16} className="text-success" /> Transaction Chiffrée SSL</div>
-                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><Zap size={16} className="text-warning" /> {deliveryLabel}</div>
-                                 <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><BadgeCheck size={16} className="text-primary" /> Assistance liée à la commande</div>
-                              </div>
-                           </div>
+                           {isExternalCheckout && product.paymentLink ? (
+                             <div className="space-y-5 rounded-3xl border border-primary/20 bg-primary/5 p-6">
+                               <div className="flex items-start gap-3">
+                                 <ExternalLink size={18} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+                                 <p className="text-sm leading-relaxed text-muted-foreground">
+                                   Le paiement et la livraison sont gérés sur la page Chariow de cette offre. MindHubs présente le produit, puis vous redirige vers le vendeur externe.
+                                 </p>
+                               </div>
+                               <Button asChild variant="outline" className="w-full rounded-xl">
+                                 <a href={product.paymentLink} onClick={handleExternalCheckout} target="_self" rel="noopener noreferrer">
+                                   Ouvrir la page de paiement <ExternalLink size={15} aria-hidden="true" />
+                                 </a>
+                               </Button>
+                             </div>
+                           ) : (
+                             <div className="space-y-6 rounded-3xl border border-primary/20 bg-primary/5 p-6">
+                                <div className="flex flex-wrap gap-3 justify-center">
+                                   <img src={payMtn} className="h-8 w-auto rounded shadow-sm" alt="MTN" />
+                                   <img src={payMoov} className="h-8 w-auto rounded shadow-sm" alt="Moov" />
+                                   <img src={payOrange} className="h-8 w-auto rounded shadow-sm" alt="Orange" />
+                                   <img src={payWave} className="h-8 w-auto rounded shadow-sm" alt="Wave" />
+                                   <img src={payVisa} className="h-8 w-auto rounded shadow-sm" alt="Visa" />
+                                   <img src={payMastercard} className="h-8 w-auto rounded shadow-sm" alt="Mastercard" />
+                                </div>
+                                <div className="space-y-3 border-t border-primary/10 pt-4">
+                                   <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><ShieldCheck size={16} className="text-success" /> Transaction Chiffrée SSL</div>
+                                   <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><Zap size={16} className="text-warning" /> {deliveryLabel}</div>
+                                   <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"><BadgeCheck size={16} className="text-primary" /> Assistance liée à la commande</div>
+                                </div>
+                             </div>
+                           )}
                        </div>
                     </div>
                     
@@ -497,7 +547,7 @@ const ProductDetail = () => {
       </section>
 
       <FooterSection />
-      <StickyProductCTA productTitle={product.title} price={product.price} oldPrice={product.oldPrice} onBuy={handleBuyNow} />
+      <StickyProductCTA productTitle={product.title} price={product.price} oldPrice={product.oldPrice} onBuy={isExternalCheckout ? handleExternalCheckout : handleBuyNow} external={isExternalCheckout} />
     </div>
   );
 };

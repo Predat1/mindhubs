@@ -25,7 +25,7 @@ const BuyPopup = ({ product, sourceChannel = "direct", open, onClose }: Props) =
   const navigate = useNavigate();
   const isPhysical = product.productMode === "physical";
   const isHybrid = product.productMode === "hybrid";
-  const isExternal = Boolean(product.paymentLink && !product.vendorId);
+  const isExternal = product.checkoutMode === "external" || Boolean(product.paymentLink && !product.vendorId);
   const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const reduce = useReducedMotion();
   const [actionState, setActionState] = useState<StatefulButtonState>("idle");
@@ -43,6 +43,13 @@ const BuyPopup = ({ product, sourceChannel = "direct", open, onClose }: Props) =
   }, [addToCart, product, onClose]);
 
   const handleBuyNow = useCallback(() => {
+    if (isExternal && product.paymentLink) {
+      trackProductClick(product.id);
+      sessionStorage.setItem("mindhubs:last-source", sourceChannel);
+      onClose();
+      window.location.assign(product.paymentLink);
+      return;
+    }
     if (isFree) {
       if (!user) {
         onClose();
@@ -133,7 +140,7 @@ const BuyPopup = ({ product, sourceChannel = "direct", open, onClose }: Props) =
 
           {/* Mini trust */}
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-            <span className="flex items-center gap-1"><ShieldCheck size={11} /> {isFree ? "Accès sécurisé" : "Paiement sécurisé"}</span>
+            <span className="flex items-center gap-1"><ShieldCheck size={11} /> {isExternal ? "Paiement externe" : isFree ? "Accès sécurisé" : "Paiement sécurisé"}</span>
             <span className="flex items-center gap-1"><Clock size={11} /> {isFree ? "Accès immédiat" : isPhysical || isHybrid ? "Livraison suivie" : "Accès après paiement"}</span>
           </div>
 
@@ -144,7 +151,7 @@ const BuyPopup = ({ product, sourceChannel = "direct", open, onClose }: Props) =
               state={actionState}
               className="w-full"
             >
-              {isFree ? "Obtenir gratuitement" : isExternal ? "Payer sur le site partenaire" : "Continuer vers le paiement"}
+              {isFree ? "Obtenir gratuitement" : isExternal ? "Payer sur Chariow" : "Continuer vers le paiement"}
             </StatefulButton>
             {!isFree && <button
               onClick={handleAddToCart}

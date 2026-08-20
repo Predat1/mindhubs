@@ -6,6 +6,8 @@ import kitLogistique from "@/assets/kit-logistique.png";
 import premiersClients from "@/assets/premiers-clients.png";
 import demarreMaintenantImg from "@/assets/demarre-maintenant.png";
 import claudeCodeImg from "@/assets/claude-code.jpg";
+import formations550BoxImg from "@/assets/formations-550-logiciels-box.png";
+import formations550CreativeImg from "@/assets/formations-550-logiciels-creative.png";
 
 export type Category = 
   | "Tous" 
@@ -24,6 +26,8 @@ export type Category =
   | "Développement Personnel"
   | "Crypto & Finance";
 
+export type CheckoutMode = "platform" | "external";
+
 export interface Product {
   id: string;
   title: string;
@@ -38,6 +42,7 @@ export interface Product {
   tag?: string;
   description?: string;
   paymentLink?: string;
+  checkoutMode?: CheckoutMode;
   imageUrls?: string[];
   keyFeatures?: string[];
   vendorId?: string;
@@ -138,6 +143,28 @@ export const allProducts: Product[] = [
     paymentLink: "https://nhvjjgbn.mychariow.shop/prd_2354xd/checkout",
   },
   {
+    id: "formations-550-logiciels",
+    title: "+550 Formations et Logiciels pour apprendre, travailler et revendre",
+    image: formations550BoxImg,
+    oldPrice: "",
+    price: "1 030 FCFA",
+    pricingMode: "paid",
+    currency: "XOF",
+    priceAmount: 1030,
+    category: "Formations",
+    featured: true,
+    checkoutMode: "external",
+    paymentLink: "https://nhvjjgbn.mychariow.shop/prd_r94ppkmu/checkout",
+    imageUrls: [formations550CreativeImg],
+    description: "Un pack numérique regroupant plus de 550 formations et logiciels pour apprendre, travailler et développer des activités en ligne.\n\nLes thèmes présentés couvrent notamment la programmation, la comptabilité, l'intelligence artificielle, le marketing digital, la bureautique, la création de sites web, l'analyse de données, le montage vidéo, l'e-commerce et la gestion de projet.\n\nL'offre annonce également des formations, logiciels, ebooks, fichiers PDF, ressources audio et business plans. Les conditions d'accès et de revente sont celles indiquées sur la page de paiement externe.",
+    keyFeatures: [
+      "Plus de 550 formations et logiciels numériques",
+      "Ressources autour de l'IA, du business, du marketing et de la bureautique",
+      "Ebooks, PDF, fichiers audio et business plans annoncés par l'offre",
+      "Paiement et livraison gérés sur la page Chariow partenaire",
+    ],
+  },
+  {
     id: "claude-code",
     title: "Claude Code — L'IA qui code à ta place",
     image: claudeCodeImg,
@@ -151,7 +178,7 @@ export const allProducts: Product[] = [
   },
 ];
 
-export const featuredProductIds = ["claude-code", "anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
+export const featuredProductIds = ["formations-550-logiciels", "claude-code", "anglais", "kit-agriculture", "kit-fiscalite", "progiciel-budget", "kit-logistique", "premiers-clients", "demarre-maintenant"];
 
 export const categories: Category[] = [
   "Tous", 
