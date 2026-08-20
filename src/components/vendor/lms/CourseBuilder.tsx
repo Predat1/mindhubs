@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
+import QuizBuilder from "@/components/vendor/lms/QuizBuilder";
 
 interface Lesson {
   id?: string;
@@ -17,6 +18,10 @@ interface Lesson {
   video_url: string;
   content_text: string;
   order_index: number;
+  lesson_type?: "video" | "text" | "pdf" | "download" | "external_link" | "quiz" | "assignment" | "live_session";
+  duration_minutes?: number | null;
+  is_preview?: boolean;
+  is_published?: boolean;
 }
 
 interface Chapter {
@@ -27,6 +32,18 @@ interface Chapter {
   lessons: Lesson[];
 }
 
+interface CourseSettings {
+  objectives: string;
+  prerequisites: string;
+  target_audience: string;
+  level: string;
+  language: string;
+  estimated_minutes: string;
+  certificate_enabled: boolean;
+  certificate_min_score: string;
+  drip_enabled: boolean;
+}
+
 interface CourseBuilderProps {
   courseId: string;
 }
@@ -35,6 +52,18 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(!!courseId);
   const [saving, setSaving] = useState(false);
+  const [quizLessonId, setQuizLessonId] = useState<string | null>(null);
+  const [settings, setSettings] = useState<CourseSettings>({
+    objectives: "",
+    prerequisites: "",
+    target_audience: "",
+    level: "Débutant",
+    language: "fr",
+    estimated_minutes: "",
+    certificate_enabled: false,
+    certificate_min_score: "70",
+    drip_enabled: false,
+  });
 
   useEffect(() => {
     if (courseId) {
@@ -43,6 +72,15 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
       setLoading(false);
     }
   }, [courseId]);
+
+  if (!courseId) {
+    return (
+      <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+        <h4 className="font-bold">Enregistrez d’abord la fiche de formation</h4>
+        <p className="mt-1 text-sm text-muted-foreground">Le programme sera disponible dès que le produit aura reçu un identifiant.</p>
+      </div>
+    );
+  }
 
   const fetchCourseStructure = async () => {
     setLoading(true);
@@ -65,6 +103,25 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
       }));
 
       setChapters(structuredData as any);
+
+      const { data: settingsData } = await (supabase as any)
+        .from("course_settings")
+        .select("objectives, prerequisites, target_audience, level, language, estimated_minutes, certificate_enabled, certificate_min_score, drip_enabled")
+        .eq("product_id", courseId)
+        .maybeSingle();
+      if (settingsData) {
+        setSettings({
+          objectives: (settingsData.objectives || []).join("\n"),
+          prerequisites: (settingsData.prerequisites || []).join("\n"),
+          target_audience: settingsData.target_audience || "",
+          level: settingsData.level || "Débutant",
+          language: settingsData.language || "fr",
+          estimated_minutes: settingsData.estimated_minutes?.toString() || "",
+          certificate_enabled: Boolean(settingsData.certificate_enabled),
+          certificate_min_score: settingsData.certificate_min_score?.toString() || "70",
+          drip_enabled: Boolean(settingsData.drip_enabled),
+        });
+      }
     } catch (error: any) {
       toast.error("Erreur lors du chargement du programme", { description: error.message });
     } finally {
@@ -88,7 +145,9 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
       title: "Nouvelle Leçon",
       video_url: "",
       content_text: "",
-      order_index: newChapters[chapterIndex].lessons.length
+      order_index: newChapters[chapterIndex].lessons.length,
+      lesson_type: "video",
+      is_preview: false,
     };
     newChapters[chapterIndex].lessons.push(newLesson);
     setChapters(newChapters);
@@ -100,7 +159,7 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
     setChapters(newChapters);
   };
 
-  const updateLesson = (chapterIndex: number, lessonIndex: number, field: keyof Lesson, value: string) => {
+  const updateLesson = <K extends keyof Lesson>(chapterIndex: number, lessonIndex: number, field: K, value: Lesson[K]) => {
     const newChapters = [...chapters];
     newChapters[chapterIndex].lessons[lessonIndex] = {
       ...newChapters[chapterIndex].lessons[lessonIndex],
@@ -122,52 +181,104 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
   const saveStructure = async () => {
     setSaving(true);
     try {
-      // 1. Delete existing structure to keep it simple for this first version
-      // In a production app, we would use upsert or handle diffs
-      const { error: delLessonsError } = await (supabase as any)
-        .from("course_lessons")
-        .delete()
-        .in("chapter_id", chapters.map(c => c.id).filter(Boolean));
-
-      const { error: delChaptersError } = await (supabase as any)
+      const { data: existingChapters, error: existingError } = await (supabase as any)
         .from("course_chapters")
-        .delete()
+        .select("id")
         .eq("course_id", courseId);
+      if (existingError) throw existingError;
 
-      // 2. Re-insert chapters and lessons
+      const savedChapterIds: string[] = [];
+      const nextChapters: Chapter[] = [];
+
       for (let i = 0; i < chapters.length; i++) {
         const chapter = chapters[i];
+        const payload = {
+          ...(chapter.id ? { id: chapter.id } : {}),
+          course_id: courseId,
+          title: chapter.title.trim() || `Module ${i + 1}`,
+          order_index: i,
+          status: "draft",
+        };
         const { data: savedChapter, error: chError } = await (supabase as any)
           .from("course_chapters")
-          .insert([{
-            course_id: courseId,
-            title: chapter.title,
-            order_index: i
-          }])
+          .upsert(payload, { onConflict: "id" })
           .select()
           .single();
-
         if (chError) throw chError;
+        savedChapterIds.push(savedChapter.id);
 
-        if (chapter.lessons.length > 0) {
-          const lessonsToInsert = chapter.lessons.map((l, lIdx) => ({
+        const savedLessons: Lesson[] = [];
+        for (let lIdx = 0; lIdx < chapter.lessons.length; lIdx++) {
+          const lesson = chapter.lessons[lIdx];
+          const lessonPayload = {
+            ...(lesson.id ? { id: lesson.id } : {}),
             chapter_id: savedChapter.id,
-            title: l.title,
-            video_url: l.video_url,
-            content_text: l.content_text,
-            order_index: lIdx
-          }));
-
-          const { error: lError } = await (supabase as any)
+            title: lesson.title.trim() || `Leçon ${lIdx + 1}`,
+            video_url: lesson.video_url.trim() || null,
+            content_text: lesson.content_text.trim() || null,
+            order_index: lIdx,
+            lesson_type: lesson.lesson_type || "video",
+            duration_minutes: lesson.duration_minutes || null,
+            is_preview: Boolean(lesson.is_preview),
+            is_published: Boolean(lesson.is_published),
+          };
+          const { data: savedLesson, error: lessonError } = await (supabase as any)
             .from("course_lessons")
-            .insert(lessonsToInsert);
-
-          if (lError) throw lError;
+            .upsert(lessonPayload, { onConflict: "id" })
+            .select()
+            .single();
+          if (lessonError) throw lessonError;
+          savedLessons.push(savedLesson as Lesson);
         }
+        nextChapters.push({ ...chapter, ...savedChapter, lessons: savedLessons });
       }
 
+      const staleChapterIds = (existingChapters || [])
+        .map((chapter: { id: string }) => chapter.id)
+        .filter((id: string) => !savedChapterIds.includes(id));
+      if (staleChapterIds.length > 0) {
+        const { error: staleError } = await (supabase as any)
+          .from("course_chapters")
+          .delete()
+          .in("id", staleChapterIds);
+        if (staleError) throw staleError;
+      }
+
+      // Delete only lessons removed from the current tree. Existing lesson IDs remain stable.
+      const currentLessonIds = nextChapters.flatMap((chapter) => chapter.lessons.map((lesson) => lesson.id).filter(Boolean));
+      const { data: existingLessons } = await (supabase as any)
+        .from("course_lessons")
+        .select("id, chapter_id")
+        .in("chapter_id", savedChapterIds.length > 0 ? savedChapterIds : ["00000000-0000-0000-0000-000000000000"]);
+      const staleLessonIds = (existingLessons || [])
+        .map((lesson: { id: string }) => lesson.id)
+        .filter((id: string) => !currentLessonIds.includes(id));
+      if (staleLessonIds.length > 0) {
+        const { error: staleLessonError } = await (supabase as any)
+          .from("course_lessons")
+          .delete()
+          .in("id", staleLessonIds);
+        if (staleLessonError) throw staleLessonError;
+      }
+
+      const { error: settingsError } = await (supabase as any)
+        .from("course_settings")
+        .upsert({
+          product_id: courseId,
+          objectives: settings.objectives.split("\n").map((item) => item.trim()).filter(Boolean),
+          prerequisites: settings.prerequisites.split("\n").map((item) => item.trim()).filter(Boolean),
+          target_audience: settings.target_audience.trim() || null,
+          level: settings.level,
+          language: settings.language,
+          estimated_minutes: settings.estimated_minutes ? Number(settings.estimated_minutes) : null,
+          certificate_enabled: settings.certificate_enabled,
+          certificate_min_score: settings.certificate_enabled ? Number(settings.certificate_min_score || 70) : null,
+          drip_enabled: settings.drip_enabled,
+        }, { onConflict: "product_id" });
+      if (settingsError) throw settingsError;
+
+      setChapters(nextChapters);
       toast.success("Programme sauvegardé avec succès ! ✨");
-      fetchCourseStructure();
     } catch (error: any) {
       toast.error("Erreur lors de la sauvegarde", { description: error.message });
     } finally {
@@ -186,6 +297,24 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <section className="space-y-5 rounded-[2rem] border border-border bg-card/60 p-5 md:p-6">
+        <div>
+          <h3 className="text-xl font-bold">Réglages pédagogiques</h3>
+          <p className="text-xs font-medium text-muted-foreground">Ces informations aident les étudiants à comprendre le parcours avant de commencer.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5 md:col-span-2"><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Objectifs (un par ligne)</label><Textarea value={settings.objectives} onChange={(event) => setSettings((current) => ({ ...current, objectives: event.target.value }))} placeholder="À la fin, l’étudiant saura…" className="min-h-20 rounded-xl" /></div>
+          <div className="space-y-1.5"><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Public cible</label><Input value={settings.target_audience} onChange={(event) => setSettings((current) => ({ ...current, target_audience: event.target.value }))} placeholder="Entrepreneurs, étudiants…" className="rounded-xl" /></div>
+          <div className="space-y-1.5"><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Prérequis (un par ligne)</label><Textarea value={settings.prerequisites} onChange={(event) => setSettings((current) => ({ ...current, prerequisites: event.target.value }))} placeholder="Aucun prérequis" className="min-h-20 rounded-xl" /></div>
+          <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Niveau</label><select value={settings.level} onChange={(event) => setSettings((current) => ({ ...current, level: event.target.value }))} className="flex h-10 w-full rounded-xl border border-border bg-background px-3 text-xs"><option>Débutant</option><option>Intermédiaire</option><option>Avancé</option><option>Tous niveaux</option></select></div><div className="space-y-1.5"><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Durée (min)</label><Input type="number" min="0" value={settings.estimated_minutes} onChange={(event) => setSettings((current) => ({ ...current, estimated_minutes: event.target.value }))} placeholder="120" className="rounded-xl" /></div></div>
+        </div>
+        <div className="flex flex-col gap-3 border-t border-border pt-4 text-sm sm:flex-row sm:flex-wrap sm:items-center">
+          <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={settings.certificate_enabled} onChange={(event) => setSettings((current) => ({ ...current, certificate_enabled: event.target.checked }))} className="size-4 accent-[hsl(var(--primary))]" /> Certificat de réussite</label>
+          {settings.certificate_enabled && <label className="flex items-center gap-2 text-xs text-muted-foreground">Score minimum <Input type="number" min="0" max="100" value={settings.certificate_min_score} onChange={(event) => setSettings((current) => ({ ...current, certificate_min_score: event.target.value }))} className="h-9 w-20 rounded-lg" />%</label>}
+          <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={settings.drip_enabled} onChange={(event) => setSettings((current) => ({ ...current, drip_enabled: event.target.checked }))} className="size-4 accent-[hsl(var(--primary))]" /> Déblocage progressif</label>
+        </div>
+      </section>
+
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold">Programme de la formation</h3>
@@ -254,6 +383,22 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type de contenu</label>
+                          <select
+                            value={lesson.lesson_type || "video"}
+                            onChange={(e) => updateLesson(chIdx, lIdx, "lesson_type", e.target.value as Lesson["lesson_type"])}
+                            className="flex h-9 w-full rounded-xl border border-border/50 bg-muted/10 px-3 text-xs outline-none focus:border-primary"
+                          >
+                            <option value="video">Vidéo YouTube/Vimeo</option>
+                            <option value="text">Texte / notes</option>
+                            <option value="pdf">PDF</option>
+                            <option value="download">Ressource à télécharger</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="assignment">Devoir</option>
+                            <option value="live_session">Session live</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                             <Video size={10} /> Lien Vidéo (YouTube/Vimeo)
                           </label>
@@ -278,7 +423,17 @@ const CourseBuilder = ({ courseId }: CourseBuilderProps) => {
                             className="rounded-xl text-xs min-h-[36px] h-9 py-2 bg-muted/10 border-border/50"
                           />
                         </div>
+                        <label className="flex items-center gap-2 text-xs text-muted-foreground md:col-span-2">
+                          <input type="checkbox" checked={Boolean(lesson.is_preview)} onChange={(e) => updateLesson(chIdx, lIdx, "is_preview", e.target.checked)} className="size-4 accent-[hsl(var(--primary))]" />
+                          Leçon disponible en aperçu gratuit
+                        </label>
                       </div>
+                      {lesson.id && (lesson.lesson_type === "quiz" || quizLessonId === lesson.id) ? (
+                        <>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setQuizLessonId(quizLessonId === lesson.id ? null : lesson.id || null)} className="rounded-xl">{quizLessonId === lesson.id ? "Masquer le quiz" : "Configurer le quiz"}</Button>
+                          {quizLessonId === lesson.id ? <QuizBuilder lessonId={lesson.id} /> : null}
+                        </>
+                      ) : null}
                     </motion.div>
                   ))}
                 </AnimatePresence>

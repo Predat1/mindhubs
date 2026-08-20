@@ -20,6 +20,7 @@ const About = lazy(() => import("./pages/About.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const MonCompte = lazy(() => import("./pages/MonCompte.tsx"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases.tsx"));
+const StudentDashboard = lazy(() => import("./pages/StudentDashboard.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const ConditionsGenerales = lazy(() => import("./pages/ConditionsGenerales.tsx"));
 const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite.tsx"));
@@ -90,6 +91,7 @@ const AppContent = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/mon-compte" element={<MonCompte />} />
             <Route path="/mes-achats" element={<MyPurchases />} />
+            <Route path="/mes-formations" element={<StudentDashboard />} />
             <Route path="/formation/:id" element={<LMSPlayer />} />
             <Route path="/experts" element={<Navigate to="/become-a-seller" replace />} />
             <Route path="/reset-password" element={<ResetPassword />} />

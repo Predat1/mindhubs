@@ -8,6 +8,9 @@ export interface DbProduct {
   image_url: string;
   old_price: string;
   price: string;
+  pricing_mode?: "free" | "paid";
+  currency?: string;
+  price_amount?: number | null;
   category: string;
   rating: number | null;
   tag: string | null;
@@ -38,6 +41,9 @@ const mapDbToProduct = (db: DbProduct): Product => ({
   image: db.image_url,
   oldPrice: db.old_price,
   price: db.price,
+  pricingMode: db.pricing_mode || (db.price_amount === 0 ? "free" : "paid"),
+  currency: db.currency || "XOF",
+  priceAmount: db.price_amount ?? undefined,
   category: db.category as Category,
   rating: db.rating ?? undefined,
   tag: db.tag ?? undefined,

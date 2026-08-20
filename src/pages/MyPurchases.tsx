@@ -20,14 +20,27 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
+import { createDigitalDownloadUrl } from "@/lib/productAccess";
+import { toast } from "@/hooks/use-toast";
 
 export default function MyPurchases() {
   const { user } = useAuth();
 
+  const handleDownload = async (product: any) => {
+    if (!product.digital_asset_path) return;
+    try {
+      const url = await createDigitalDownloadUrl(product.digital_asset_path);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error: unknown) {
+      toast({ title: "Téléchargement indisponible", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   const { data: purchases, isLoading } = useQuery({
     queryKey: ['my-purchases', user?.id],
     queryFn: async () => {
-      // Fetch orders and their products for the current user
+      // Paid purchases remain available through orders. Free products and
+      // courses use the same library through product_entitlements.
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -39,11 +52,12 @@ export default function MyPurchases() {
             product_id,
             products (
               id,
-              name,
-              image_url,
-              file_url,
+               title,
+               image_url,
+               digital_asset_path,
               category,
-              is_lms
+              is_lms,
+              pricing_mode
             )
           )
         `)
@@ -51,17 +65,38 @@ export default function MyPurchases() {
         .eq('status', 'confirmed'); // Only show paid items
 
       if (error) throw error;
-      
-      // Flatten products from orders
-      const allProducts = (data as any)?.flatMap((order: any) => 
+
+      const paidProducts = (data as any)?.flatMap((order: any) =>
         order.order_items?.map((item: any) => ({
           ...item.products,
+          name: item.products?.title,
           orderId: order.id,
-          purchasedAt: order.created_at
+          purchasedAt: order.created_at,
+          accessSource: 'purchase'
         }))
       ) || [];
 
-      return allProducts;
+      let freeProducts: any[] = [];
+      const { data: entitlements, error: entitlementError } = await (supabase as any)
+        .from('product_entitlements')
+        .select('id, product_id, granted_at, source, products(id, title, image_url, digital_asset_path, category, is_lms, pricing_mode)')
+        .eq('user_id', user?.id)
+        .eq('status', 'active');
+      if (!entitlementError) {
+        freeProducts = (entitlements || []).map((entry: any) => ({
+          ...(entry.products || {}),
+          id: entry.products?.id || entry.product_id,
+          name: entry.products?.title,
+          purchasedAt: entry.granted_at,
+          accessSource: entry.source,
+        }));
+      }
+
+      const unique = new Map<string, any>();
+      [...paidProducts, ...freeProducts].forEach((product: any) => {
+        if (product?.id && !unique.has(product.id)) unique.set(product.id, product);
+      });
+      return Array.from(unique.values());
     },
     enabled: !!user?.id
   });
@@ -109,7 +144,7 @@ export default function MyPurchases() {
                   <p className="text-muted-foreground font-medium">Parcourez la marketplace pour découvrir des produits incroyables.</p>
                 </div>
                 <Button asChild className="h-14 rounded-2xl bg-primary px-8 font-black gap-2">
-                  <Link to="/marketplace">VOIR LA MARKETPLACE <ArrowRight size={18} /></Link>
+                  <Link to="/boutique">VOIR LA MARKETPLACE <ArrowRight size={18} /></Link>
                 </Button>
               </div>
             ) : (
@@ -131,7 +166,7 @@ export default function MyPurchases() {
                            </Link>
                          </Button>
                        ) : (
-                         <Button className="w-full h-12 rounded-xl bg-surface-secondary text-foreground hover:bg-primary hover:text-primary-foreground font-black gap-2" onClick={() => window.open(product.file_url, '_blank')}>
+                         <Button className="w-full h-12 rounded-xl bg-surface-secondary text-foreground hover:bg-primary hover:text-primary-foreground font-black gap-2" onClick={() => handleDownload(product)} disabled={!product.digital_asset_path}>
                            <Download size={16} /> TÉLÉCHARGER
                          </Button>
                        )}
@@ -153,7 +188,7 @@ export default function MyPurchases() {
                     <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
                        <div className="flex items-center gap-2 text-success">
                           <CheckCircle2 size={16} />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Paiement Validé</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest">{product.accessSource === "free_claim" ? "Accès gratuit" : "Paiement validé"}</span>
                        </div>
                        <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-primary">
                           <ExternalLink size={18} />

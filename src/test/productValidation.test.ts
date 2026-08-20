@@ -44,4 +44,31 @@ describe("validateProduct", () => {
     expect(result.fields.price).toBeTruthy();
     expect(result.fields.oldPrice).toBeUndefined();
   });
+
+  it("accepts a free digital product without a sale price", () => {
+    const result = validateProduct({
+      ...base,
+      pricingMode: "free",
+      price: "0",
+      oldPrice: "",
+    });
+    expect(result.valid).toBe(true);
+    expect(result.fields.price).toBeUndefined();
+  });
+
+  it("does not allow a physical product to be free", () => {
+    const result = validateProduct({
+      ...base,
+      pricingMode: "free",
+      productMode: "physical",
+      price: "0",
+      oldPrice: "",
+      digitalAssetPath: "",
+      digitalAssetName: "",
+      inventoryQuantity: "2",
+      shippingNotes: "Livraison sous 3 jours",
+    });
+    expect(result.valid).toBe(false);
+    expect(result.fields.price).toBeTruthy();
+  });
 });

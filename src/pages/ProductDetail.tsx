@@ -14,6 +14,7 @@ import { ProductContentRenderer } from "@/components/products/ProductContentRend
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useProductReviews } from "@/hooks/useProductReviews";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { CheckSquare, ShoppingCart, Eye, Star, Package, FileText, Gift, BookOpen, Store, BadgeCheck, Zap, ShieldCheck, Share2, Sparkles, Lock, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
@@ -33,6 +34,7 @@ import payVisa from "@/assets/pay-visa.png";
 import payMastercard from "@/assets/pay-mastercard.png";
 import { formatCurrency } from "@/lib/currency";
 import { contentToPlainText, parseProductContent } from "@/lib/productContent";
+import { claimFreeProduct } from "@/lib/productAccess";
 
 interface CurriculumLesson {
   id: string;
@@ -71,6 +73,7 @@ const ProductDetail = () => {
   const { data: allProducts = [] } = useProducts();
   const { data: reviews = [] } = useProductReviews(id || "");
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { addViewed } = useRecentlyViewed();
   const { data: vendor } = useVendorById(product?.vendorId);
@@ -119,8 +122,23 @@ const ProductDetail = () => {
     setActiveTab("description");
   }, [id]);
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (product) {
+      const isFree = product.pricingMode === "free" || product.priceAmount === 0;
+      if (isFree) {
+        if (!user) {
+          navigate(`/mon-compte?redirect=${encodeURIComponent(`/produit/${product.id}`)}`);
+          return;
+        }
+        try {
+          await claimFreeProduct(product.id);
+          toast({ title: "Accès accordé", description: "Le produit est maintenant disponible dans votre bibliothèque." });
+          navigate(product.is_lms ? `/formation/${product.id}` : "/mon-compte");
+        } catch (error: unknown) {
+          toast({ title: "Accès impossible", description: (error as Error).message || "Réessayez dans un instant.", variant: "destructive" });
+        }
+        return;
+      }
       trackProductClick(product.id);
       addToCart(product);
       trackAddToCart(product.id);
@@ -176,6 +194,7 @@ const ProductDetail = () => {
   const priceNum = parseFloat(product.price.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
   const oldPriceNum = parseFloat(product.oldPrice.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
   const discountPct = oldPriceNum > 0 ? Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100) : 0;
+  const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const allImages = [product.image, ...(product.imageUrls || [])].filter(Boolean);
   const keyFeatures = (product.keyFeatures && product.keyFeatures.length > 0) ? product.keyFeatures : extractFeatures(product.description);
   const contentBlocks = parseProductContent(product.description);
@@ -290,8 +309,8 @@ const ProductDetail = () => {
                <div className="glass-card rounded-2xl p-6 md:p-8 space-y-8">
                   <div className="flex items-end gap-4">
                      <div className="space-y-1">
-                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{formatCurrency(product.oldPrice)}</p>
-                        <p className="text-5xl font-black text-foreground tracking-tighter">{formatCurrency(product.price)}</p>
+                        {!isFree && <p className="text-xs font-black text-muted-foreground uppercase tracking-widest line-through">{formatCurrency(product.oldPrice)}</p>}
+                        <p className="text-5xl font-black text-foreground tracking-tighter">{isFree ? "Gratuit" : formatCurrency(product.price)}</p>
                      </div>
                      {discountPct > 0 && (
                        <Badge className="mb-2 bg-success text-success-foreground border-none px-3 py-1 font-black text-[10px]">ÉCONOMIE {discountPct}%</Badge>
@@ -309,12 +328,12 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="space-y-4">
-                     <Button 
+                     <Button
                        onClick={handleBuyNow}
                        disabled={isOutOfStock}
                        className="w-full h-14 rounded-xl btn-glow font-semibold text-base gap-3 disabled:cursor-not-allowed disabled:opacity-60"
                      >
-                        {isOutOfStock ? "Produit indisponible" : product.vendorId ? "Ajouter au panier et continuer" : "Obtenir mon accès"} <Zap size={22} fill="currentColor" />
+                        {isOutOfStock ? "Produit indisponible" : isFree ? "Obtenir gratuitement" : product.vendorId ? "Ajouter au panier et continuer" : "Obtenir mon accès"} <Zap size={22} fill="currentColor" />
                      </Button>
                      <div className="flex flex-wrap items-center justify-center gap-6">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">

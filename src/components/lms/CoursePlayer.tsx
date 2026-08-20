@@ -10,6 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
+import QuizPlayer from "@/components/lms/QuizPlayer";
 
 interface Lesson {
   id: string;
@@ -18,6 +19,9 @@ interface Lesson {
   video_url: string;
   content_text: string;
   order_index: number;
+  lesson_type?: "video" | "text" | "pdf" | "download" | "external_link" | "quiz" | "assignment" | "live_session";
+  duration_minutes?: number | null;
+  is_preview?: boolean;
 }
 
 interface Chapter {
@@ -63,18 +67,24 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
 
       // 2. Fetch progress
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const lessonIds = structured.flatMap((chapter: Chapter) => chapter.lessons.map((lesson: Lesson) => lesson.id));
+      if (user && lessonIds.length > 0) {
         const { data: progressData } = await (supabase as any)
           .from("user_course_progress")
           .select("lesson_id")
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .in("lesson_id", lessonIds);
         
         setCompletedLessons((progressData || []).map((p: any) => p.lesson_id));
       }
 
       // Set first lesson as default
       if (structured.length > 0 && structured[0].lessons.length > 0) {
-        setCurrentLesson(structured[0].lessons[0]);
+        const savedLessonId = window.localStorage.getItem(`mindhubs:last-lesson:${courseId}`);
+        const savedLesson = lessonIds.includes(savedLessonId || "")
+          ? structured.flatMap((chapter: Chapter) => chapter.lessons).find((lesson: Lesson) => lesson.id === savedLessonId)
+          : undefined;
+        setCurrentLesson(savedLesson || structured[0].lessons[0]);
       }
     } catch (error: any) {
       toast.error("Erreur de chargement", { description: error.message });
@@ -104,6 +114,12 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
         setCompletedLessons(prev => [...prev, lessonId]);
         toast.success("Leçon terminée ! 🎯");
       }
+
+      await (supabase as any)
+        .from("student_enrollments")
+        .update({ last_lesson_id: lessonId })
+        .eq("user_id", user.id)
+        .eq("course_id", courseId);
     } catch (error: any) {
       toast.error("Erreur de progression");
     }
@@ -120,12 +136,26 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
     const vimeoMatch = url.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/);
     if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?badge=0&autopause=0&player_id=0&app_id=58479`;
 
-    return url;
+    // Unknown providers are intentionally not embedded. This keeps the
+    // student player predictable and prevents arbitrary third-party frames.
+    return null;
   };
 
-  const progress = chapters.reduce((acc, ch) => acc + ch.lessons.length, 0) > 0
-    ? (completedLessons.length / chapters.reduce((acc, ch) => acc + ch.lessons.length, 0)) * 100
+  const lessonList = chapters.flatMap((chapter) => chapter.lessons);
+  const currentLessonIndex = currentLesson ? lessonList.findIndex((lesson) => lesson.id === currentLesson.id) : -1;
+  const progress = lessonList.length > 0
+    ? (completedLessons.filter((id) => lessonList.some((lesson) => lesson.id === id)).length / lessonList.length) * 100
     : 0;
+
+  const selectLesson = (lesson: Lesson) => {
+    setCurrentLesson(lesson);
+    window.localStorage.setItem(`mindhubs:last-lesson:${courseId}`, lesson.id);
+  };
+
+  const goToLesson = (offset: number) => {
+    const nextLesson = lessonList[currentLessonIndex + offset];
+    if (nextLesson) selectLesson(nextLesson);
+  };
 
   if (loading) return <div className="flex h-screen items-center justify-center">Chargement...</div>;
 
@@ -171,7 +201,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
                         {chapter.lessons.map((lesson) => (
                           <button
                             key={lesson.id}
-                            onClick={() => setCurrentLesson(lesson)}
+                            onClick={() => selectLesson(lesson)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                               currentLesson?.id === lesson.id 
                                 ? "bg-primary/10 text-primary border border-primary/20" 
@@ -222,22 +252,44 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
         <main className="flex-1 overflow-y-auto">
           {currentLesson ? (
             <div className="max-w-5xl mx-auto p-6 space-y-8 animate-in fade-in duration-500">
-              {/* Video Area */}
+              {/* Lesson media/content keeps a stable frame for video lessons and
+                  avoids pretending every lesson is a YouTube video. */}
+              {currentLesson.lesson_type === "text" ? (
+                <article className="rounded-[2rem] border border-border bg-card p-8 shadow-xl">
+                  <div className="mb-6 flex items-center gap-3 text-primary">
+                    <FileText size={22} aria-hidden="true" />
+                    <span className="text-xs font-black uppercase tracking-widest">Lecture</span>
+                  </div>
+                  <div className="whitespace-pre-wrap text-base leading-8 text-foreground">
+                    {currentLesson.content_text || "Aucun contenu pour cette leçon."}
+                  </div>
+                </article>
+              ) : currentLesson.lesson_type === "external_link" && currentLesson.video_url ? (
+                <div className="rounded-[2rem] border border-border bg-card p-8 shadow-xl">
+                  <p className="mb-4 text-sm text-muted-foreground">Cette leçon ouvre une ressource externe contrôlée par le formateur.</p>
+                  <a href={currentLesson.video_url} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-4">
+                    Ouvrir la ressource
+                  </a>
+                </div>
+              ) : (
               <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-black shadow-2xl border border-white/5 ring-1 ring-white/10">
-                {currentLesson.video_url ? (
+                {currentLesson.video_url && getEmbedUrl(currentLesson.video_url) ? (
                   <iframe
                     src={getEmbedUrl(currentLesson.video_url) || ""}
                     className="w-full h-full"
+                    title={`Vidéo de la leçon ${currentLesson.title}`}
+                    referrerPolicy="strict-origin-when-cross-origin"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-4">
                     <Video size={48} className="opacity-20" />
-                    <p className="font-bold">Aucune vidéo pour cette leçon</p>
+                    <p className="font-bold">Aucun média pour cette leçon</p>
                   </div>
                 )}
               </div>
+              )}
 
               {/* Lesson Content */}
               <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-8">
@@ -245,7 +297,7 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h1 className="text-3xl font-black tracking-tight">{currentLesson.title}</h1>
-                      <p className="text-sm text-muted-foreground font-medium">MindHubs Academy • Formation Premium</p>
+                      <p className="text-sm text-muted-foreground font-medium">MindHubs Academy • Votre progression est sauvegardée</p>
                     </div>
                     <Button 
                       onClick={() => toggleComplete(currentLesson.id)}
@@ -260,6 +312,16 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
                     </Button>
                   </div>
 
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
+                    <Button type="button" variant="outline" size="sm" disabled={currentLessonIndex <= 0} onClick={() => goToLesson(-1)} className="rounded-xl gap-2">
+                      <ArrowLeft size={14} /> Leçon précédente
+                    </Button>
+                    <span className="text-xs font-semibold text-muted-foreground">{currentLessonIndex + 1} / {lessonList.length}</span>
+                    <Button type="button" variant="outline" size="sm" disabled={currentLessonIndex < 0 || currentLessonIndex >= lessonList.length - 1} onClick={() => goToLesson(1)} className="rounded-xl gap-2">
+                      Leçon suivante <ChevronRight size={14} />
+                    </Button>
+                  </div>
+
                   <div className="prose prose-invert max-w-none">
                     <div className="p-8 rounded-[2rem] bg-card border border-border/50 text-foreground">
                       <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -270,6 +332,8 @@ const CoursePlayer = ({ courseId, courseTitle }: CoursePlayerProps) => {
                       </div>
                     </div>
                   </div>
+
+                  {currentLesson.lesson_type === "quiz" && <QuizPlayer lessonId={currentLesson.id} />}
                 </div>
 
                 <aside className="space-y-6">

@@ -119,6 +119,8 @@ interface FormState {
   description: string;
   category: string;
   price: string;
+  pricing_mode: "free" | "paid";
+  currency: string;
   old_price: string;
   image_url: string;
   image_urls: string[];
@@ -141,6 +143,8 @@ const emptyForm: FormState = {
   description: "",
   category: "Formations",
   price: "",
+  pricing_mode: "paid",
+  currency: "XOF",
   old_price: "",
   image_url: "",
   image_urls: [],
@@ -422,6 +426,8 @@ const Inner = ({
           description: data.description || "",
           category: data.category,
           price: data.price,
+          pricing_mode: ((data as Record<string, unknown>).pricing_mode as FormState["pricing_mode"]) || (((data as Record<string, unknown>).price_amount as number | null) === 0 ? "free" : "paid"),
+          currency: ((data as Record<string, unknown>).currency as string) || "XOF",
           old_price: data.old_price,
           image_url: data.image_url,
           image_urls: (data.image_urls as string[]) || [],
@@ -470,6 +476,7 @@ const Inner = ({
       category: form.category,
       imageUrl: form.image_url,
       price: form.price,
+      pricingMode: form.pricing_mode,
       oldPrice: form.old_price,
       productMode: form.product_mode,
       digitalAssetPath: form.digital_asset_path,
@@ -484,7 +491,7 @@ const Inner = ({
     () => ({
       info: form.title.trim().length >= 3,
       media: !!form.image_url && ((form.product_mode === "physical") || !!form.digital_asset_path || !!form.digital_asset_name),
-      pricing: parseProductAmount(form.price) !== null && ((form.product_mode === "digital") || (form.inventory_quantity.trim() !== "" && !!form.shipping_notes.trim())),
+      pricing: (form.pricing_mode === "free" || (parseProductAmount(form.price) !== null && parseProductAmount(form.price)! > 0)) && ((form.product_mode === "digital") || (form.inventory_quantity.trim() !== "" && !!form.shipping_notes.trim())),
       curriculum: true,
       details: publishValidation.valid,
     }),
@@ -623,7 +630,10 @@ const Inner = ({
         description: form.description.trim() || null,
         category: form.category,
         price: form.price.trim() || "0",
-        old_price: form.old_price.trim() || form.price.trim() || "0",
+        old_price: form.pricing_mode === "paid" ? (form.old_price.trim() || form.price.trim() || "0") : "0",
+        pricing_mode: form.pricing_mode,
+        currency: form.currency || "XOF",
+        price_amount: form.pricing_mode === "free" ? 0 : parseProductAmount(form.price),
         image_url: form.image_url || "",
         image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         payment_link: form.payment_link.trim() || null,
@@ -645,6 +655,13 @@ const Inner = ({
         : await (supabase as any).from("products").insert(productData);
       if (error) throw error;
 
+      if (form.is_lms) {
+        const { error: courseSettingsError } = await (supabase as any)
+          .from("course_settings")
+          .upsert({ product_id: productId, status: finalStatus === "published" ? "published" : "draft" }, { onConflict: "product_id" });
+        if (courseSettingsError) throw courseSettingsError;
+      }
+
       // Channel publication is deliberately independent: a seller can keep a product
       // in their own store while hiding it from marketplace discovery.
       try {
@@ -654,6 +671,7 @@ const Inner = ({
           "description",
           "category",
           "price",
+          "pricing_mode",
           "old_price",
           "image_url",
           "image_urls",
@@ -997,7 +1015,7 @@ const Inner = ({
                       <Label>Type d’offre</Label>
                       <p className="mt-1 text-[10px] text-muted-foreground">Ce choix adapte la livraison et la gestion du produit.</p>
                     </div>
-                    <Select value={form.product_mode} onValueChange={(value: FormState["product_mode"]) => setForm({ ...form, product_mode: value })}>
+                    <Select value={form.product_mode} onValueChange={(value: FormState["product_mode"]) => setForm({ ...form, product_mode: value, pricing_mode: (value === "physical" || value === "hybrid") ? "paid" : form.pricing_mode })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="digital">Produit digital — livraison instantanée</SelectItem>
@@ -1436,7 +1454,41 @@ const Inner = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Mode de tarification">
+                    {([
+                      ["free", "Gratuit", "Accès sans paiement après inscription", "Obtenir gratuitement"],
+                      ["paid", "Payant", "Vente via le checkout MindHubs", "Acheter maintenant"],
+                    ] as const).map(([value, label, description]) => {
+                      const selected = form.pricing_mode === value;
+                      const unavailable = value === "free" && (form.product_mode === "physical" || form.product_mode === "hybrid");
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          disabled={unavailable}
+                          onClick={() => setForm((current) => ({ ...current, pricing_mode: value, old_price: value === "free" ? "" : current.old_price }))}
+                          className={`rounded-2xl border p-4 text-left transition-colors ${selected ? "border-primary bg-primary/10" : "border-border bg-muted/20 hover:border-primary/40"} ${unavailable ? "cursor-not-allowed opacity-50" : ""}`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-bold">{label}</span>
+                            <span className={`grid size-5 place-items-center rounded-full border ${selected ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
+                              {selected ? <Check size={12} /> : null}
+                            </span>
+                          </div>
+                          <span className="mt-1 block text-xs text-muted-foreground">{unavailable ? "Disponible uniquement pour les produits digitaux et formations." : description}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {form.pricing_mode === "free" ? (
+                    <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                      <CheckCircle2 className="mt-0.5 shrink-0 text-primary" size={18} />
+                      <div><p className="font-semibold">Produit gratuit</p><p className="mt-1 text-xs text-muted-foreground">Les utilisateurs devront créer un compte pour obtenir l’accès. Aucun paiement ne sera demandé.</p></div>
+                    </div>
+                  ) : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label htmlFor="price">
                         Prix de vente{" "}
@@ -1464,7 +1516,7 @@ const Inner = ({
                       />
                       {validation?.fields.oldPrice && <p className="text-xs text-destructive">{validation.fields.oldPrice}</p>}
                     </div>
-                  </div>
+                  </div>}
 
                   {previewDiscount !== null && (
                     <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">

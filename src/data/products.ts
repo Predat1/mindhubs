@@ -30,6 +30,9 @@ export interface Product {
   image: string;
   oldPrice: string;
   price: string;
+  pricingMode?: "free" | "paid";
+  currency?: string;
+  priceAmount?: number | null;
   category: Category;
   rating?: number;
   tag?: string;

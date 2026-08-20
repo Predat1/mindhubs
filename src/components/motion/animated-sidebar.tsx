@@ -30,6 +30,9 @@ type SidebarSide = "left" | "right";
 type SidebarVariant = "sidebar" | "floating" | "inset";
 type SidebarCollapsible = "offcanvas" | "icon" | "none";
 
+const SIDEBAR_WIDTH_PX = 256;
+const SIDEBAR_ICON_WIDTH_PX = 68;
+
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -322,7 +325,10 @@ export const AnimatedSidebar = forwardRef<HTMLElement, AnimatedSidebarProps>(fun
     );
   }
 
-  const width = collapsible === "offcanvas" && collapsed ? "0px" : collapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)";
+  // Numeric values let Motion interpolate the width with a real spring. CSS
+  // variable strings are treated as discrete values by some browsers and
+  // make the retraction feel abrupt.
+  const width = collapsible === "offcanvas" && collapsed ? 0 : collapsed ? SIDEBAR_ICON_WIDTH_PX : SIDEBAR_WIDTH_PX;
 
   return (
     <motion.aside
@@ -336,7 +342,7 @@ export const AnimatedSidebar = forwardRef<HTMLElement, AnimatedSidebarProps>(fun
       data-variant={variant}
       data-side={side}
       animate={{ width }}
-      transition={context.reduce ? { duration: 0.01 } : { type: "spring", stiffness: 380, damping: 35, mass: 0.75 }}
+      transition={context.reduce ? { duration: 0.01 } : SPRING_LAYOUT}
       style={style}
       className={cn(
         "group/sidebar fixed inset-y-0 z-40 hidden h-svh shrink-0 md:block will-change-[width]",
@@ -365,23 +371,22 @@ export const AnimatedSidebar = forwardRef<HTMLElement, AnimatedSidebarProps>(fun
   );
 });
 
-export const AnimatedSidebarInset = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(function AnimatedSidebarInset(
+export const AnimatedSidebarInset = forwardRef<HTMLElement, HTMLMotionProps<"main">>(function AnimatedSidebarInset(
   { className, style, ...props },
   ref,
 ) {
   const context = useAnimatedSidebar();
-  const sidebarOffset = context.isMobile ? undefined : context.open ? "var(--sidebar-width)" : "var(--sidebar-width-icon)";
+  const sidebarOffset = context.isMobile ? 0 : context.open ? SIDEBAR_WIDTH_PX : SIDEBAR_ICON_WIDTH_PX;
 
   return (
-    <main
+    <motion.main
       ref={ref}
+      initial={false}
       data-slot="sidebar-inset"
       className={cn("relative flex min-h-svh min-w-0 flex-1 flex-col bg-background", className)}
-      style={{
-        ...style,
-        marginLeft: sidebarOffset,
-        transition: context.reduce ? "none" : "margin-left 280ms cubic-bezier(0.16, 1, 0.3, 1)",
-      }}
+      animate={{ marginLeft: sidebarOffset }}
+      transition={context.reduce ? { duration: 0.01 } : SPRING_LAYOUT}
+      style={style}
       {...props}
     />
   );
@@ -414,6 +419,7 @@ export const AnimatedSidebarTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAt
 ) {
   const context = useAnimatedSidebar();
   const expanded = context.isMobile ? context.openMobile : context.open;
+  const label = expanded ? "Réduire la navigation" : "Développer la navigation";
   return (
     <button
       {...props}
@@ -423,7 +429,8 @@ export const AnimatedSidebarTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAt
         else if (forwardedRef) forwardedRef.current = node;
       }}
       type={type}
-      aria-label={props["aria-label"] ?? "Ouvrir ou réduire la navigation"}
+      aria-label={props["aria-label"] ?? label}
+      title={props.title ?? label}
       aria-expanded={expanded}
       data-slot="sidebar-trigger"
       onClick={(event) => {
@@ -432,7 +439,14 @@ export const AnimatedSidebarTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAt
       }}
       className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring", className)}
     >
-      <PanelLeft className="size-4" aria-hidden="true" />
+      <motion.span
+        initial={false}
+        animate={{ rotate: expanded ? 0 : 180 }}
+        transition={context.reduce ? { duration: 0.01 } : SPRING_LAYOUT}
+        className="grid place-items-center"
+      >
+        <PanelLeft className="size-4" aria-hidden="true" />
+      </motion.span>
     </button>
   );
 });

@@ -192,6 +192,9 @@ export type Database = {
           image_urls: Json | null
           key_features: string[] | null
           old_price: string
+          pricing_mode: string
+          currency: string
+          price_amount: number | null
           payment_link: string | null
           product_mode: string
           sku: string | null
@@ -218,6 +221,9 @@ export type Database = {
           image_urls?: Json | null
           key_features?: string[] | null
           old_price: string
+          pricing_mode?: string
+          currency?: string
+          price_amount?: number | null
           payment_link?: string | null
           product_mode?: string
           sku?: string | null
@@ -244,6 +250,9 @@ export type Database = {
           image_urls?: Json | null
           key_features?: string[] | null
           old_price?: string
+          pricing_mode?: string
+          currency?: string
+          price_amount?: number | null
           payment_link?: string | null
           product_mode?: string
           sku?: string | null

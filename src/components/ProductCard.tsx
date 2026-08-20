@@ -31,6 +31,7 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
   const reduce = useReducedMotion();
   const productMode = product.productMode || "digital";
   const isOutOfStock = (productMode === "physical" || productMode === "hybrid") && product.inventoryQuantity === 0;
+  const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const hasDiscount = parseCurrency(product.oldPrice) > parseCurrency(product.price);
   const detailHref = `/produit/${product.id}?source=${sourceChannel}`;
   const vendorHref = vendor?.username ? `/store/${encodeURIComponent(vendor.username)}` : null;
@@ -136,8 +137,8 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
 
             <div className="mt-auto flex items-end justify-between gap-3 border-t border-border pt-3">
               <div className="min-w-0">
-                {hasDiscount ? <span className="block text-[10px] font-medium text-muted-foreground line-through">{formatCurrency(product.oldPrice)}</span> : null}
-                <span className="block text-base font-bold text-foreground">{formatCurrency(product.price)}</span>
+                {!isFree && hasDiscount ? <span className="block text-[10px] font-medium text-muted-foreground line-through">{formatCurrency(product.oldPrice)}</span> : null}
+                <span className="block text-base font-bold text-foreground">{isFree ? "Gratuit" : formatCurrency(product.price)}</span>
               </div>
 
               {showQuickBuy ? (
@@ -145,11 +146,11 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
                   type="button"
                   onClick={handleBuy}
                   disabled={isOutOfStock}
-                  aria-label={isOutOfStock ? `${product.title} est en rupture de stock` : `Acheter ${product.title}`}
+                  aria-label={isOutOfStock ? `${product.title} est en rupture de stock` : isFree ? `Obtenir gratuitement ${product.title}` : `Acheter ${product.title}`}
                   className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                 >
                   <ShoppingBag size={15} aria-hidden="true" />
-                  <span className="hidden sm:inline">Acheter</span>
+                  <span className="hidden sm:inline">{isFree ? "Obtenir" : "Acheter"}</span>
                 </button>
               ) : (
                 <Link

@@ -13,6 +13,7 @@ export type ProductValidationInput = {
   category: string;
   imageUrl: string;
   price: string;
+  pricingMode?: "free" | "paid";
   oldPrice?: string;
   productMode: ProductMode;
   digitalAssetPath?: string;
@@ -64,14 +65,18 @@ export function validateProduct(input: ProductValidationInput): ProductValidatio
     missingByStep.content.push("Image principale");
   }
 
+  const pricingMode = input.pricingMode ?? "paid";
   const price = stripAmount(input.price);
-  if (price === null || price < 0) {
-    fields.price = "Saisissez un prix valide.";
+  if (pricingMode === "free" && (input.productMode === "physical" || input.productMode === "hybrid")) {
+    fields.price = "Les produits physiques et hybrides doivent être payants.";
+    missingByStep.pricing.push("Prix payant");
+  } else if (pricingMode === "paid" && (price === null || price <= 0)) {
+    fields.price = "Saisissez un prix supérieur à zéro.";
     missingByStep.pricing.push("Prix");
   }
 
   const oldPrice = stripAmount(input.oldPrice);
-  if (oldPrice !== null && price !== null && oldPrice <= price) {
+  if (pricingMode === "paid" && oldPrice !== null && price !== null && oldPrice <= price) {
     fields.oldPrice = "L’ancien prix doit être supérieur au prix actuel.";
     missingByStep.pricing.push("Ancien prix cohérent");
   }
@@ -103,4 +108,3 @@ export function validateProduct(input: ProductValidationInput): ProductValidatio
 
   return { valid: Object.keys(fields).length === 0, fields, missingByStep };
 }
-
