@@ -22,6 +22,12 @@ const BASE_URL = "https://mindhubs.fun";
 const DEFAULT_IMAGE = "/og-image.png";
 const BRAND_ICON = `${BASE_URL}/favicon-512.png`;
 
+const normalizePath = (value: string) => {
+  const withoutQuery = value.split(/[?#]/, 1)[0] || "/";
+  if (!withoutQuery.startsWith("/")) return `/${withoutQuery}`;
+  return withoutQuery === "/" ? "/" : withoutQuery.replace(/\/+$/, "");
+};
+
 const SEGMENT_LABELS: Record<string, string> = {
   boutique: "Boutique",
   "a-propos": "À propos",
@@ -38,9 +44,11 @@ const SEGMENT_LABELS: Record<string, string> = {
 };
 
 const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "website", noindex = false, faq }: SEOProps) => {
-  const fullTitle = `${title} | ${SITE_NAME} – Formations Digitales Premium Afrique`;
-  const url = `${BASE_URL}${path}`;
+  const fullTitle = title.toLowerCase().includes(SITE_NAME.toLowerCase()) ? title : `${title} | ${SITE_NAME}`;
+  const normalizedPath = normalizePath(path);
+  const url = `${BASE_URL}${normalizedPath}`;
   const ogImage = image ? (image.startsWith("http") ? image : `${BASE_URL}${image}`) : `${BASE_URL}${DEFAULT_IMAGE}`;
+  const openGraphType = type === "product" ? "website" : type;
 
   useEffect(() => {
     document.title = fullTitle;
@@ -86,7 +94,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("property", "og:image:width", "1200");
     setMeta("property", "og:image:height", "630");
     setMeta("property", "og:image:alt", title);
-    setMeta("property", "og:type", type);
+    setMeta("property", "og:type", openGraphType);
     setMeta("property", "og:site_name", SITE_NAME);
     setMeta("property", "og:logo", BRAND_ICON);
     setMeta("property", "og:locale", "fr_FR");
@@ -96,7 +104,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", ogImage);
-    setMeta("name", "twitter:image:src", BRAND_ICON);
+    setMeta("name", "twitter:image:src", ogImage);
     setMeta("name", "twitter:image:alt", title);
 
     // Canonical + hreflang
@@ -105,7 +113,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
     setLink("alternate", url, { hreflang: "x-default" });
 
     // Breadcrumbs
-    const pathSegments = path.split("/").filter(Boolean);
+    const pathSegments = normalizedPath.split("/").filter(Boolean);
     const breadcrumbLd = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -164,7 +172,7 @@ const SEO = ({ title, description, path = "", image, jsonLd, keywords, type = "w
       const el = document.getElementById(ldId);
       if (el) el.remove();
     };
-  }, [fullTitle, description, url, ogImage, jsonLd, keywords, type, path, noindex, faq]);
+  }, [fullTitle, description, url, ogImage, jsonLd, keywords, openGraphType, normalizedPath, noindex, faq]);
 
   return null;
 };

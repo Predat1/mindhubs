@@ -15,6 +15,7 @@ export type ProductValidationInput = {
   price: string;
   pricingMode?: "free" | "paid";
   oldPrice?: string;
+  paymentLink?: string;
   productMode: ProductMode;
   digitalAssetPath?: string;
   digitalAssetName?: string;
@@ -79,6 +80,18 @@ export function validateProduct(input: ProductValidationInput): ProductValidatio
   if (pricingMode === "paid" && oldPrice !== null && price !== null && oldPrice <= price) {
     fields.oldPrice = "L’ancien prix doit être supérieur au prix actuel.";
     missingByStep.pricing.push("Ancien prix cohérent");
+  }
+
+  if (input.paymentLink?.trim()) {
+    try {
+      const externalUrl = new URL(input.paymentLink.trim());
+      if (externalUrl.protocol !== "http:" && externalUrl.protocol !== "https:") {
+        throw new Error("unsupported protocol");
+      }
+    } catch {
+      fields.paymentLink = "Utilisez une URL externe valide commençant par https://.";
+      missingByStep.pricing.push("Lien externe valide");
+    }
   }
 
   if (input.productMode === "digital" || input.productMode === "hybrid") {

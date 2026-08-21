@@ -37,8 +37,15 @@ function loadEnv() {
 loadEnv();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const DOMAIN = 'https://mindhubs.fun';
+
+const escapeXml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&apos;');
 
 const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
@@ -49,6 +56,7 @@ async function generateSitemap() {
   const urls = [
     { loc: `${DOMAIN}/`, priority: 1.0 },
     { loc: `${DOMAIN}/boutique`, priority: 0.9 },
+    { loc: `${DOMAIN}/produit/formations-550-logiciels`, priority: 0.85 },
     { loc: `${DOMAIN}/a-propos`, priority: 0.8 },
     { loc: `${DOMAIN}/become-a-seller`, priority: 0.8 },
     { loc: `${DOMAIN}/contact`, priority: 0.7 },
@@ -63,15 +71,30 @@ async function generateSitemap() {
     if (supabase) {
       console.log("Fetching dynamic routes from Supabase...");
 
-      const { data: products } = await supabase.from('products').select('id, updated_at');
+      const { data: publications, error: publicationsError } = await supabase
+        .from('product_publications')
+        .select('product_id, updated_at')
+        .eq('status', 'published');
+      const publishedProductIds = Array.isArray(publications) && publications.length > 0
+        ? new Map(publications.map((publication) => [publication.product_id, publication.updated_at]))
+        : null;
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('id, updated_at, status')
+        .eq('status', 'published');
       const { data: vendors } = await supabase.from('vendors').select('username');
+
+      if (publicationsError) console.warn('Publications indisponibles, le sitemap utilise les produits publiés :', publicationsError.message);
+      if (productsError) console.warn('Produits dynamiques indisponibles :', productsError.message);
 
       if (products) {
         products.forEach(p => {
+          if (publishedProductIds && !publishedProductIds.has(p.id)) return;
+          const lastmod = publishedProductIds?.get(p.id) || p.updated_at;
           urls.push({
-            loc: `${DOMAIN}/produit/${p.id}`,
+            loc: `${DOMAIN}/produit/${encodeURIComponent(p.id)}`,
             priority: 0.8,
-            lastmod: p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : null
+            lastmod: lastmod ? new Date(lastmod).toISOString().split('T')[0] : null
           });
         });
       }
@@ -80,7 +103,7 @@ async function generateSitemap() {
         vendors.forEach(v => {
           if (v.username) {
             urls.push({
-              loc: `${DOMAIN}/store/${v.username}`,
+              loc: `${DOMAIN}/store/${encodeURIComponent(v.username)}`,
               priority: 0.7
             });
           }
@@ -90,17 +113,17 @@ async function generateSitemap() {
       console.warn("Supabase credentials missing. Generating static sitemap only.");
     }
 
+    const uniqueUrls = Array.from(new Map(urls.map((url) => [url.loc, url])).values());
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
-    <priority>${u.priority}</priority>
+${uniqueUrls.map(u => `  <url>
+    <loc>${escapeXml(u.loc)}</loc>
+${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}    <priority>${u.priority}</priority>
   </url>`).join('\n')}
 </urlset>`;
 
     fs.writeFileSync(path.resolve(__dirname, '../public/sitemap.xml'), sitemapContent);
-    console.log(`Sitemap generated successfully with ${urls.length} URLs!`);
+    console.log(`Sitemap generated successfully with ${uniqueUrls.length} URLs!`);
   } catch (error) {
     console.error("Error generating sitemap:", error);
     process.exit(1);

@@ -1,7 +1,7 @@
 {
   "name": "MindHubs",
   "short_name": "MindHubs",
-  "description": "Marketplace et boutiques de produits digitaux et physiques.",
+  "description": "Marketplace et boutiques de formations, produits digitaux et ressources numériques.",
   "lang": "fr",
   "start_url": "/",
   "display": "standalone",

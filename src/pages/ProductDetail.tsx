@@ -80,7 +80,7 @@ const ProductDetail = () => {
   const { data: vendorProducts = [] } = useVendorProducts(product?.vendorId);
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [currentImage, setCurrentImage] = useState(0);
-  const isExternalCheckout = product?.checkoutMode === "external" && Boolean(product.paymentLink);
+  const isExternalCheckout = Boolean(product?.paymentLink);
 
   // LMS Curriculum data
   const { data: chapters = [] } = useQuery<CurriculumChapter[]>({
@@ -151,8 +151,8 @@ const ProductDetail = () => {
         num_items: 1,
       });
       sessionStorage.setItem("mindhubs:last-source", sourceChannel || "direct");
-      if (product.paymentLink && !product.vendorId) {
-        window.open(product.paymentLink, "_blank", "noopener,noreferrer");
+      if (product.paymentLink) {
+        window.location.assign(product.paymentLink);
       } else {
         navigate("/checkout");
       }

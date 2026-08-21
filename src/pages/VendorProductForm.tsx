@@ -58,6 +58,7 @@ import {
   Crop,
   AlertCircle,
   Store,
+  ExternalLink,
 } from "lucide-react";
 import { RichDescriptionEditor } from "@/components/products/RichDescriptionEditor";
 import CourseBuilder from "@/components/vendor/lms/CourseBuilder";
@@ -490,6 +491,7 @@ const Inner = ({
       price: form.price,
       pricingMode: form.pricing_mode,
       oldPrice: form.old_price,
+      paymentLink: form.payment_link,
       productMode: form.product_mode,
       digitalAssetPath: form.digital_asset_path,
       digitalAssetName: form.digital_asset_name,
@@ -1558,6 +1560,29 @@ const Inner = ({
                       </div>
                     </div>
                   )}
+
+                  <div className={`space-y-3 rounded-2xl border p-4 ${validation?.fields.paymentLink ? "border-destructive/50 bg-destructive/5" : "border-border bg-muted/20"}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <ExternalLink size={17} aria-hidden="true" />
+                      </div>
+                      <div>
+                        <Label htmlFor="payment_link" className="text-sm font-bold">Lien externe de paiement ou de livraison <span className="text-[10px] font-normal text-muted-foreground">(facultatif)</span></Label>
+                        <p className="mt-1 text-xs text-muted-foreground">Si vous ajoutez un lien, le bouton d’achat redirigera directement vers cette page au lieu du panier MindHubs.</p>
+                      </div>
+                    </div>
+                    <Input
+                      id="payment_link"
+                      type="url"
+                      inputMode="url"
+                      value={form.payment_link}
+                      onChange={(event) => setForm((current) => ({ ...current, payment_link: event.target.value }))}
+                      placeholder="https://exemple.com/checkout"
+                      aria-describedby="payment-link-help payment-link-error"
+                      aria-invalid={Boolean(validation?.fields.paymentLink)}
+                    />
+                    {validation?.fields.paymentLink ? <p id="payment-link-error" className="flex items-center gap-1.5 text-xs font-medium text-destructive"><AlertCircle size={13} /> {validation.fields.paymentLink}</p> : <p id="payment-link-help" className="text-[11px] text-muted-foreground">Utilisez une URL https:// publique. Le lien reste optionnel pour les ventes via le checkout MindHubs.</p>}
+                  </div>
 
                   {(form.product_mode === "physical" || form.product_mode === "hybrid") && (
                     <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">

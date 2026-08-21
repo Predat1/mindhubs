@@ -30,7 +30,10 @@ const ProductCard = ({ product, sourceChannel = "marketplace", showQuickBuy = tr
   const prefetch = usePrefetchProduct();
   const reduce = useReducedMotion();
   const productMode = product.productMode || "digital";
-  const isExternalCheckout = product.checkoutMode === "external" && Boolean(product.paymentLink);
+  // A saved external payment link is the source of truth for legacy and new
+  // vendor products. It must bypass the MindHubs cart, even when no optional
+  // checkout_mode column exists in the database yet.
+  const isExternalCheckout = Boolean(product.paymentLink);
   const isOutOfStock = (productMode === "physical" || productMode === "hybrid") && product.inventoryQuantity === 0;
   const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const hasDiscount = parseCurrency(product.oldPrice) > parseCurrency(product.price);

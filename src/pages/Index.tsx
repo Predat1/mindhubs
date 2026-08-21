@@ -13,8 +13,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Formations Digitales Premium"
-        description="MindHubs : plateforme de produits et formations digitales premium en Afrique francophone. E-books, kits business, marketing digital et IA créative, avec accès immédiat après achat."
+        title="Marketplace de produits digitaux et formations"
+        description="Découvrez des formations, ebooks, logiciels et ressources numériques proposés par MindHubs et ses vendeurs. Achetez, apprenez et développez vos projets depuis une marketplace pensée pour l'Afrique francophone."
         path="/"
         keywords="formations digitales Afrique, e-books business Afrique, formation en ligne Bénin, Sénégal, Côte d'Ivoire, marketing digital Afrique, business en ligne Afrique, MindHubs, formation premium, vendre produits digitaux, e-commerce Afrique, mobile money"
         faq={[

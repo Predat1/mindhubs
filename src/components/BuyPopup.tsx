@@ -25,7 +25,7 @@ const BuyPopup = ({ product, sourceChannel = "direct", open, onClose }: Props) =
   const navigate = useNavigate();
   const isPhysical = product.productMode === "physical";
   const isHybrid = product.productMode === "hybrid";
-  const isExternal = product.checkoutMode === "external" || Boolean(product.paymentLink && !product.vendorId);
+  const isExternal = Boolean(product.paymentLink);
   const isFree = product.pricingMode === "free" || product.priceAmount === 0;
   const reduce = useReducedMotion();
   const [actionState, setActionState] = useState<StatefulButtonState>("idle");

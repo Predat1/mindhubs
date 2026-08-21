@@ -2,52 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://mindhubs.fun/</loc>
-    
     <priority>1</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/boutique</loc>
-    
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://mindhubs.fun/produit/formations-550-logiciels</loc>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://mindhubs.fun/a-propos</loc>
-    
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/become-a-seller</loc>
-    
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/contact</loc>
-    
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/faq</loc>
-    
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/conditions-generales</loc>
-    
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/politique-confidentialite</loc>
-    
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/politique-remboursement</loc>
-    
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://mindhubs.fun/politique-livraison</loc>
-    
     <priority>0.3</priority>
   </url>
 </urlset>

@@ -71,4 +71,16 @@ describe("validateProduct", () => {
     expect(result.valid).toBe(false);
     expect(result.fields.price).toBeTruthy();
   });
+
+  it("accepts an optional external checkout link", () => {
+    const result = validateProduct({ ...base, paymentLink: "https://payments.example.test/checkout" });
+    expect(result.valid).toBe(true);
+    expect(result.fields.paymentLink).toBeUndefined();
+  });
+
+  it("rejects an external link that is not an http(s) URL", () => {
+    const result = validateProduct({ ...base, paymentLink: "javascript:alert(1)" });
+    expect(result.valid).toBe(false);
+    expect(result.fields.paymentLink).toBeTruthy();
+  });
 });

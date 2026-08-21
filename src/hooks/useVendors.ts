@@ -46,6 +46,7 @@ const mapVendorProduct = (db: any): Product => ({
   tag: db.tag ?? undefined,
   description: db.description ?? undefined,
   paymentLink: db.payment_link ?? undefined,
+  checkoutMode: db.payment_link ? "external" : "platform",
   imageUrls: Array.isArray(db.image_urls) ? db.image_urls : [],
   keyFeatures: db.key_features ?? [],
   vendorId: db.vendor_id ?? undefined,
