@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import ShareButtons from "@/components/ShareButtons";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import fbPixel from "@/hooks/useFacebookPixel";
-import { trackProductView, trackProductPurchase, trackProductClick, trackAddToCart } from "@/hooks/useProductTracking";
+import { trackProductView, trackProductClick, trackAddToCart } from "@/hooks/useProductTracking";
 import { useVendorById, useVendorProducts } from "@/hooks/useVendors";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -140,6 +140,16 @@ const ProductDetail = () => {
         }
         return;
       }
+
+      // External offers must never enter the MindHubs cart or create an
+      // internal order. The external provider owns payment and delivery.
+      if (product.paymentLink) {
+        trackProductClick(product.id);
+        sessionStorage.setItem("mindhubs:last-source", sourceChannel || "direct");
+        window.location.assign(product.paymentLink);
+        return;
+      }
+
       trackProductClick(product.id);
       addToCart(product);
       trackAddToCart(product.id);
@@ -151,11 +161,7 @@ const ProductDetail = () => {
         num_items: 1,
       });
       sessionStorage.setItem("mindhubs:last-source", sourceChannel || "direct");
-      if (product.paymentLink) {
-        window.location.assign(product.paymentLink);
-      } else {
-        navigate("/checkout");
-      }
+      navigate("/checkout");
     }
   };
 

@@ -135,6 +135,7 @@ export const useFeaturedProducts = () => {
         const { data } = await supabase
           .from("products")
           .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .eq("status", "published")
           .eq("featured", true)
           .order("sort_order");
         dbFeatured = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
@@ -163,13 +164,9 @@ export const useProduct = (id: string, sourceChannel?: "marketplace" | "storefro
   return useQuery({
     queryKey: ["products", id, sourceChannel],
     queryFn: async (): Promise<Product | null> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
-        .eq("id", id)
-        .maybeSingle();
+      const staticProduct = allProducts.find((p) => p.id === id) ?? null;
 
-      if ((sourceChannel === "marketplace" || sourceChannel === "storefront") && !error) {
+      if (sourceChannel === "marketplace" || sourceChannel === "storefront") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: publication, error: publicationError } = await (supabase as any)
           .from("product_publications")
@@ -183,13 +180,24 @@ export const useProduct = (id: string, sourceChannel?: "marketplace" | "storefro
           if (publication?.product) return mapDbToProduct(publication.product as DbProduct);
           // Static catalogue items remain available while database-backed products
           // are governed strictly by their publication status.
-          return allProducts.find((p) => p.id === id) ?? null;
+          return staticProduct;
         }
+
+        // If the distribution table is unavailable, fail closed for marketplace
+        // products. Storefront URLs can use the legacy published flag as a safe
+        // compatibility path until the publication migration is available.
+        if (sourceChannel === "marketplace") return staticProduct;
       }
 
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+        .eq("id", id)
+        .eq("status", "published")
+        .maybeSingle();
+
       if (error || !data) {
-        const fallback = allProducts.find((p) => p.id === id);
-        return fallback ?? null;
+        return staticProduct;
       }
 
       return mapDbToProduct(data as unknown as DbProduct);
@@ -219,6 +227,7 @@ export const useNewProducts = () => {
         const { data } = await supabase
           .from("products")
           .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .eq("status", "published")
           .order("created_at", { ascending: false })
           .limit(10);
         dbProducts = (data || []).map(db => mapDbToProduct(db as unknown as DbProduct));
@@ -253,6 +262,7 @@ export const useSearchProducts = (query: string) => {
         const { data } = await supabase
           .from("products")
           .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
+          .eq("status", "published")
           .ilike("title", `%${query}%`)
           .order("sort_order")
           .limit(20);
@@ -285,6 +295,7 @@ export const usePrefetchProduct = () => {
           .from("products")
           .select("*, vendor:vendors(username, shop_name, avatar_url, verified)")
           .eq("id", id)
+          .eq("status", "published")
           .maybeSingle();
 
         if (error || !data) {

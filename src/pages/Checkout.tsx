@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import fbPixel from "@/hooks/useFacebookPixel";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SEO from "@/components/SEO";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,13 +14,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
-import { trackCheckoutStart, trackProductPurchase } from "@/hooks/useProductTracking";
+import { trackCheckoutStart } from "@/hooks/useProductTracking";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", paymentMethod: "mobile_money" });
   const [country, setCountry] = useState<string | null>(null);
@@ -55,8 +53,8 @@ const Checkout = () => {
       items.forEach(item => trackCheckoutStart(item.product.id));
     }
     
-    if (items.length === 1 && items[0].product.paymentLink && !items[0].product.vendorId) {
-      window.open(items[0].product.paymentLink, "_blank", "noopener,noreferrer");
+    if (items.length === 1 && items[0].product.paymentLink) {
+      window.location.assign(items[0].product.paymentLink);
       navigate("/boutique", { replace: true });
     }
   }, [items, navigate]);
@@ -102,7 +100,7 @@ const Checkout = () => {
             <div className="space-y-4">
                <h1 className="text-4xl font-black tracking-tighter">Félicitations !</h1>
                <p className="text-muted-foreground font-medium max-w-md mx-auto">
-                 Merci <span className="text-foreground font-bold">{form.name}</span> ! Votre commande a été enregistrée. {hasPhysicalItems ? "Le vendeur vous contactera pour la préparation et la livraison." : <>Votre accès sera envoyé après confirmation du paiement à <span className="text-primary font-bold">{form.email}</span>.</>}
+                 Merci <span className="text-foreground font-bold">{form.name}</span> ! Votre commande {orderNumber ? <><span className="text-primary font-bold">{orderNumber}</span> </> : null} a été enregistrée en attente de paiement. {hasPhysicalItems ? "La préparation commencera après confirmation du paiement." : <>Votre accès sera envoyé après confirmation du paiement à <span className="text-primary font-bold">{form.email}</span>.</>}
                </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -110,7 +108,7 @@ const Checkout = () => {
                   <Link to="/boutique">Continuer mes Achats</Link>
                </Button>
                <Button asChild variant="outline" className="h-14 rounded-2xl px-10 border-white/10 font-black text-lg">
-                  <Link to="/mon-compte">Accéder à ma Formation</Link>
+                   <Link to="/mon-compte">Accéder à mon compte</Link>
                </Button>
             </div>
           </motion.div>
@@ -141,37 +139,27 @@ const Checkout = () => {
         vendor_id: item.product.vendorId ?? null,
         product_mode: item.product.productMode ?? "digital",
       }));
-      const orderPayload = {
-        user_id: user?.id ?? null,
-        customer_name: form.name.trim(),
-        customer_email: form.email.trim(),
-        customer_phone: form.phone.trim(),
-        payment_method: form.paymentMethod,
-        total_price: totalPrice,
-        items: orderItems,
-        status: "pending",
-        payment_status: "pending",
-        country: country,
-        source_channel: sourceChannel,
-        referrer: document.referrer || null,
-        landing_page: window.location.pathname,
-        utm_source: new URLSearchParams(window.location.search).get("utm_source"),
-        utm_medium: new URLSearchParams(window.location.search).get("utm_medium"),
-        utm_campaign: new URLSearchParams(window.location.search).get("utm_campaign"),
-        shipping_address: hasPhysicalItems ? shippingAddress : null,
-      };
-      const { error } = await supabase.from("orders").insert(orderPayload as never);
+      const { data, error } = await (supabase as any).rpc("create_pending_order", {
+        p_customer_name: form.name.trim(),
+        p_customer_email: form.email.trim(),
+        p_customer_phone: form.phone.trim(),
+        p_payment_method: form.paymentMethod,
+        p_items: orderItems,
+        p_source_channel: sourceChannel,
+        p_referrer: document.referrer || null,
+        p_landing_page: window.location.pathname,
+        p_utm_source: new URLSearchParams(window.location.search).get("utm_source"),
+        p_utm_medium: new URLSearchParams(window.location.search).get("utm_medium"),
+        p_utm_campaign: new URLSearchParams(window.location.search).get("utm_campaign"),
+        p_shipping_address: hasPhysicalItems ? shippingAddress : null,
+        p_country: country,
+      });
       if (error) throw error;
+      const createdOrder = Array.isArray(data) ? data[0] : data;
+      setOrderNumber(createdOrder?.order_number || null);
       clearCart();
       setConfirmed(true);
-      items.forEach(item => trackProductPurchase(item.product.id));
-      fbPixel.purchase({
-        content_ids: items.map((i) => i.product.id),
-        value: totalPrice,
-        currency: "XOF",
-        num_items: items.reduce((s, i) => s + i.quantity, 0),
-      });
-      toast({ title: "Commande enregistrée ✅", description: hasPhysicalItems ? "Le vendeur va préparer votre commande." : "Votre accès sera disponible après confirmation du paiement." });
+      toast({ title: "Commande enregistrée", description: "Elle restera en attente jusqu’à la confirmation du paiement." });
     } catch (err: unknown) {
       toast({ title: "Erreur", description: (err as Error).message || "Une erreur est survenue", variant: "destructive" });
     } finally {
@@ -277,10 +265,10 @@ const Checkout = () => {
 
                 <div className="pt-6 border-t border-border flex flex-wrap items-center gap-6">
                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-success bg-success/5 px-3 py-1.5 rounded-full border border-success/10">
-                      <ShieldCheck size={14} /> Paiement 100% Sécurisé
+                      <ShieldCheck size={14} /> Paiement à confirmer
                    </div>
                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
-                      <Lock size={14} /> Cryptage SSL 256-bit
+                      <Lock size={14} /> Données protégées
                    </div>
                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                       Protection acheteur
