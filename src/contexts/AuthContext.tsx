@@ -59,13 +59,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Initial session check
     const initAuth = async () => {
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      if (mounted) {
-        if (initialSession) {
-          setSession(initialSession);
-          setUser(initialSession.user);
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Initial auth session check failed:", error);
         }
-        setLoading(false);
+        if (mounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+        }
+      } catch (error) {
+        console.error("Initial auth session check failed:", error);
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
 
@@ -79,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
         
         // If we get an initial session event, we can stop loading
-        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
           setLoading(false);
         }
       }
@@ -93,11 +103,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string, redirectTo?: string) => {
     if (isDemoMode) return { error: new Error("Le mode démo ne permet pas de créer un compte."), needsConfirmation: false };
+    const normalizedEmail = email.trim().toLowerCase();
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName.trim() },
         emailRedirectTo: redirectTo || window.location.origin,
       },
     });
@@ -113,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     if (isDemoMode) return { error: new Error("Le mode démo est déjà ouvert.") };
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     return { error: error ? new Error(translateAuthError(error.message)) : null };
   };
 
@@ -145,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetPassword = async (email: string) => {
     if (isDemoMode) return { error: new Error("La récupération de compte est désactivée en mode démo.") };
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     return { error: error ? new Error(translateAuthError(error.message)) : null };
@@ -155,7 +166,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (isDemoMode) return { error: new Error("La confirmation email est désactivée en mode démo.") };
     const { error } = await supabase.auth.resend({
       type: "signup",
-      email,
+      email: email.trim().toLowerCase(),
       options: { emailRedirectTo: redirectTo || window.location.origin },
     });
     return { error: error ? new Error(translateAuthError(error.message)) : null };

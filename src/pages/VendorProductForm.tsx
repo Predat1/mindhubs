@@ -173,7 +173,7 @@ const Inner = ({
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, canMutate } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const draftKey = `vendor:product:draft:v2:${vendorId}:${id ?? "new"}`;
@@ -283,6 +283,10 @@ const Inner = ({
 
   // ===== AI Key Features
   const generateAIFeatures = async () => {
+    if (!canMutate) {
+      toast.info("Action désactivée en mode démo", { description: "Passez sur l'environnement de production pour enregistrer un produit." });
+      return;
+    }
     if (form.title.trim().length < 3) {
       toast.error("Titre requis", {
         description: "Saisissez au moins 3 caractères.",
@@ -320,6 +324,10 @@ const Inner = ({
 
   // ===== AI Image — generate variants
   const generateAIImageVariants = async () => {
+    if (!canMutate) {
+      toast.info("Action désactivée en mode démo", { description: "Passez sur l'environnement de production pour générer une image." });
+      return;
+    }
     if (form.title.trim().length < 3) {
       toast.error("Titre requis", {
         description: "Saisissez d'abord le titre du produit.",
@@ -367,6 +375,10 @@ const Inner = ({
 
   // ===== AI Image — edit existing
   const editAIImage = async () => {
+    if (!canMutate) {
+      toast.info("Action désactivée en mode démo", { description: "Passez sur l'environnement de production pour modifier une image." });
+      return;
+    }
     if (!form.image_url) {
       toast.error("Aucune image", {
         description: "Ajoutez d'abord une image.",
@@ -519,6 +531,10 @@ const Inner = ({
   // ===== Upload helper
   const uploadFile = async (file: File) => {
     if (!user) return;
+    if (!canMutate) {
+      toast.info("Upload désactivé en mode démo", { description: "Les fichiers ne sont pas envoyés depuis l'aperçu local." });
+      return;
+    }
     if (!file.type.startsWith("image/")) {
       toast.error("Format invalide", {
         description: "Sélectionnez une image (jpg, png, webp…)",
@@ -597,6 +613,11 @@ const Inner = ({
   const handleSave = async (overrideStatus?: "draft" | "published") => {
     const finalStatus = overrideStatus ?? form.status;
 
+    if (!canMutate) {
+      toast.info("Enregistrement désactivé en mode démo", { description: "Connectez une session vendeur réelle pour créer ou publier un produit." });
+      return;
+    }
+
     // Les brouillons demandent seulement un titre ; la publication utilise la checklist complète.
     if (finalStatus === "published" && !allValid) {
       setValidation(publishValidation);
@@ -630,7 +651,7 @@ const Inner = ({
         description: form.description.trim() || null,
         category: form.category,
         price: form.price.trim() || "0",
-        old_price: form.pricing_mode === "paid" ? (form.old_price.trim() || form.price.trim() || "0") : "0",
+        old_price: form.pricing_mode === "paid" ? (form.old_price.trim() || "0") : "0",
         pricing_mode: form.pricing_mode,
         currency: form.currency || "XOF",
         price_amount: form.pricing_mode === "free" ? 0 : parseProductAmount(form.price),
@@ -766,6 +787,10 @@ const Inner = ({
   // ===== File Upload (Digital Product)
   const uploadDigitalFile = async (file: File) => {
     if (!user) return;
+    if (!canMutate) {
+      toast.info("Upload désactivé en mode démo", { description: "Les fichiers ne sont pas envoyés depuis l'aperçu local." });
+      return;
+    }
     setFileUploading(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase();
@@ -860,7 +885,7 @@ const Inner = ({
               size="sm"
               variant="outline"
               onClick={() => handleSave("draft")}
-              disabled={saving || !form.title.trim()}
+              disabled={saving || !form.title.trim() || !canMutate}
             >
               <FileEdit size={14} /> Enregistrer le brouillon
             </Button>
@@ -870,7 +895,7 @@ const Inner = ({
             <Button
               size="sm"
               onClick={() => handleSave("published")}
-              disabled={saving}
+              disabled={saving || !canMutate}
             >
               {saving ? (
                 <Loader2 className="animate-spin" size={14} />

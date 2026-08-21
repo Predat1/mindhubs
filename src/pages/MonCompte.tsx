@@ -98,18 +98,15 @@ const MonCompte = () => {
           setSubmitting(false);
           return;
         }
-        const { error } = await signUp(email, password, fullName);
+        const { error, needsConfirmation } = await signUp(email, password, fullName);
         if (error) {
           toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        } else if (needsConfirmation) {
+          setPendingEmail(email.trim().toLowerCase());
+          setMode("check-email");
+          toast({ title: "Vérifiez votre email", description: "Un lien de confirmation vient de vous être envoyé." });
         } else {
-          // Auto-confirm activé : on connecte directement
-          const { error: signInErr } = await signIn(email, password);
-          if (signInErr) {
-            toast({ title: "Compte créé", description: "Connectez-vous avec vos identifiants." });
-            setMode("login");
-          } else {
-            toast({ title: "Bienvenue ! 🎉", description: "Votre compte a été créé avec succès." });
-          }
+          toast({ title: "Bienvenue ! 🎉", description: "Votre compte a été créé avec succès." });
         }
       } else if (mode === "login") {
         const { error } = await signIn(email, password);
@@ -389,6 +386,76 @@ const MonCompte = () => {
                </div>
             )}
             
+          </div>
+        </main>
+        <FooterSection />
+      </div>
+    );
+  }
+
+  if (mode === "check-email") {
+    const confirmationEmail = pendingEmail || email;
+
+    const handleResendConfirmation = async () => {
+      if (!confirmationEmail) return;
+      setSubmitting(true);
+      try {
+        const { error } = await resendConfirmation(confirmationEmail);
+        if (error) {
+          toast({ title: "Impossible de renvoyer l'email", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Email renvoyé", description: "Vérifiez votre boîte de réception et vos spams." });
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-background aurora-bg">
+        <SEO title="Confirmez votre email – MindHubs" description="Confirmez votre adresse email pour activer votre compte MindHubs." path="/mon-compte" />
+        <Navbar />
+        <main className="flex min-h-[90vh] items-center pt-28 pb-20">
+          <div className="container mx-auto max-w-lg px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card space-y-7 rounded-[2rem] border border-border p-8 text-center shadow-2xl md:p-12"
+            >
+              <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
+                <MailCheck size={30} aria-hidden="true" />
+              </div>
+              <div className="space-y-3">
+                <h1 className="text-3xl font-black tracking-tight">Vérifiez votre email</h1>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Un lien de confirmation a été envoyé à <strong className="text-foreground">{confirmationEmail}</strong>.
+                  Cliquez dessus pour activer votre compte et accéder à votre espace vendeur.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-left text-xs leading-5 text-muted-foreground" role="status" aria-live="polite">
+                Si vous ne voyez pas le message dans quelques minutes, vérifiez le dossier spam ou renvoyez le lien.
+              </div>
+              <div className="space-y-3">
+                <Button type="button" className="h-12 w-full rounded-xl font-bold" onClick={handleResendConfirmation} disabled={submitting || !confirmationEmail}>
+                  {submitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <MailCheck size={17} aria-hidden="true" />}
+                  Renvoyer le lien
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 w-full rounded-xl font-bold"
+                  onClick={() => {
+                    setEmail(confirmationEmail);
+                    setMode("register");
+                  }}
+                >
+                  Modifier l’adresse email
+                </Button>
+                <button type="button" className="text-sm font-semibold text-primary hover:underline" onClick={() => setMode("login")}>
+                  Retour à la connexion
+                </button>
+              </div>
+            </motion.div>
           </div>
         </main>
         <FooterSection />
